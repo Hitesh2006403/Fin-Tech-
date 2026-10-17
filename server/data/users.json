@@ -1,0 +1,16 @@
+[
+  {
+    "id": "usr_alex_01",
+    "email": "alex@example.com",
+    "name": "Alex Vance",
+    "picture": null,
+    "avatarInitials": "AV",
+    "role": "Freelance Product Architect",
+    "authProvider": "local",
+    "googleSub": null,
+    "passwordHash": "baf8c2ee130dfbc189605759d82fb15e:972f8b1202a8906fb6a6ae8497dbccb1d39a3d9c132f9ca6d316211ba09318b44f9986be642a6fd3e14be90bd712e56eda4a2a83a5b8c218a87737b5d1b5a4cc",
+    "onboardingCompleted": true,
+    "createdAt": "2026-10-17T17:22:42.266Z",
+    "updatedAt": "2026-10-17T17:22:42.266Z"
+  }
+]

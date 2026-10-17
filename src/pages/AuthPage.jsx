@@ -1,63 +1,227 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { formatINR } from '../services/financialEngine.js';
 import {
   ShieldCheck,
-  TrendingUp,
-  Receipt,
   Sparkles,
   ArrowRight,
   Eye,
   EyeOff,
   Lock,
-  Mail,
   CheckCircle2,
   Sliders,
-  DollarSign
+  AlertCircle,
+  Link2,
+  RefreshCw
 } from 'lucide-react';
 
-export function AuthPage() {
-  const { login, setUser, setPreferences } = useApp();
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'onboarding'
+export function AuthPage({ initialMode = 'login' }) {
+  const {
+    loginWithGoogle,
+    linkGoogleAccount,
+    loginWithEmail,
+    registerWithEmail,
+    completeOnboarding,
+    setPreferences,
+    setActiveRoute
+  } = useApp();
+
+  const [mode, setMode] = useState(initialMode); // 'login' | 'register' | 'forgot' | 'onboarding' | 'link_account'
   const [email, setEmail] = useState('alex@example.com');
   const [password, setPassword] = useState('FinSight2026!Secured');
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('Alex Vance');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
+  // Authentication status & error handling (Requirements 11 & 12)
+  const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(null);
+  const [authNotice, setAuthNotice] = useState(null);
+
+  // Account linking state (Requirement 8)
+  const [conflictData, setConflictData] = useState(null);
+  const [linkPassword, setLinkPassword] = useState('');
+  const [showLinkPassword, setShowLinkPassword] = useState(false);
+  const [linkLoading, setLinkLoading] = useState(false);
+
   // Onboarding Wizard state (3 short steps)
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [obBalance, setObBalance] = useState('45000');
   const [obBuffer, setObBuffer] = useState('25000');
   const [obFrequency, setObFrequency] = useState('Irregular / Milestone-based');
-  const [obEssentialRent, setObEssentialRent] = useState('22000');
   const [obThreshold, setObThreshold] = useState('20000');
 
-  const handleLoginSubmit = (e) => {
+  // Google Identity Services (GIS) button ref
+  const googleBtnRef = useRef(null);
+
+  // Handle Google Credential Response
+  const handleGoogleCredentialResponse = async (response) => {
+    if (!response || !response.credential) {
+      setAuthError('Authentication canceled or no credential was returned by Google.');
+      return;
+    }
+
+    setAuthError(null);
+    setLoading(true);
+
+    try {
+      const data = await loginWithGoogle(response.credential);
+      // If new user with incomplete onboarding, switch to onboarding
+      if (data.user && !data.user.onboardingCompleted) {
+        setMode('onboarding');
+      }
+    } catch (err) {
+      console.warn('Google authentication response handling:', err);
+      if (err.code === 'EXISTING_LOCAL_ACCOUNT') {
+        // Trigger secure account linking modal
+        setConflictData({
+          email: err.details?.email || email,
+          credential: response.credential,
+          message: err.message
+        });
+        setMode('link_account');
+      } else {
+        setAuthError(err.message || 'Google authentication failed. Please retry.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize Google Identity Services (Requirements 1, 3, 4)
+  useEffect(() => {
+    let intervalId = null;
+
+    const setupGis = () => {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+            context: 'signin'
+          });
+
+          if (googleBtnRef.current) {
+            // Render genuine GIS button inside the overlay container
+            window.google.accounts.id.renderButton(googleBtnRef.current, {
+              type: 'standard',
+              theme: 'outline',
+              size: 'large',
+              text: 'continue_with',
+              shape: 'rectangular',
+              logo_alignment: 'left',
+              width: 380
+            });
+          }
+        } catch (e) {
+          console.error('Failed to initialize Google Identity Services:', e);
+        }
+        if (intervalId) clearInterval(intervalId);
+      }
+    };
+
+    // Try immediately
+    setupGis();
+
+    // Check periodically if library script is still loading
+    intervalId = setInterval(setupGis, 300);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [mode]);
+
+  // Fallback trigger if user clicks the button before/around overlay
+  const handleGoogleBtnClick = () => {
+    setAuthError(null);
+    if (window.google?.accounts?.id) {
+      try {
+        window.google.accounts.id.prompt();
+      } catch (err) {
+        console.warn('GIS prompt trigger error:', err);
+      }
+    } else {
+      setAuthError('Google Identity Services library is still connecting. Please check your network and retry.');
+    }
+  };
+
+  // Handle standard email/password login
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    login(email, fullName);
+    setAuthError(null);
+    setLoading(true);
+
+    try {
+      await loginWithEmail(email, password);
+    } catch (err) {
+      setAuthError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e) => {
+  // Handle email/password registration
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    setMode('onboarding');
+    setAuthError(null);
+    setLoading(true);
+
+    try {
+      await registerWithEmail(email, fullName, password);
+      setMode('onboarding');
+    } catch (err) {
+      setAuthError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOnboardingFinish = () => {
-    setPreferences(prev => ({
-      ...prev,
-      startingBalance: Number(obBalance),
-      safetyBuffer: Number(obBuffer),
-      incomeFrequency: obFrequency,
-      lowBalanceAlertThreshold: Number(obThreshold)
-    }));
+  // Handle Account Linking (Requirement 8)
+  const handleAccountLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (!conflictData) return;
 
-    login(email, fullName);
+    setAuthError(null);
+    setLinkLoading(true);
+
+    try {
+      await linkGoogleAccount({
+        email: conflictData.email,
+        password: linkPassword,
+        credential: conflictData.credential
+      });
+      setAuthNotice('Google account successfully linked!');
+    } catch (err) {
+      setAuthError(err.message || 'Failed to link account. Please verify password.');
+    } finally {
+      setLinkLoading(false);
+    }
   };
 
-  const handleDemoBypass = () => {
-    login('alex@example.com', 'Alex Vance');
+  // Handle Onboarding Completion (Requirement 10)
+  const handleOnboardingFinish = async () => {
+    setLoading(true);
+    try {
+      setPreferences(prev => ({
+        ...prev,
+        startingBalance: Number(obBalance),
+        safetyBuffer: Number(obBuffer),
+        incomeFrequency: obFrequency,
+        lowBalanceAlertThreshold: Number(obThreshold)
+      }));
+
+      await completeOnboarding();
+      setActiveRoute('dashboard');
+    } catch (err) {
+      console.error('Error completing onboarding:', err);
+      setActiveRoute('dashboard');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -135,7 +299,7 @@ export function AuthPage() {
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: 20, fontSize: 12, color: '#64748B' }}>
           <span>Indian Currency Architecture (₹ INR)</span>
-          <span>SOC-2 Verified Security Standards</span>
+          <span>Google OAuth 2.0 & SOC-2 Verified</span>
         </div>
       </div>
 
@@ -148,63 +312,210 @@ export function AuthPage() {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '40px'
+          padding: '40px',
+          position: 'relative'
         }}
       >
         <div style={{ width: '100%', maxWidth: 440 }}>
-          
-          {/* Quick Demo Bypass Banner for Hackathon Judges */}
-          <div
-            style={{
-              background: '#F0EFFF',
-              border: '1px solid #E0E7FF',
-              borderRadius: 12,
-              padding: '14px 16px',
-              marginBottom: 24,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: '#635BFF' }}>
-                ⚡ Hackathon Evaluator Access
-              </div>
-              <div style={{ fontSize: 11.5, color: '#667085' }}>
-                Jump directly into the workspace with sample data
-              </div>
-            </div>
-            <button
-              type="button"
-              className="btn-primary"
-              style={{ fontSize: 12, padding: '6px 12px' }}
-              onClick={handleDemoBypass}
-            >
-              <span>Instant Launch</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
 
+          {/* Feedback Alerts */}
+          {authError && (
+            <div
+              style={{
+                background: '#FEF2F2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                marginBottom: '18px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                fontSize: '13px',
+                color: '#991B1B'
+              }}
+            >
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ flex: 1, lineHeight: '1.45' }}>{authError}</div>
+              <button
+                type="button"
+                onClick={() => setAuthError(null)}
+                style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontWeight: 700 }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {authNotice && (
+            <div
+              style={{
+                background: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                marginBottom: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '13px',
+                color: '#065F46'
+              }}
+            >
+              <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>{authNotice}</div>
+            </div>
+          )}
+          
           {/* Mode 1: Login */}
           {mode === 'login' && (
             <div>
-              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>
-                Welcome Back
-              </h2>
-              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 24px 0' }}>
-                Access your personalized treasury cash flow dashboard.
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: 0 }}>
+                  Welcome back
+                </h2>
+                <button
+                  type="button"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: '#F5F3FF',
+                    border: '1px solid #E0E7FF',
+                    color: '#635BFF',
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    setEmail('alex@example.com');
+                    setPassword('FinSight2026!Secured');
+                  }}
+                  title="Auto-fill demo credentials"
+                >
+                  <Sparkles size={12} />
+                  <span>Auto-fill</span>
+                </button>
+              </div>
+
+              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 20px 0' }}>
+                Sign in to continue to your financial dashboard.
               </p>
+
+              {/* Google SSO Button Container (Preserves exact design + Real GIS Account Chooser) */}
+              <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
+                {/* Visual presentation exactly matches existing design */}
+                <button
+                  type="button"
+                  className="btn-google-sso"
+                  onClick={handleGoogleBtnClick}
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '10px',
+                    padding: '10px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    cursor: loading ? 'wait' : 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+                    opacity: loading ? 0.7 : 1
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {loading ? (
+                      <RefreshCw size={18} className="spin" color="#635BFF" />
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12c0 1.97.45 3.82 1.25 5.42l4.03-3.15z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                        />
+                      </svg>
+                    )}
+                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#1E293B' }}>
+                      {loading ? 'Authenticating with Google...' : 'Continue with Google'}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: '14px',
+                      background: '#F1F5F9',
+                      border: '1px solid #E2E8F0',
+                      color: '#64748B',
+                      fontSize: '10.5px',
+                      fontWeight: 500,
+                      padding: '2px 7px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    Fast SSO
+                  </span>
+                </button>
+
+                {/* Real Google Identity Services Overlay (Seamlessly renders genuine account chooser iframe over button) */}
+                <div
+                  ref={googleBtnRef}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0.001,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: loading ? 'none' : 'auto'
+                  }}
+                  title="Sign in with genuine Google account"
+                />
+              </div>
+
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '12px' }}>
+                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
+                <span style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.9px', color: '#94A3B8', textTransform: 'uppercase' }}>
+                  OR CONTINUE WITH EMAIL
+                </span>
+                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
+              </div>
 
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group-item">
-                  <label className="form-label-title">Work Email</label>
-                  <input
-                    type="email"
-                    className="form-input-control"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <label className="form-label-title">Email Address</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="email"
+                      className="form-input-control"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="alex@example.com"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group-item">
@@ -225,6 +536,8 @@ export function AuthPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={loading}
+                      style={{ letterSpacing: showPassword ? 'normal' : '2px' }}
                     />
                     <button
                       type="button"
@@ -236,13 +549,32 @@ export function AuthPage() {
                   </div>
                 </div>
 
+                {/* Remember this device & 30-day session */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 20px 0' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 13, color: '#334155', fontWeight: 500 }}>
+                    <input type="checkbox" defaultChecked style={{ accentColor: '#EA580C', width: 16, height: 16, borderRadius: 4 }} />
+                    <span>Remember this device</span>
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#10B981', fontWeight: 500 }}>
+                    <Lock size={12} />
+                    <span>30-day session</span>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   className="btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14.5, marginTop: 10 }}
+                  disabled={loading}
+                  style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14.5 }}
                 >
-                  <span>Sign In to FinSight</span>
-                  <ArrowRight size={16} />
+                  {loading ? (
+                    <span>Signing In...</span>
+                  ) : (
+                    <>
+                      <span>Sign In</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
                 </button>
               </form>
 
@@ -279,6 +611,7 @@ export function AuthPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -291,6 +624,7 @@ export function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -303,16 +637,24 @@ export function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
 
                 <button
                   type="submit"
                   className="btn-primary"
+                  disabled={loading}
                   style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14.5, marginTop: 10 }}
                 >
-                  <span>Continue to Financial Setup</span>
-                  <ArrowRight size={16} />
+                  {loading ? (
+                    <span>Creating Account...</span>
+                  ) : (
+                    <>
+                      <span>Continue to Financial Setup</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
                 </button>
               </form>
 
@@ -326,6 +668,87 @@ export function AuthPage() {
                   Sign in
                 </a>
               </div>
+            </div>
+          )}
+
+          {/* Mode: Account Linking Modal (Requirement 8) */}
+          {mode === 'link_account' && (
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#4338CA', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
+                <Link2 size={14} />
+                <span>Account Linking Required</span>
+              </div>
+
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>
+                Link Google Account
+              </h2>
+              <p style={{ fontSize: 13.5, color: '#667085', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+                An existing account with <strong>{conflictData?.email}</strong> already exists. To securely connect your Google credentials and prevent unauthorized access, please confirm your account password.
+              </p>
+
+              <form onSubmit={handleAccountLinkSubmit}>
+                <div className="form-group-item">
+                  <label className="form-label-title">Account Email</label>
+                  <input
+                    type="email"
+                    className="form-input-control"
+                    value={conflictData?.email || ''}
+                    disabled
+                    style={{ background: '#F8FAFC', cursor: 'not-allowed' }}
+                  />
+                </div>
+
+                <div className="form-group-item">
+                  <label className="form-label-title">Existing Account Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showLinkPassword ? 'text' : 'password'}
+                      className="form-input-control"
+                      value={linkPassword}
+                      onChange={(e) => setLinkPassword(e.target.value)}
+                      placeholder="Enter your existing password"
+                      required
+                      disabled={linkLoading}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}
+                      onClick={() => setShowLinkPassword(!showLinkPassword)}
+                    >
+                      {showLinkPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={linkLoading}
+                  style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14.5, marginTop: 10 }}
+                >
+                  {linkLoading ? (
+                    <span>Verifying & Linking...</span>
+                  ) : (
+                    <>
+                      <span>Verify & Link Google Account</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', color: '#667085', fontSize: 12.5, marginTop: 14, cursor: 'pointer' }}
+                  onClick={() => {
+                    setMode('login');
+                    setConflictData(null);
+                    setLinkPassword('');
+                  }}
+                >
+                  ← Cancel and return to Sign In
+                </button>
+              </form>
             </div>
           )}
 
@@ -379,7 +802,7 @@ export function AuthPage() {
             </div>
           )}
 
-          {/* Mode 4: 3-Step Onboarding Wizard */}
+          {/* Mode 4: 3-Step Onboarding Wizard (Requirement 10) */}
           {mode === 'onboarding' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -481,11 +904,12 @@ export function AuthPage() {
                     <button
                       type="button"
                       className="btn-primary"
+                      disabled={loading}
                       style={{ flex: 2, justifyContent: 'center', padding: '12px' }}
                       onClick={handleOnboardingFinish}
                     >
                       <CheckCircle2 size={16} />
-                      <span>Launch Planner Workspace</span>
+                      <span>{loading ? 'Launching...' : 'Launch Planner Workspace'}</span>
                     </button>
                   </div>
                 </div>

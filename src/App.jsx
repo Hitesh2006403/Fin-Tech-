@@ -20,11 +20,28 @@ import { AuthPage } from './pages/AuthPage.jsx';
 import './App.css';
 
 function MainAppShell() {
-  const { user, activeRoute } = useApp();
+  const { user, authLoading, activeRoute } = useApp();
+
+  // Session check in progress
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F8FC' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 36, height: 36, border: '3px solid #E2E8F0', borderTopColor: '#635BFF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ fontSize: 13.5, color: '#64748B', fontWeight: 500 }}>Verifying secure session...</div>
+        </div>
+      </div>
+    );
+  }
 
   // If user is not authenticated, display login/register/onboarding
   if (!user || !user.isAuthenticated) {
     return <AuthPage />;
+  }
+
+  // If authenticated but onboarding is incomplete, redirect to onboarding first (Requirement 10)
+  if (!user.onboardingCompleted) {
+    return <AuthPage initialMode="onboarding" />;
   }
 
   // Active page router

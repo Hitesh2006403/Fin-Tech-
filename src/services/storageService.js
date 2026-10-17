@@ -13,15 +13,15 @@ const STORAGE_KEYS = {
 };
 
 export const INITIAL_USER = {
-  id: 'usr_alex_01',
-  name: 'Alex Vance',
-  email: 'alex@example.com',
+  id: '',
+  name: '',
+  email: '',
   currency: 'INR',
   timezone: 'Asia/Kolkata (IST)',
-  avatarInitials: 'AV',
-  role: 'Freelance Product Architect',
-  isAuthenticated: true,
-  onboardingCompleted: true
+  avatarInitials: '',
+  role: 'Freelance Professional',
+  isAuthenticated: false,
+  onboardingCompleted: false
 };
 
 export const INITIAL_PREFERENCES = {

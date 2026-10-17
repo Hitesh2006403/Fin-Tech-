@@ -18,14 +18,17 @@ import {
   toISODate,
   addDays
 } from '../services/financialEngine.js';
+import { authService } from '../services/authService.js';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  // 1. Core State with LocalStorage Persistence
+  // 1. Core State with LocalStorage & Session Check
   const [user, setUser] = useState(() => 
     storageService.get(storageService.KEYS.USER_PROFILE, INITIAL_USER)
   );
+
+  const [authLoading, setAuthLoading] = useState(true);
 
   const [preferences, setPreferences] = useState(() => 
     storageService.get(storageService.KEYS.PREFERENCES, INITIAL_PREFERENCES)
@@ -51,6 +54,27 @@ export function AppProvider({ children }) {
   const [activeRoute, setActiveRoute] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickAddModalOpen, setQuickAddModalOpen] = useState(false);
+
+  // Check HttpOnly session on initial load from backend
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const sessionUser = await authService.getCurrentUser();
+        if (sessionUser) {
+          setUser(prev => ({
+            ...prev,
+            ...sessionUser,
+            isAuthenticated: true
+          }));
+        }
+      } catch (err) {
+        console.warn('Session verification check:', err);
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+    checkSession();
+  }, []);
 
   // Sync to localStorage
   useEffect(() => {
@@ -256,16 +280,61 @@ export function AppProvider({ children }) {
     setActiveRoute('dashboard');
   };
 
-  const logout = () => {
+  // Real backend authentication methods
+  const loginWithGoogle = async (credential) => {
+    const data = await authService.verifyGoogleCredential(credential);
+    setUser(prev => ({
+      ...prev,
+      ...data.user,
+      isAuthenticated: true
+    }));
+    return data;
+  };
+
+  const linkGoogleAccount = async ({ email, password, credential }) => {
+    const data = await authService.linkGoogleAccount({ email, password, credential });
+    setUser(prev => ({
+      ...prev,
+      ...data.user,
+      isAuthenticated: true
+    }));
+    return data;
+  };
+
+  const loginWithEmail = async (email, password) => {
+    const data = await authService.loginWithEmail(email, password);
+    setUser(prev => ({
+      ...prev,
+      ...data.user,
+      isAuthenticated: true
+    }));
+    return data;
+  };
+
+  const registerWithEmail = async (email, name, password) => {
+    const data = await authService.registerWithEmail(email, name, password);
+    setUser(prev => ({
+      ...prev,
+      ...data.user,
+      isAuthenticated: true
+    }));
+    return data;
+  };
+
+  const logout = async () => {
+    await authService.logout();
     setUser(prev => ({ ...prev, isAuthenticated: false }));
   };
 
-  const login = (email, name = 'Alex Vance') => {
+  const completeOnboarding = async () => {
+    try {
+      await authService.completeOnboarding();
+    } catch (e) {
+      console.warn('Backend onboarding sync error:', e);
+    }
     setUser(prev => ({
       ...prev,
-      email,
-      name,
-      isAuthenticated: true
+      onboardingCompleted: true
     }));
   };
 
@@ -275,6 +344,7 @@ export function AppProvider({ children }) {
         // State
         user,
         setUser,
+        authLoading,
         preferences,
         setPreferences,
         incomes,
@@ -318,7 +388,11 @@ export function AppProvider({ children }) {
         clearNotifications,
 
         resetToDemoData,
-        login,
+        loginWithGoogle,
+        linkGoogleAccount,
+        loginWithEmail,
+        registerWithEmail,
+        completeOnboarding,
         logout
       }}
     >
