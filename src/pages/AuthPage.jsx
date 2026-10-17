@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Lock,
   CheckCircle2,
   Sliders,
   AlertCircle,
@@ -454,21 +453,6 @@ export function AuthPage({ initialMode = 'login' }) {
                       {loading ? 'Authenticating with Google...' : 'Continue with Google'}
                     </span>
                   </div>
-                  <span
-                    style={{
-                      position: 'absolute',
-                      right: '14px',
-                      background: '#F1F5F9',
-                      border: '1px solid #E2E8F0',
-                      color: '#64748B',
-                      fontSize: '10.5px',
-                      fontWeight: 500,
-                      padding: '2px 7px',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    Fast SSO
-                  </span>
                 </button>
 
                 {/* Real Google Identity Services Overlay (Seamlessly renders genuine account chooser iframe over button) */}
@@ -549,16 +533,12 @@ export function AuthPage({ initialMode = 'login' }) {
                   </div>
                 </div>
 
-                {/* Remember this device & 30-day session */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 20px 0' }}>
+                {/* Remember this device */}
+                <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0 20px 0' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 13, color: '#334155', fontWeight: 500 }}>
                     <input type="checkbox" defaultChecked style={{ accentColor: '#EA580C', width: 16, height: 16, borderRadius: 4 }} />
                     <span>Remember this device</span>
                   </label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#10B981', fontWeight: 500 }}>
-                    <Lock size={12} />
-                    <span>30-day session</span>
-                  </div>
                 </div>
 
                 <button
