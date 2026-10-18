@@ -205,7 +205,12 @@ export function IncomeManagement() {
                 filteredIncomes.map(inc => (
                   <tr key={inc.id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: '#172033' }}>{inc.title}</div>
+                      <div style={{ fontWeight: 600, color: '#172033', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>{inc.title}</span>
+                        {inc.isDemo && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#635BFF', background: '#F0EFFF', padding: '1px 5px', borderRadius: 4 }}>DEMO</span>
+                        )}
+                      </div>
                       {inc.notes && (
                         <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>{inc.notes}</div>
                       )}

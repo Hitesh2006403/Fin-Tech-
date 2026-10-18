@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "node server/index.js",
-    "start": "node server/index.js",
+    "backend": "node backend/index.js",
+    "server": "node backend/index.js",
+    "start": "node backend/index.js",
     "build": "vite build",
+    "test": "node --test src/services/financialEngine.test.js && node --test test_e2e_workflow.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^18.0.8",

@@ -12,10 +12,11 @@ import {
 } from './auth.js';
 import { db, verifyPassword, hashPassword } from './db.js';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,9 +36,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Session authentication middleware
+// Session authentication middleware (supports HttpOnly cookie & Bearer token header)
 function authenticate(req, res, next) {
-  const sessionId = req.cookies.session_token;
+  let sessionId = req.cookies?.session_token;
+  if (!sessionId && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    sessionId = req.headers.authorization.slice(7).trim();
+  }
+
   if (!sessionId) {
     req.user = null;
     return next();
@@ -87,6 +92,7 @@ app.post('/api/auth/google', async (req, res) => {
 
     return res.json({
       success: true,
+      token: sessionId,
       user: sanitizeUser(result.user),
       isNewUser: Boolean(result.isNewUser)
     });
@@ -113,6 +119,7 @@ app.post('/api/auth/google/link', async (req, res) => {
 
     return res.json({
       success: true,
+      token: sessionId,
       message: 'Google account linked successfully',
       user: sanitizeUser(updatedUser)
     });
@@ -148,6 +155,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     return res.json({
       success: true,
+      token: sessionId,
       user: sanitizeUser(user)
     });
   } catch (err) {
@@ -182,6 +190,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     return res.json({
       success: true,
+      token: sessionId,
       user: sanitizeUser(newUser),
       isNewUser: true
     });
@@ -245,6 +254,135 @@ app.get('/api/health', (req, res) => {
     serverTime: new Date().toISOString()
   });
 });
+
+// ==========================================
+// FINANCIAL DATA API ROUTES (USER-ISOLATED)
+// ==========================================
+
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+}
+
+// 1. Get all financial data for current user
+app.get('/api/financials', requireAuth, (req, res) => {
+  const data = db.getUserFinancials(req.user.id);
+  res.json({ success: true, data });
+});
+
+// 2. Update user planning preferences
+app.put('/api/preferences', requireAuth, (req, res) => {
+  const updated = db.updateUserPreferences(req.user.id, req.body);
+  res.json({ success: true, preferences: updated });
+});
+
+// 3. Incomes CRUD
+app.post('/api/incomes', requireAuth, (req, res) => {
+  const { title, amount, expectedDate, status } = req.body;
+  if (!title || amount === undefined || !expectedDate || !status) {
+    return res.status(400).json({ error: 'Title, amount, expected date, and status are required' });
+  }
+  const income = db.addIncome(req.user.id, req.body);
+  res.status(201).json({ success: true, income });
+});
+
+app.put('/api/incomes/:id', requireAuth, (req, res) => {
+  const updated = db.updateIncome(req.user.id, req.params.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Income entry not found' });
+  res.json({ success: true, income: updated });
+});
+
+app.delete('/api/incomes/:id', requireAuth, (req, res) => {
+  db.deleteIncome(req.user.id, req.params.id);
+  res.json({ success: true, message: 'Income deleted' });
+});
+
+// 4. Expenses & Bills CRUD
+app.post('/api/expenses', requireAuth, (req, res) => {
+  const { title, category, amount, dueDate } = req.body;
+  if (!title || !category || amount === undefined || !dueDate) {
+    return res.status(400).json({ error: 'Title, category, amount, and due date are required' });
+  }
+  const expense = db.addExpense(req.user.id, req.body);
+  res.status(201).json({ success: true, expense });
+});
+
+app.put('/api/expenses/:id', requireAuth, (req, res) => {
+  const updated = db.updateExpense(req.user.id, req.params.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Expense entry not found' });
+  res.json({ success: true, expense: updated });
+});
+
+app.delete('/api/expenses/:id', requireAuth, (req, res) => {
+  db.deleteExpense(req.user.id, req.params.id);
+  res.json({ success: true, message: 'Expense deleted' });
+});
+
+// 5. Lean-Week Savings
+app.put('/api/savings', requireAuth, (req, res) => {
+  const updated = db.updateSavings(req.user.id, req.body);
+  res.json({ success: true, leanSavings: updated });
+});
+
+app.post('/api/savings/deposit', requireAuth, (req, res) => {
+  const { amount } = req.body;
+  if (!amount || Number(amount) <= 0) {
+    return res.status(400).json({ error: 'Valid deposit amount required' });
+  }
+  const updated = db.contributeSavings(req.user.id, amount);
+  res.json({ success: true, leanSavings: updated });
+});
+
+// 6. Notifications
+app.put('/api/notifications/:id/read', requireAuth, (req, res) => {
+  db.markNotificationRead(req.user.id, req.params.id);
+  res.json({ success: true });
+});
+
+app.post('/api/notifications/read-all', requireAuth, (req, res) => {
+  db.markAllNotificationsRead(req.user.id);
+  res.json({ success: true });
+});
+
+app.delete('/api/notifications', requireAuth, (req, res) => {
+  db.clearNotifications(req.user.id);
+  res.json({ success: true });
+});
+
+// 7. Payment Delay Scenarios
+app.post('/api/scenarios', requireAuth, (req, res) => {
+  const scenario = db.saveScenario(req.user.id, req.body);
+  res.status(201).json({ success: true, scenario });
+});
+
+// 8. Demo Data Actions
+app.post('/api/demo/reset', requireAuth, (req, res) => {
+  const financials = db.resetUserToDemo(req.user.id);
+  res.json({ success: true, message: 'Reset to demo dataset', data: financials });
+});
+
+app.post('/api/demo/clear', requireAuth, (req, res) => {
+  const financials = db.clearUserData(req.user.id);
+  res.json({ success: true, message: 'Cleared all financial records', data: financials });
+});
+
+// 9. Database & Supabase Status
+app.get('/api/database/status', (req, res) => {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const supabaseConfigured = Boolean(supabaseUrl && !supabaseUrl.includes('your-project-ref'));
+
+  res.json({
+    status: 'operational',
+    activeDatabase: supabaseConfigured ? 'Supabase PostgreSQL' : 'Local Isolated JSON Store',
+    supabaseConfigured,
+    supabaseUrlSnippet: supabaseConfigured ? supabaseUrl.slice(0, 25) + '...' : 'Not Configured (Running in offline/local MVP mode)',
+    serverPersistence: 'Active',
+    serverTime: new Date().toISOString()
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`[FinSight Auth Server] Running on http://localhost:${PORT}`);

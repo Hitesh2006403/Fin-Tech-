@@ -238,7 +238,12 @@ export function ExpensesBills() {
                   return (
                     <tr key={exp.id}>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#172033' }}>{exp.title}</div>
+                        <div style={{ fontWeight: 600, color: '#172033', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>{exp.title}</span>
+                          {exp.isDemo && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#635BFF', background: '#F0EFFF', padding: '1px 5px', borderRadius: 4 }}>DEMO</span>
+                          )}
+                        </div>
                         {exp.emiDetails && (
                           <div style={{ fontSize: 11.5, color: '#635BFF', fontWeight: 600, marginTop: 2 }}>
                             EMI: {exp.emiDetails.remainingInstallments} installments remaining

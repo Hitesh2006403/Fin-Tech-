@@ -46,7 +46,8 @@ export const INITIAL_INCOMES = [
     actualDate: '2026-10-05',
     status: 'received',
     recurring: 'monthly',
-    notes: 'Q4 core banking UX sprint, wire transferred.'
+    notes: 'Q4 core banking UX sprint, wire transferred.',
+    isDemo: true
   },
   {
     id: 'inc_102',
@@ -57,7 +58,8 @@ export const INITIAL_INCOMES = [
     actualDate: '2026-10-12',
     status: 'received',
     recurring: 'one-time',
-    notes: 'Design audit payout received into HDFC account.'
+    notes: 'Design audit payout received into HDFC account.',
+    isDemo: true
   },
   {
     id: 'inc_103',
@@ -68,7 +70,8 @@ export const INITIAL_INCOMES = [
     actualDate: null,
     status: 'confirmed',
     recurring: 'milestone',
-    notes: 'Contract signed. Invoice verified by finance department.'
+    notes: 'Contract signed. Invoice verified by finance department.',
+    isDemo: true
   },
   {
     id: 'inc_104',
@@ -79,7 +82,8 @@ export const INITIAL_INCOMES = [
     actualDate: null,
     status: 'confirmed',
     recurring: 'bi-weekly',
-    notes: 'Ongoing architecture sprint retainer.'
+    notes: 'Ongoing architecture sprint retainer.',
+    isDemo: true
   },
   {
     id: 'inc_105',
@@ -90,7 +94,8 @@ export const INITIAL_INCOMES = [
     actualDate: null,
     status: 'uncertain',
     recurring: 'one-time',
-    notes: 'Shortlisted among 3 finalists. Awaiting board decision.'
+    notes: 'Shortlisted among 3 finalists. Awaiting board decision.',
+    isDemo: true
   }
 ];
 
@@ -107,7 +112,8 @@ export const INITIAL_EXPENSES = [
     lateFee: 1500,
     gracePeriod: 3,
     status: 'unpaid',
-    notes: 'Landlord requires bank transfer before 25th.'
+    notes: 'Landlord requires bank transfer before 25th.',
+    isDemo: true
   },
   {
     id: 'exp_202',
@@ -122,7 +128,8 @@ export const INITIAL_EXPENSES = [
     gracePeriod: 0,
     status: 'unpaid',
     emiDetails: { remainingInstallments: 6, totalTenure: 12 },
-    notes: 'Auto-debit from primary account. CIBIL impact if missed.'
+    notes: 'Auto-debit from primary account. CIBIL impact if missed.',
+    isDemo: true
   },
   {
     id: 'exp_203',
@@ -136,7 +143,8 @@ export const INITIAL_EXPENSES = [
     lateFee: 200,
     gracePeriod: 5,
     status: 'unpaid',
-    notes: 'Broadband connection for remote client meetings.'
+    notes: 'Broadband connection for remote client meetings.',
+    isDemo: true
   },
   {
     id: 'exp_204',
@@ -150,7 +158,8 @@ export const INITIAL_EXPENSES = [
     lateFee: 0,
     gracePeriod: 7,
     status: 'unpaid',
-    notes: 'Client staging demo environment infrastructure.'
+    notes: 'Client staging demo environment infrastructure.',
+    isDemo: true
   },
   {
     id: 'exp_205',
@@ -164,7 +173,8 @@ export const INITIAL_EXPENSES = [
     lateFee: 500,
     gracePeriod: 10,
     status: 'unpaid',
-    notes: 'Family health coverage quarterly premium.'
+    notes: 'Family health coverage quarterly premium.',
+    isDemo: true
   },
   {
     id: 'exp_206',
@@ -178,7 +188,8 @@ export const INITIAL_EXPENSES = [
     lateFee: 0,
     gracePeriod: 5,
     status: 'unpaid',
-    notes: 'Can be downgraded or deferred if cash flow is constrained.'
+    notes: 'Can be downgraded or deferred if cash flow is constrained.',
+    isDemo: true
   },
   {
     id: 'exp_207',
@@ -189,7 +200,8 @@ export const INITIAL_EXPENSES = [
     paidDate: '2026-10-08',
     isEssential: true,
     status: 'paid',
-    notes: 'Cleared at beginning of month.'
+    notes: 'Cleared at beginning of month.',
+    isDemo: true
   },
   {
     id: 'exp_208',
@@ -200,7 +212,8 @@ export const INITIAL_EXPENSES = [
     paidDate: '2026-10-10',
     isEssential: true,
     status: 'paid',
-    notes: 'Monthly essential food supplies cleared.'
+    notes: 'Monthly essential food supplies cleared.',
+    isDemo: true
   }
 ];
 

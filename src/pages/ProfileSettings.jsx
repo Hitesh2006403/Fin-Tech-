@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Lock,
   Wallet,
-  DollarSign
+  DollarSign,
+  Trash2
 } from 'lucide-react';
 
 export function ProfileSettings() {
@@ -25,6 +26,7 @@ export function ProfileSettings() {
     expenses,
     standardForecast,
     resetToDemoData,
+    clearUserData,
     logout
   } = useApp();
 
@@ -386,6 +388,46 @@ export function ProfileSettings() {
                   >
                     <Download size={14} />
                     <span>Download Forecast (CSV)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Data Isolation & Sample Controls */}
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #E2E8F0' }}>
+                <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: '#172033' }}>
+                  Financial Dataset & Demo Controls
+                </h4>
+                <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 16px 0' }}>
+                  Switch between the hackathon sample dataset with benchmark milestones or start completely fresh with zero records.
+                </p>
+
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ color: '#635BFF', borderColor: '#C7D2FE' }}
+                    onClick={() => {
+                      resetToDemoData();
+                      showToast('Dataset reset to benchmark demo records.');
+                    }}
+                  >
+                    <RotateCcw size={14} />
+                    <span>Reset Sample Demo Data</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ color: '#D64545', borderColor: '#FECACA' }}
+                    onClick={() => {
+                      if (window.confirm('Clear all income, expense, and savings entries to start with a blank personal ledger?')) {
+                        clearUserData();
+                        showToast('All financial records cleared. Fresh start ready.');
+                      }
+                    }}
+                  >
+                    <Trash2 size={14} />
+                    <span>Start Fresh (Clear All Records)</span>
                   </button>
                 </div>
               </div>

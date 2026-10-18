@@ -19,6 +19,7 @@ import {
   addDays
 } from '../services/financialEngine.js';
 import { authService } from '../services/authService.js';
+import { apiService } from '../services/apiService.js';
 
 const AppContext = createContext(null);
 
@@ -30,7 +31,7 @@ export function AppProvider({ children }) {
 
   const [authLoading, setAuthLoading] = useState(true);
 
-  const [preferences, setPreferences] = useState(() => 
+  const [preferences, setPreferencesState] = useState(() => 
     storageService.get(storageService.KEYS.PREFERENCES, INITIAL_PREFERENCES)
   );
 
@@ -49,6 +50,15 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState(() => 
     storageService.get(storageService.KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS)
   );
+
+  const [dismissedAlertIds, setDismissedAlertIds] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Active navigation route: 'dashboard' | 'income' | 'expenses' | 'safe-to-spend' | 'forecast' | 'simulator' | 'prioritization' | 'savings' | 'notifications' | 'settings'
   const [activeRoute, setActiveRoute] = useState('dashboard');
@@ -75,6 +85,27 @@ export function AppProvider({ children }) {
     }
     checkSession();
   }, []);
+
+  // Load user-specific dataset from backend / user-scoped storage when user.id changes
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadFinancialData() {
+      if (!user?.id) return;
+      try {
+        const data = await apiService.getFinancials(user.id);
+        if (isCancelled || !data) return;
+        if (data.preferences) setPreferencesState(data.preferences);
+        if (data.incomes) setIncomes(data.incomes);
+        if (data.expenses) setExpenses(data.expenses);
+        if (data.savingsGoals) setLeanSavings(data.savingsGoals);
+        if (data.notifications) setNotifications(data.notifications);
+      } catch (err) {
+        console.warn('Financial data load error:', err);
+      }
+    }
+    loadFinancialData();
+    return () => { isCancelled = true; };
+  }, [user?.id]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -133,7 +164,7 @@ export function AppProvider({ children }) {
     });
   }, [balanceDetails.availableCash, incomes, expenses, preferences.safetyBuffer]);
 
-  const dashboardInsights = useMemo(() => {
+  const rawDashboardInsights = useMemo(() => {
     return generateDashboardInsights({
       availableCash: balanceDetails.availableCash,
       safetyBuffer: preferences.safetyBuffer,
@@ -144,6 +175,13 @@ export function AppProvider({ children }) {
       firstNegativeDate: standardForecast.firstNegativeDate
     });
   }, [balanceDetails.availableCash, preferences.safetyBuffer, incomes, expenses, standardForecast]);
+
+  const dashboardInsights = useMemo(() => {
+    return {
+      ...rawDashboardInsights,
+      alerts: rawDashboardInsights.alerts.filter(a => !dismissedAlertIds.includes(a.id))
+    };
+  }, [rawDashboardInsights, dismissedAlertIds]);
 
   const billRanking = useMemo(() => {
     return rankBills(expenses, balanceDetails.availableCash);
@@ -183,14 +221,17 @@ export function AppProvider({ children }) {
       amount: Number(incomeData.amount || 0)
     };
     setIncomes(prev => [newIncome, ...prev]);
+    apiService.addIncome(user?.id, newIncome).catch(e => console.warn('Sync addIncome error:', e));
   };
 
   const editIncome = (id, updatedData) => {
     setIncomes(prev => prev.map(inc => inc.id === id ? { ...inc, ...updatedData, amount: Number(updatedData.amount || 0) } : inc));
+    apiService.updateIncome(user?.id, id, updatedData).catch(e => console.warn('Sync editIncome error:', e));
   };
 
   const deleteIncome = (id) => {
     setIncomes(prev => prev.filter(inc => inc.id !== id));
+    apiService.deleteIncome(user?.id, id).catch(e => console.warn('Sync deleteIncome error:', e));
   };
 
   const markIncomeReceived = (id, actualDate = toISODate(new Date())) => {
@@ -204,6 +245,7 @@ export function AppProvider({ children }) {
       }
       return inc;
     }));
+    apiService.updateIncome(user?.id, id, { status: 'received', actualDate }).catch(e => console.warn('Sync markIncomeReceived error:', e));
   };
 
   // Expense Actions
@@ -215,14 +257,17 @@ export function AppProvider({ children }) {
       status: expenseData.status || 'unpaid'
     };
     setExpenses(prev => [newExpense, ...prev]);
+    apiService.addExpense(user?.id, newExpense).catch(e => console.warn('Sync addExpense error:', e));
   };
 
   const editExpense = (id, updatedData) => {
     setExpenses(prev => prev.map(exp => exp.id === id ? { ...exp, ...updatedData, amount: Number(updatedData.amount || 0) } : exp));
+    apiService.updateExpense(user?.id, id, updatedData).catch(e => console.warn('Sync editExpense error:', e));
   };
 
   const deleteExpense = (id) => {
     setExpenses(prev => prev.filter(exp => exp.id !== id));
+    apiService.deleteExpense(user?.id, id).catch(e => console.warn('Sync deleteExpense error:', e));
   };
 
   const markExpensePaid = (id, paidDate = toISODate(new Date())) => {
@@ -236,47 +281,114 @@ export function AppProvider({ children }) {
       }
       return exp;
     }));
+    apiService.updateExpense(user?.id, id, { status: 'paid', paidDate }).catch(e => console.warn('Sync markExpensePaid error:', e));
+  };
+
+  // Preferences Actions
+  const setPreferences = (updater) => {
+    setPreferencesState(prev => {
+      const nextVal = typeof updater === 'function' ? updater(prev) : updater;
+      apiService.updatePreferences(user?.id, nextVal).catch(e => console.warn('Sync updatePreferences error:', e));
+      return nextVal;
+    });
   };
 
   // Lean-Week Savings Actions
   const updateLeanSavings = (newData) => {
-    setLeanSavings(prev => ({
-      ...prev,
-      ...newData
-    }));
+    setLeanSavings(prev => {
+      const updated = { ...prev, ...newData };
+      apiService.updateSavings(user?.id, updated).catch(e => console.warn('Sync updateSavings error:', e));
+      return updated;
+    });
   };
 
   const contributeToSavings = (amount) => {
     const addAmt = Number(amount || 0);
     if (addAmt <= 0) return;
-    setLeanSavings(prev => ({
-      ...prev,
-      currentDesignatedReserve: prev.currentDesignatedReserve + addAmt
-    }));
+    setLeanSavings(prev => {
+      const updated = {
+        ...prev,
+        currentDesignatedReserve: prev.currentDesignatedReserve + addAmt
+      };
+      apiService.contributeSavings(user?.id, addAmt).catch(e => console.warn('Sync contributeSavings error:', e));
+      return updated;
+    });
   };
 
   // Notification Actions
   const markNotificationRead = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    apiService.markNotificationRead(user?.id, id).catch(e => console.warn('Sync markNotificationRead error:', e));
   };
 
   const markAllNotificationsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    apiService.markAllNotificationsRead(user?.id).catch(e => console.warn('Sync markAllNotificationsRead error:', e));
   };
 
   const clearNotifications = () => {
     setNotifications([]);
+    apiService.clearNotifications(user?.id).catch(e => console.warn('Sync clearNotifications error:', e));
+  };
+
+  // Dismiss alert helper
+  const dismissAlert = (alertId) => {
+    setDismissedAlertIds(prev => {
+      const next = [...new Set([...prev, alertId])];
+      try {
+        localStorage.setItem(`uip_dismissed_alerts_${user?.id || 'default'}`, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   // User & Reset Actions
-  const resetToDemoData = () => {
+  const resetToDemoData = async () => {
     storageService.resetAll();
-    setUser(INITIAL_USER);
-    setPreferences(INITIAL_PREFERENCES);
-    setIncomes(INITIAL_INCOMES);
-    setExpenses(INITIAL_EXPENSES);
-    setLeanSavings(INITIAL_LEAN_SAVINGS);
-    setNotifications(INITIAL_NOTIFICATIONS);
+    try {
+      const demoData = await apiService.resetToDemo(user?.id);
+      if (demoData) {
+        if (demoData.preferences) setPreferencesState(demoData.preferences);
+        if (demoData.incomes) setIncomes(demoData.incomes);
+        if (demoData.expenses) setExpenses(demoData.expenses);
+        if (demoData.savingsGoals) setLeanSavings(demoData.savingsGoals);
+        if (demoData.notifications) setNotifications(demoData.notifications);
+      }
+    } catch {
+      setPreferencesState(INITIAL_PREFERENCES);
+      setIncomes(INITIAL_INCOMES);
+      setExpenses(INITIAL_EXPENSES);
+      setLeanSavings(INITIAL_LEAN_SAVINGS);
+      setNotifications(INITIAL_NOTIFICATIONS);
+    }
+    setDismissedAlertIds([]);
+    try {
+      localStorage.removeItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
+    } catch {}
+    setActiveRoute('dashboard');
+  };
+
+  const clearUserData = async () => {
+    try {
+      const cleared = await apiService.clearUserData(user?.id);
+      if (cleared) {
+        if (cleared.preferences) setPreferencesState(cleared.preferences);
+        setIncomes(cleared.incomes || []);
+        setExpenses(cleared.expenses || []);
+        if (cleared.savingsGoals) setLeanSavings(cleared.savingsGoals);
+        setNotifications(cleared.notifications || []);
+      }
+    } catch {
+      setPreferencesState({ ...INITIAL_PREFERENCES, startingBalance: 0 });
+      setIncomes([]);
+      setExpenses([]);
+      setLeanSavings({ ...INITIAL_LEAN_SAVINGS, currentDesignatedReserve: 0 });
+      setNotifications([]);
+    }
+    setDismissedAlertIds([]);
+    try {
+      localStorage.removeItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
+    } catch {}
     setActiveRoute('dashboard');
   };
 
@@ -323,7 +435,14 @@ export function AppProvider({ children }) {
 
   const logout = async () => {
     await authService.logout();
-    setUser(prev => ({ ...prev, isAuthenticated: false }));
+    setUser(INITIAL_USER);
+    setPreferencesState(INITIAL_PREFERENCES);
+    setIncomes(INITIAL_INCOMES);
+    setExpenses(INITIAL_EXPENSES);
+    setLeanSavings(INITIAL_LEAN_SAVINGS);
+    setNotifications(INITIAL_NOTIFICATIONS);
+    setDismissedAlertIds([]);
+    setActiveRoute('dashboard');
   };
 
   const completeOnboarding = async () => {
@@ -351,6 +470,7 @@ export function AppProvider({ children }) {
         expenses,
         leanSavings,
         notifications,
+        dismissedAlertIds,
         activeRoute,
         setActiveRoute,
         mobileMenuOpen,
@@ -386,8 +506,10 @@ export function AppProvider({ children }) {
         markNotificationRead,
         markAllNotificationsRead,
         clearNotifications,
+        dismissAlert,
 
         resetToDemoData,
+        clearUserData,
         loginWithGoogle,
         linkGoogleAccount,
         loginWithEmail,

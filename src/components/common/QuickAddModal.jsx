@@ -21,6 +21,7 @@ export function QuickAddModal() {
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDate, setExpenseDate] = useState(toISODate(new Date()));
   const [expenseEssential, setExpenseEssential] = useState(true);
+  const [expenseIsPaid, setExpenseIsPaid] = useState(false);
   const [expenseLateFee, setExpenseLateFee] = useState('');
   const [expenseGrace, setExpenseGrace] = useState('0');
 
@@ -55,16 +56,18 @@ export function QuickAddModal() {
       category: expenseCategory,
       amount: Number(expenseAmount),
       dueDate: expenseDate,
+      paidDate: expenseIsPaid ? expenseDate : null,
       isEssential: expenseEssential,
       priority: expenseEssential ? 'high' : 'low',
       lateFee: Number(expenseLateFee || 0),
       gracePeriod: Number(expenseGrace || 0),
-      status: 'unpaid'
+      status: expenseIsPaid ? 'paid' : 'unpaid'
     });
 
     // Reset & close
     setExpenseTitle('');
     setExpenseAmount('');
+    setExpenseIsPaid(false);
     setQuickAddModalOpen(false);
   };
 
@@ -281,7 +284,7 @@ export function QuickAddModal() {
 
                 <div className="form-group-item">
                   <label className="form-label-title">Obligation Type</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
                       <input
                         type="checkbox"
@@ -289,6 +292,14 @@ export function QuickAddModal() {
                         onChange={(e) => setExpenseEssential(e.target.checked)}
                       />
                       <span>Essential Living Expense</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={expenseIsPaid}
+                        onChange={(e) => setExpenseIsPaid(e.target.checked)}
+                      />
+                      <span>Already Paid / Cash Expense (Immediate deduction)</span>
                     </label>
                   </div>
                 </div>

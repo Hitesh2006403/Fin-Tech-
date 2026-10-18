@@ -28,7 +28,8 @@ export function OverviewDashboard() {
     incomes,
     setActiveRoute,
     setQuickAddModalOpen,
-    preferences
+    preferences,
+    dismissAlert
   } = useApp();
 
   const hasRecords = incomes.length > 0 || expenses.length > 0;
@@ -365,34 +366,63 @@ export function OverviewDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {dashboardInsights.alerts.map(alert => (
-                <div
-                  key={alert.id}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: 8,
-                    background: alert.severity === 'critical' ? '#FEF2F2' : alert.severity === 'warning' ? '#FFFBEB' : '#F8FAFC',
-                    border: `1px solid ${alert.severity === 'critical' ? '#FECACA' : alert.severity === 'warning' ? '#FDE68A' : '#E2E8F0'}`,
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 10,
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => alert.actionPage && setActiveRoute(alert.actionPage)}
-                >
-                  {alert.severity === 'critical' ? (
-                    <AlertTriangle size={15} color="#D64545" style={{ flexShrink: 0, marginTop: 2 }} />
-                  ) : alert.severity === 'warning' ? (
-                    <Clock size={15} color="#D99116" style={{ flexShrink: 0, marginTop: 2 }} />
-                  ) : (
-                    <CheckCircle2 size={15} color="#159A72" style={{ flexShrink: 0, marginTop: 2 }} />
-                  )}
-                  <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#172033' }}>{alert.title}</div>
-                    <div style={{ fontSize: 11.5, color: '#64748B', lineHeight: 1.35 }}>{alert.description}</div>
-                  </div>
+              {dashboardInsights.alerts.length === 0 ? (
+                <div style={{ fontSize: 12, color: '#94A3B8', textAlign: 'center', padding: '16px 8px' }}>
+                  No active alerts. All financial flows are within safe parameters.
                 </div>
-              ))}
+              ) : (
+                dashboardInsights.alerts.map(alert => (
+                  <div
+                    key={alert.id}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      background: alert.severity === 'critical' ? '#FEF2F2' : alert.severity === 'warning' ? '#FFFBEB' : '#F8FAFC',
+                      border: `1px solid ${alert.severity === 'critical' ? '#FECACA' : alert.severity === 'warning' ? '#FDE68A' : '#E2E8F0'}`,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => alert.actionPage && setActiveRoute(alert.actionPage)}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flex: 1 }}>
+                      {alert.severity === 'critical' ? (
+                        <AlertTriangle size={15} color="#D64545" style={{ flexShrink: 0, marginTop: 2 }} />
+                      ) : alert.severity === 'warning' ? (
+                        <Clock size={15} color="#D99116" style={{ flexShrink: 0, marginTop: 2 }} />
+                      ) : (
+                        <CheckCircle2 size={15} color="#159A72" style={{ flexShrink: 0, marginTop: 2 }} />
+                      )}
+                      <div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#172033' }}>{alert.title}</div>
+                        <div style={{ fontSize: 11.5, color: '#64748B', lineHeight: 1.35 }}>{alert.description}</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      title="Dismiss alert"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissAlert(alert.id);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#94A3B8',
+                        cursor: 'pointer',
+                        padding: '0 4px',
+                        fontSize: 15,
+                        lineHeight: 1,
+                        borderRadius: 4
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

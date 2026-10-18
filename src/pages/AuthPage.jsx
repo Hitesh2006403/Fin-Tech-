@@ -5,13 +5,15 @@ import {
   ShieldCheck,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Eye,
   EyeOff,
   CheckCircle2,
   Sliders,
   AlertCircle,
   Link2,
-  RefreshCw
+  RefreshCw,
+  Check
 } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
@@ -32,6 +34,9 @@ export function AuthPage({ initialMode = 'login' }) {
   const [password, setPassword] = useState('FinSight2026!Secured');
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('Alex Vance');
+  const [confirmPassword, setConfirmPassword] = useState('FinSight2026!Secured');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(true);
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
   // Authentication status & error handling (Requirements 11 & 12)
@@ -163,10 +168,55 @@ export function AuthPage({ initialMode = 'login' }) {
     }
   };
 
+  // Password strength calculation
+  const getPasswordStrength = (pass) => {
+    if (!pass) return { score: 0, label: 'Empty', color: '#94A3B8' };
+    let score = 0;
+    if (pass.length >= 8) score += 1;
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score <= 1) return { score: 1, label: 'Weak', color: '#EF4444' };
+    if (score === 2) return { score: 2, label: 'Fair', color: '#F59E0B' };
+    if (score === 3) return { score: 3, label: 'Good', color: '#3B82F6' };
+    return { score: 4, label: 'Strong', color: '#10B981' };
+  };
+
+  const passwordStrength = getPasswordStrength(password);
+  const passwordsMatch = Boolean(password && confirmPassword && password === confirmPassword);
+  const passwordMismatch = Boolean(confirmPassword && password !== confirmPassword);
+
   // Handle email/password registration
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setAuthError(null);
+
+    if (!fullName.trim()) {
+      setAuthError('Please enter your full name.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setAuthError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password || password.length < 8) {
+      setAuthError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setAuthError('Passwords do not match. Please verify your confirm password.');
+      return;
+    }
+
+    if (!agreeTerms) {
+      setAuthError('Please agree to the Terms of Service & Privacy Policy.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -574,58 +624,192 @@ export function AuthPage({ initialMode = 'login' }) {
           {/* Mode 2: Register */}
           {mode === 'register' && (
             <div>
-              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Create Your Account
               </h2>
-              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 24px 0' }}>
+              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 22px 0' }}>
                 Set up your uncertain income workspace in 60 seconds.
               </p>
 
               <form onSubmit={handleRegisterSubmit}>
-                <div className="form-group-item">
-                  <label className="form-label-title">Full Name</label>
-                  <input
-                    type="text"
-                    className="form-input-control"
-                    placeholder="e.g. Alex Vance"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
+                {/* 1. Personal Information Section */}
+                <div style={{ marginBottom: 16 }}>
+                  <div className="form-group-item">
+                    <label className="form-label-title">Full Name</label>
+                    <input
+                      type="text"
+                      className="form-input-control"
+                      placeholder="e.g. Alex Vance"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="form-group-item">
+                    <label className="form-label-title">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-input-control"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
-                <div className="form-group-item">
-                  <label className="form-label-title">Email Address</label>
-                  <input
-                    type="email"
-                    className="form-input-control"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
+                {/* 2. Security & Credentials Section */}
+                <div style={{ marginBottom: 12 }}>
+                  <div className="form-group-item">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <label className="form-label-title" style={{ margin: 0 }}>Create Password</label>
+                      {password && (
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: passwordStrength.color }}>
+                          {passwordStrength.label}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        className="form-input-control"
+                        placeholder="Minimum 8 characters"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={loading}
+                        style={{ letterSpacing: showPassword ? 'normal' : '1.5px', paddingRight: 40 }}
+                      />
+                      <button
+                        type="button"
+                        style={{
+                          position: 'absolute',
+                          right: 10,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#94A3B8',
+                          cursor: 'pointer',
+                          padding: 4
+                        }}
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+
+                    {/* Interactive Password Strength Indicator */}
+                    {password && (
+                      <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                        {[1, 2, 3, 4].map((step) => (
+                          <div
+                            key={step}
+                            style={{
+                              flex: 1,
+                              height: 3,
+                              borderRadius: 2,
+                              background: passwordStrength.score >= step ? passwordStrength.color : '#E2E8F0',
+                              transition: 'background 0.2s ease'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Field */}
+                  <div className="form-group-item">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <label className="form-label-title" style={{ margin: 0 }}>Confirm Password</label>
+                      {confirmPassword && (
+                        <span style={{
+                          fontSize: 11.5,
+                          fontWeight: 600,
+                          color: passwordsMatch ? '#10B981' : '#EF4444',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}>
+                          {passwordsMatch ? (
+                            <>
+                              <Check size={12} strokeWidth={3} />
+                              <span>Passwords match</span>
+                            </>
+                          ) : (
+                            <span>Passwords do not match</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className="form-input-control"
+                        placeholder="Re-enter your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        disabled={loading}
+                        style={{
+                          letterSpacing: showConfirmPassword ? 'normal' : '1.5px',
+                          paddingRight: 40,
+                          borderColor: passwordMismatch ? '#FCA5A5' : (passwordsMatch ? '#86EFAC' : undefined)
+                        }}
+                      />
+                      <button
+                        type="button"
+                        style={{
+                          position: 'absolute',
+                          right: 10,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#94A3B8',
+                          cursor: 'pointer',
+                          padding: 4
+                        }}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-group-item">
-                  <label className="form-label-title">Create Password</label>
+                {/* Terms & Conditions Agreement */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0 18px 0', fontSize: 12.5, color: '#475569' }}>
                   <input
-                    type="password"
-                    className="form-input-control"
-                    placeholder="Minimum 8 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    style={{ accentColor: '#635BFF', width: 16, height: 16, borderRadius: 4, cursor: 'pointer' }}
+                    id="agreeTerms"
                   />
+                  <label htmlFor="agreeTerms" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                    I agree to the <span style={{ color: '#635BFF', fontWeight: 600 }}>Terms of Service</span> & <span style={{ color: '#635BFF', fontWeight: 600 }}>Privacy Policy</span>
+                  </label>
                 </div>
 
+                {/* 5. Primary Submit Button */}
                 <button
                   type="submit"
                   className="btn-primary"
                   disabled={loading}
-                  style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14.5, marginTop: 10 }}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'center',
+                    padding: '12.5px',
+                    fontSize: 14.5,
+                    background: 'linear-gradient(135deg, #635BFF 0%, #4F46E5 100%)',
+                    boxShadow: '0 4px 14px rgba(99, 91, 255, 0.28)'
+                  }}
                 >
                   {loading ? (
                     <span>Creating Account...</span>
@@ -638,15 +822,28 @@ export function AuthPage({ initialMode = 'login' }) {
                 </button>
               </form>
 
-              <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#667085' }}>
-                Already registered?{' '}
-                <a
-                  href="#login"
-                  style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
-                  onClick={(e) => { e.preventDefault(); setMode('login'); }}
-                >
-                  Sign in
-                </a>
+              {/* 6. Footer Navigation Links */}
+              <div style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: '#667085', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div>
+                  Already registered?{' '}
+                  <a
+                    href="#login"
+                    style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                    onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('login'); }}
+                  >
+                    Sign in
+                  </a>
+                </div>
+                <div style={{ fontSize: 12, color: '#94A3B8' }}>
+                  Trouble logging in?{' '}
+                  <a
+                    href="#forgot"
+                    style={{ color: '#635BFF', fontWeight: 500, textDecoration: 'none' }}
+                    onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('forgot'); }}
+                  >
+                    Forgot password
+                  </a>
+                </div>
               </div>
             </div>
           )}
@@ -735,24 +932,31 @@ export function AuthPage({ initialMode = 'login' }) {
           {/* Mode 3: Forgot Password */}
           {mode === 'forgot' && (
             <div>
-              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Reset Password
               </h2>
-              <p style={{ fontSize: 13.5, color: '#667085', margin: '0 0 20px 0' }}>
-                Enter your verified email and we'll dispatch an instant recovery link.
+              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+                Enter your account email and we'll send you an instant link to recover your access.
               </p>
 
               {forgotSubmitted ? (
-                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '16px', borderRadius: 10, fontSize: 13, color: '#065F46' }}>
-                  <CheckCircle2 size={18} style={{ marginBottom: 6 }} />
-                  <div>Password reset link dispatched to <strong>{email}</strong>. Check your inbox.</div>
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '24px 20px', borderRadius: 12, textAlign: 'center' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#166534', margin: '0 0 6px 0' }}>
+                    Recovery Link Dispatched
+                  </h3>
+                  <p style={{ fontSize: 13, color: '#475569', margin: '0 0 18px 0', lineHeight: 1.5 }}>
+                    We've sent a password reset link to <strong>{email}</strong>. Please check your inbox.
+                  </p>
                   <button
                     type="button"
-                    className="btn-secondary"
-                    style={{ marginTop: 12, width: '100%', justifyContent: 'center' }}
+                    className="btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: 13.5 }}
                     onClick={() => { setMode('login'); setForgotSubmitted(false); }}
                   >
-                    Back to Login
+                    <span>Return to Sign In</span>
                   </button>
                 </div>
               ) : (
@@ -762,21 +966,77 @@ export function AuthPage({ initialMode = 'login' }) {
                     <input
                       type="email"
                       className="form-input-control"
+                      placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
-                    Send Recovery Link
-                  </button>
+
                   <button
-                    type="button"
-                    style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', color: '#667085', fontSize: 12.5, marginTop: 14, cursor: 'pointer' }}
-                    onClick={() => setMode('login')}
+                    type="submit"
+                    className="btn-primary"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      padding: '12px',
+                      fontSize: 14.5,
+                      background: 'linear-gradient(135deg, #635BFF 0%, #4F46E5 100%)',
+                      boxShadow: '0 4px 14px rgba(99, 91, 255, 0.28)',
+                      marginTop: 6
+                    }}
                   >
-                    ← Back to Sign In
+                    <span>Send Recovery Link</span>
+                    <ArrowRight size={16} />
                   </button>
+
+                  {/* Professional Bottom Navigation */}
+                  <div style={{ marginTop: 24, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div>
+                      <button
+                        type="button"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#F8FAFC',
+                          border: '1px solid #E2E8F0',
+                          color: '#475569',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          padding: '7px 14px',
+                          borderRadius: 6,
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#0F172A';
+                          e.currentTarget.style.borderColor = '#CBD5E1';
+                          e.currentTarget.style.background = '#F1F5F9';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#475569';
+                          e.currentTarget.style.borderColor = '#E2E8F0';
+                          e.currentTarget.style.background = '#F8FAFC';
+                        }}
+                        onClick={() => { setAuthError(null); setMode('login'); }}
+                      >
+                        <ArrowLeft size={14} />
+                        <span>Return to Sign In</span>
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: 12.5, color: '#94A3B8' }}>
+                      Don't have an account yet?{' '}
+                      <a
+                        href="#register"
+                        style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                        onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('register'); }}
+                      >
+                        Create an account
+                      </a>
+                    </div>
+                  </div>
                 </form>
               )}
             </div>

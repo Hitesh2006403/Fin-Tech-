@@ -5,6 +5,19 @@
 
 const API_BASE = '/api/auth';
 
+export function getAuthHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  try {
+    const token = localStorage.getItem('uip_auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // LocalStorage unavailable
+  }
+  return headers;
+}
+
 export const authService = {
   /**
    * Sends Google ID credential token to the backend for cryptographic validation
@@ -12,7 +25,7 @@ export const authService = {
   async verifyGoogleCredential(credential) {
     const res = await fetch(`${API_BASE}/google`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({ credential })
     });
@@ -25,6 +38,10 @@ export const authService = {
       throw error;
     }
 
+    if (data.token) {
+      try { localStorage.setItem('uip_auth_token', data.token); } catch {}
+    }
+
     return data;
   },
 
@@ -34,7 +51,7 @@ export const authService = {
   async linkGoogleAccount({ email, password, credential }) {
     const res = await fetch(`${API_BASE}/google/link`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({ email, password, credential })
     });
@@ -42,6 +59,10 @@ export const authService = {
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.details || data.error || 'Failed to link account');
+    }
+
+    if (data.token) {
+      try { localStorage.setItem('uip_auth_token', data.token); } catch {}
     }
 
     return data;
@@ -53,7 +74,7 @@ export const authService = {
   async loginWithEmail(email, password) {
     const res = await fetch(`${API_BASE}/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({ email, password })
     });
@@ -61,6 +82,10 @@ export const authService = {
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.error || 'Invalid email or password');
+    }
+
+    if (data.token) {
+      try { localStorage.setItem('uip_auth_token', data.token); } catch {}
     }
 
     return data;
@@ -72,7 +97,7 @@ export const authService = {
   async registerWithEmail(email, name, password) {
     const res = await fetch(`${API_BASE}/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({ email, name, password })
     });
@@ -82,16 +107,21 @@ export const authService = {
       throw new Error(data.error || 'Registration failed');
     }
 
+    if (data.token) {
+      try { localStorage.setItem('uip_auth_token', data.token); } catch {}
+    }
+
     return data;
   },
 
   /**
-   * Checks current HttpOnly cookie session on app load
+   * Checks current HttpOnly cookie session or token on app load
    */
   async getCurrentUser() {
     try {
       const res = await fetch(`${API_BASE}/me`, {
         method: 'GET',
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
 
@@ -104,16 +134,19 @@ export const authService = {
   },
 
   /**
-   * Signs out current user and clears HttpOnly cookie session
+   * Signs out current user and clears HttpOnly cookie session & token
    */
   async logout() {
     try {
       await fetch(`${API_BASE}/logout`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
     } catch (e) {
       console.warn('Logout network error:', e);
+    } finally {
+      try { localStorage.removeItem('uip_auth_token'); } catch {}
     }
   },
 
@@ -123,6 +156,7 @@ export const authService = {
   async completeOnboarding() {
     const res = await fetch(`${API_BASE}/onboarding`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       credentials: 'include'
     });
     return res.json();

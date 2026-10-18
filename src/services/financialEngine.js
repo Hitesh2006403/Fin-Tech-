@@ -605,16 +605,25 @@ export function generateDashboardInsights({
     type: 'positive'
   };
 
-  if (firstNegativeDate) {
+  const detectedDeficitDate = firstNegativeDate || (forecast || []).find(f => f.balance < 0)?.date;
+  const detectedLowBufferDate = firstLowBufferDate || (forecast || []).find(f => f.balance < safetyBuffer)?.date;
+
+  if (availableCash < 0) {
     primaryInsight = {
-      title: 'Projected Cash Shortage',
-      message: `Your balance is projected to fall into deficit on ${firstNegativeDate}. Delay non-essential bills or expedite client invoices.`,
+      title: 'Current Balance Overdrawn',
+      message: `Your available balance is currently ${formatINR(availableCash)}. Deposit funds to cover upcoming obligations.`,
       type: 'danger'
     };
-  } else if (firstLowBufferDate) {
+  } else if (detectedDeficitDate) {
+    primaryInsight = {
+      title: 'Projected Cash Shortage',
+      message: `Your balance is projected to fall into deficit on ${detectedDeficitDate}. Delay non-essential bills or expedite client invoices.`,
+      type: 'danger'
+    };
+  } else if (detectedLowBufferDate) {
     primaryInsight = {
       title: 'Buffer Warning',
-      message: `Your balance may fall below your ${formatINR(safetyBuffer)} safety buffer on ${firstLowBufferDate}.`,
+      message: `Your balance may fall below your ${formatINR(safetyBuffer)} safety buffer on ${detectedLowBufferDate}.`,
       type: 'warning'
     };
   } else if (overdueBills.length > 0) {
@@ -635,7 +644,17 @@ export function generateDashboardInsights({
   // Exactly up to 3 high-priority alerts
   const alerts = [];
 
-  if (overdueBills.length > 0) {
+  if (availableCash < 0) {
+    alerts.push({
+      id: 'alert_overdrawn',
+      severity: 'critical',
+      title: 'Account Overdrawn',
+      description: `Immediate shortfall of ${formatINR(Math.abs(availableCash))}. Review expenses immediately.`,
+      actionPage: 'income'
+    });
+  }
+
+  if (overdueBills.length > 0 && alerts.length < 3) {
     alerts.push({
       id: 'alert_overdue',
       severity: 'critical',
