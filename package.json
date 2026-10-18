@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "backend": "node backend/index.js",
-    "server": "node backend/index.js",
-    "start": "node backend/index.js",
+    "backend": "node backend/server.js",
+    "server": "node backend/server.js",
+    "start": "node backend/server.js",
     "build": "vite build",
     "test": "node --test src/services/financialEngine.test.js && node --test test_e2e_workflow.js",
     "lint": "eslint .",

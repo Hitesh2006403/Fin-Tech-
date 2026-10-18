@@ -8,9 +8,10 @@ This directory houses the complete backend service for **Uncertain Income Planne
 
 ```text
 backend/
+├── server.js          # Express API server entry point, CORS, session middleware, and REST endpoints
+├── index.js           # Module alias forwarding to server.js
 ├── auth.js            # Authentication logic, Google OAuth verification, password hashing (scrypt)
 ├── db.js              # User-isolated persistence engine, benchmark demo datasets, and ledger mutations
-├── index.js           # Express API server, session middleware, and REST endpoints
 ├── README.md          # Backend documentation and API reference
 └── data/              # Local isolated data store partitions
     ├── financials.json # User-scoped financial datasets (incomes, bills, savings, scenarios)
@@ -22,7 +23,7 @@ backend/
 
 ## 2. Core Modules
 
-### `backend/index.js`
+### `backend/server.js` (or `backend/index.js`)
 The main server application running on `http://localhost:3001` (proxied by Vite at `/api`).
 - **CORS & Credentials**: Allows credentials from `http://localhost:5174` and `http://localhost:5173`.
 - **Authentication Middleware**: Supports both HttpOnly `session_token` cookies and `Authorization: Bearer <token>` headers.
@@ -56,17 +57,21 @@ The main server application running on `http://localhost:3001` (proxied by Vite 
 
 From project root:
 ```bash
-# Using npm script:
+# Using npm scripts:
 npm run backend
+# or
+npm run server
+# or
+npm start
 
-# Or directly with Node:
-node backend/index.js
+# Directly with Node:
+node backend/server.js
 ```
 
 From inside the `backend` folder:
 ```bash
 cd backend
-node index.js
+node server.js
 ```
 The server will automatically bind to port `3001` (or `process.env.PORT`) and output:
 ```text
