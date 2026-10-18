@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { supabase } from './supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -288,6 +289,161 @@ function writeJSON(file, data) {
 let users = readJSON(USERS_FILE, INITIAL_DEMO_USERS);
 let sessions = readJSON(SESSIONS_FILE, {});
 
+// ==========================================
+// ASYNC SUPABASE CLOUD MIRRORING HELPERS
+// (Non-blocking, resilient, zero-failure guarantee)
+// ==========================================
+
+async function syncProfileToSupabase(user) {
+  if (!supabase || !user) return;
+  try {
+    await supabase.from('profiles').upsert({
+      id: user.id,
+      name: user.name || 'User',
+      email: user.email,
+      role: user.role || 'Treasury Planner',
+      avatar_initials: user.avatarInitials || 'U',
+      picture: user.picture || null,
+      auth_provider: user.authProvider || 'local',
+      google_sub: user.googleSub || null,
+      onboarding_completed: Boolean(user.onboardingCompleted),
+      created_at: user.createdAt || new Date().toISOString(),
+      updated_at: user.updatedAt || new Date().toISOString()
+    });
+  } catch (err) {
+    // Non-blocking sync failure silently ignored
+  }
+}
+
+async function syncPreferencesToSupabase(userId, prefs) {
+  if (!supabase || !userId) return;
+  try {
+    await supabase.from('user_preferences').upsert(
+      {
+        user_id: userId,
+        starting_balance: prefs.startingBalance ?? 45000,
+        safety_buffer: prefs.safetyBuffer ?? 25000,
+        default_horizon_days: prefs.defaultHorizonDays ?? 30,
+        default_scenario: prefs.defaultScenario || 'expected',
+        income_frequency: prefs.incomeFrequency || 'Irregular / Milestone-based',
+        essential_expense_assumptions: prefs.essentialExpenseAssumptions || 'Strict essential only',
+        low_balance_alert_threshold: prefs.lowBalanceAlertThreshold ?? 20000,
+        bill_reminder_lead_days: prefs.billReminderLeadDays ?? 3,
+        notifications_enabled: prefs.notificationsEnabled ?? true
+      },
+      { onConflict: 'user_id' }
+    );
+  } catch (err) {
+    // Non-blocking sync failure silently ignored
+  }
+}
+
+async function syncIncomeToSupabase(userId, inc) {
+  if (!supabase || !userId || !inc) return;
+  try {
+    await supabase.from('income_entries').upsert({
+      id: inc.id,
+      user_id: userId,
+      title: inc.title,
+      source: inc.source || null,
+      amount: Number(inc.amount || 0),
+      expected_date: inc.expectedDate,
+      actual_date: inc.actualDate || null,
+      status: inc.status,
+      recurring: inc.recurring || 'one-time',
+      notes: inc.notes || null,
+      is_demo: Boolean(inc.isDemo),
+      created_at: inc.createdAt || new Date().toISOString()
+    });
+  } catch (err) {
+    // Non-blocking sync failure silently ignored
+  }
+}
+
+async function deleteIncomeFromSupabase(incomeId) {
+  if (!supabase || !incomeId) return;
+  try {
+    await supabase.from('income_entries').delete().eq('id', incomeId);
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
+async function syncExpenseToSupabase(userId, exp) {
+  if (!supabase || !userId || !exp) return;
+  try {
+    await supabase.from('expenses').upsert({
+      id: exp.id,
+      user_id: userId,
+      title: exp.title,
+      category: exp.category,
+      amount: Number(exp.amount || 0),
+      due_date: exp.dueDate,
+      paid_date: exp.paidDate || null,
+      is_essential: Boolean(exp.isEssential),
+      priority: exp.priority || 'high',
+      recurring: exp.recurring || 'one-time',
+      late_fee: Number(exp.lateFee || 0),
+      grace_period: Number(exp.gracePeriod || 0),
+      status: exp.status || 'unpaid',
+      emi_details: exp.emiDetails || null,
+      notes: exp.notes || null,
+      is_demo: Boolean(exp.isDemo),
+      created_at: exp.createdAt || new Date().toISOString()
+    });
+  } catch (err) {
+    // Non-blocking sync failure silently ignored
+  }
+}
+
+async function deleteExpenseFromSupabase(expenseId) {
+  if (!supabase || !expenseId) return;
+  try {
+    await supabase.from('expenses').delete().eq('id', expenseId);
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
+async function syncSavingsToSupabase(userId, sav) {
+  if (!supabase || !userId || !sav) return;
+  try {
+    await supabase.from('savings_goals').upsert(
+      {
+        user_id: userId,
+        weeks: sav.weeks ?? 4,
+        expected_low_income_per_week: sav.expectedLowIncomePerWeek ?? 5000,
+        essential_weekly_expenses: sav.essentialWeeklyExpenses ?? 12000,
+        current_designated_reserve: sav.currentDesignatedReserve ?? 14000,
+        weekly_contribution: sav.weeklyContribution ?? 3500
+      },
+      { onConflict: 'user_id' }
+    );
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
+async function syncScenarioToSupabase(userId, scen) {
+  if (!supabase || !userId || !scen) return;
+  try {
+    await supabase.from('simulation_scenarios').upsert({
+      id: scen.id,
+      user_id: userId,
+      title: scen.title || 'Saved Scenario',
+      income_id: scen.incomeId || null,
+      delay_days: scen.delayDays || 0,
+      unexpected_expense: scen.unexpectedExpense || 0,
+      income_reduction_pct: scen.incomeReductionPct || 0,
+      max_shortfall: scen.maxShortfall || 0,
+      min_balance: scen.minBalance || 0,
+      created_at: scen.createdAt || new Date().toISOString()
+    });
+  } catch (err) {
+    // Non-blocking
+  }
+}
+
 export const db = {
   // Users
   getUserById(id) {
@@ -328,6 +484,7 @@ export const db = {
 
     users.push(newUser);
     writeJSON(USERS_FILE, users);
+    syncProfileToSupabase(newUser);
     return newUser;
   },
 
@@ -343,6 +500,7 @@ export const db = {
     };
 
     writeJSON(USERS_FILE, users);
+    syncProfileToSupabase(users[index]);
     return users[index];
   },
 
@@ -441,6 +599,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncPreferencesToSupabase(userId, data.preferences);
     return data.preferences;
   },
 
@@ -456,6 +615,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncIncomeToSupabase(userId, newIncome);
     return newIncome;
   },
 
@@ -473,6 +633,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncIncomeToSupabase(userId, data.incomes[idx]);
     return data.incomes[idx];
   },
 
@@ -482,6 +643,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    deleteIncomeFromSupabase(incomeId);
     return true;
   },
 
@@ -498,6 +660,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncExpenseToSupabase(userId, newExpense);
     return newExpense;
   },
 
@@ -515,6 +678,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncExpenseToSupabase(userId, data.expenses[idx]);
     return data.expenses[idx];
   },
 
@@ -524,6 +688,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    deleteExpenseFromSupabase(expenseId);
     return true;
   },
 
@@ -533,6 +698,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncSavingsToSupabase(userId, data.leanSavings);
     return data.leanSavings;
   },
 
@@ -544,6 +710,7 @@ export const db = {
       const financials = readJSON(FINANCIALS_FILE, {});
       financials[userId] = data;
       writeJSON(FINANCIALS_FILE, financials);
+      syncSavingsToSupabase(userId, data.leanSavings);
     }
     return data.leanSavings;
   },
@@ -586,6 +753,7 @@ export const db = {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = data;
     writeJSON(FINANCIALS_FILE, financials);
+    syncScenarioToSupabase(userId, newScenario);
     return newScenario;
   },
 

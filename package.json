@@ -8,6 +8,7 @@
     "backend": "node backend/server.js",
     "server": "node backend/server.js",
     "start": "node backend/server.js",
+    "migrate": "node backend/scripts/migrate_json_to_supabase.js",
     "build": "vite build",
     "test": "node --test src/services/financialEngine.test.js && node --test test_e2e_workflow.js",
     "lint": "eslint .",

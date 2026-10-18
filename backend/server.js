@@ -11,11 +11,18 @@ import {
   setSessionCookie
 } from './auth.js';
 import { db, verifyPassword, hashPassword } from './db.js';
+import {
+  isSupabaseConfigured,
+  supabase,
+  supabaseUrl,
+  testSupabaseCloudConnection
+} from './supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
+// Explicitly load backend/.env first, then root .env as fallback
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
@@ -369,23 +376,24 @@ app.post('/api/demo/clear', requireAuth, (req, res) => {
 });
 
 // 9. Database & Supabase Status
-app.get('/api/database/status', (req, res) => {
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-  const supabaseConfigured = Boolean(supabaseUrl && !supabaseUrl.includes('your-project-ref'));
+app.get('/api/database/status', async (req, res) => {
+  const cloudTest = await testSupabaseCloudConnection();
 
   res.json({
     status: 'operational',
-    activeDatabase: supabaseConfigured ? 'Supabase PostgreSQL' : 'Local Isolated JSON Store',
-    supabaseConfigured,
-    supabaseUrlSnippet: supabaseConfigured ? supabaseUrl.slice(0, 25) + '...' : 'Not Configured (Running in offline/local MVP mode)',
+    activeDatabase: cloudTest.connected ? 'Supabase PostgreSQL Cloud' : 'Local Isolated JSON Store (Resilient Fallback)',
+    supabaseConfigured: isSupabaseConfigured,
+    supabaseConnected: cloudTest.connected,
+    supabaseUrlSnippet: isSupabaseConfigured ? supabaseUrl.slice(0, 30) + '...' : 'Not Configured (Running in offline/local MVP mode)',
+    cloudDiagnostic: cloudTest,
     serverPersistence: 'Active',
     serverTime: new Date().toISOString()
   });
 });
 
-
 app.listen(PORT, () => {
   console.log(`[FinSight Auth Server] Running on http://localhost:${PORT}`);
   console.log(`[FinSight Auth Server] Authorized origin: ${APP_ORIGIN}`);
   console.log(`[FinSight Auth Server] Google Client ID loaded: ${process.env.GOOGLE_CLIENT_ID ? 'YES' : 'NO'}`);
+  console.log(`[FinSight Auth Server] Supabase Cloud configured: ${isSupabaseConfigured ? 'YES (' + supabaseUrl + ')' : 'NO (Local JSON mode)'}`);
 });
