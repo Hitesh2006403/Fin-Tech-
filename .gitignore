@@ -9,12 +9,18 @@ lerna-debug.log*
 
 # Environment Variables & Secrets
 .env
+.env.*
 .env.local
 .env.*.local
+*.env
+backend/.env
+!.env.example
 
 # Local Session & Financial Store
+backend/data/*.json
 backend/data/sessions.json
 backend/data/financials.json
+backend/data/users.json
 backend/data/backups/
 
 node_modules
