@@ -19,13 +19,19 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5173';
+const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5174';
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: [APP_ORIGIN, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: [
+    APP_ORIGIN,
+    'http://localhost:5174',
+    'http://127.0.0.1:5174',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
+  ],
   credentials: true
 }));
 
