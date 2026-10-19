@@ -76,21 +76,23 @@ export function QuickAddModal() {
       <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="modal-header-bar">
-          <div style={{ display: 'flex', gap: 8, background: '#F1F5F9', padding: 3, borderRadius: 8 }}>
+          <div style={{ display: 'flex', gap: 6, background: 'rgba(11, 18, 32, 0.75)', padding: 4, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
             <button
               type="button"
               style={{
                 border: 'none',
-                background: tab === 'income' ? '#FFFFFF' : 'transparent',
-                color: tab === 'income' ? '#635BFF' : '#64748B',
-                fontWeight: 600,
+                background: tab === 'income' ? 'linear-gradient(135deg, #38BDF8 0%, #6366F1 100%)' : 'transparent',
+                color: tab === 'income' ? '#0B1220' : '#94A3B8',
+                fontWeight: tab === 'income' ? 700 : 500,
                 fontSize: 12.5,
                 padding: '6px 14px',
-                borderRadius: 6,
+                borderRadius: 7,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6
+                gap: 6,
+                boxShadow: tab === 'income' ? '0 0 14px rgba(56, 189, 248, 0.35)' : 'none',
+                transition: 'all 0.15s ease'
               }}
               onClick={() => setTab('income')}
             >
@@ -102,16 +104,18 @@ export function QuickAddModal() {
               type="button"
               style={{
                 border: 'none',
-                background: tab === 'expense' ? '#FFFFFF' : 'transparent',
-                color: tab === 'expense' ? '#635BFF' : '#64748B',
-                fontWeight: 600,
+                background: tab === 'expense' ? 'linear-gradient(135deg, #38BDF8 0%, #6366F1 100%)' : 'transparent',
+                color: tab === 'expense' ? '#0B1220' : '#94A3B8',
+                fontWeight: tab === 'expense' ? 700 : 500,
                 fontSize: 12.5,
                 padding: '6px 14px',
-                borderRadius: 6,
+                borderRadius: 7,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6
+                gap: 6,
+                boxShadow: tab === 'expense' ? '0 0 14px rgba(56, 189, 248, 0.35)' : 'none',
+                transition: 'all 0.15s ease'
               }}
               onClick={() => setTab('expense')}
             >
@@ -122,7 +126,7 @@ export function QuickAddModal() {
 
           <button
             type="button"
-            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 4 }}
+            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 6, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => setQuickAddModalOpen(false)}
           >
             <X size={20} />

@@ -8,7 +8,7 @@ import {
   Calendar,
   LogOut,
   Settings,
-  RotateCcw
+  RefreshCw
 } from 'lucide-react';
 
 export function Header() {
@@ -18,7 +18,8 @@ export function Header() {
     setActiveRoute,
     unreadNotificationCount,
     setQuickAddModalOpen,
-    resetToDemoData,
+    refreshData,
+    isSyncing,
     logout
   } = useApp();
 
@@ -45,7 +46,7 @@ export function Header() {
         </button>
 
         <div className="header-date-badge">
-          <Calendar size={14} color="#635BFF" />
+          <Calendar size={14} color="#38BDF8" />
           <span>{todayStr}</span>
         </div>
       </div>
@@ -99,35 +100,47 @@ export function Header() {
                 position: 'absolute',
                 top: '115%',
                 right: 0,
-                width: 220,
-                background: '#FFFFFF',
+                width: 230,
+                background: 'rgba(15, 23, 42, 0.95)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
                 borderRadius: 12,
-                border: '1px solid #E2E8F0',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.22)',
+                boxShadow: '0 20px 45px rgba(0,0,0,0.65), 0 0 25px rgba(56, 189, 248, 0.12)',
                 padding: '8px 0',
                 zIndex: 200
               }}
               onMouseLeave={() => setProfileDropdownOpen(false)}
             >
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid #F1F5F9' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{user.name}</div>
-                <div style={{ fontSize: 11.5, color: '#64748B' }}>{user.email}</div>
+              <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{user.name}</div>
+                <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 2 }}>{user.email}</div>
               </div>
 
               <button
                 type="button"
                 style={{
                   width: '100%',
-                  padding: '9px 16px',
+                  padding: '10px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                   border: 'none',
                   background: 'transparent',
-                  color: '#334155',
+                  color: '#94A3B8',
                   fontSize: 13,
                   cursor: 'pointer',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#F8FAFC';
+                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#94A3B8';
+                  e.currentTarget.style.background = 'transparent';
                 }}
                 onClick={() => {
                   setActiveRoute('settings');
@@ -142,43 +155,57 @@ export function Header() {
                 type="button"
                 style={{
                   width: '100%',
-                  padding: '9px 16px',
+                  padding: '10px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                   border: 'none',
                   background: 'transparent',
-                  color: '#635BFF',
+                  color: '#38BDF8',
                   fontSize: 13,
                   fontWeight: 600,
                   cursor: 'pointer',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
                 }}
-                onClick={() => {
-                  resetToDemoData();
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                onClick={async () => {
                   setProfileDropdownOpen(false);
+                  await refreshData();
                 }}
               >
-                <RotateCcw size={15} />
-                <span>Reset Demo Sample Data</span>
+                <RefreshCw size={15} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                <span>{isSyncing ? 'Syncing Server Data...' : 'Sync Live Data'}</span>
               </button>
 
-              <div style={{ height: 1, background: '#F1F5F9', margin: '4px 0' }} />
+              <div style={{ height: 1, background: 'rgba(255, 255, 255, 0.08)', margin: '4px 0' }} />
 
               <button
                 type="button"
                 style={{
                   width: '100%',
-                  padding: '9px 16px',
+                  padding: '10px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                   border: 'none',
                   background: 'transparent',
-                  color: '#D64545',
+                  color: '#F87171',
                   fontSize: 13,
                   cursor: 'pointer',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
                 }}
                 onClick={() => {
                   logout();

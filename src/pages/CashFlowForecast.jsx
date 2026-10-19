@@ -60,9 +60,9 @@ export function CashFlowForecast() {
       {/* Scenario & Horizon Controls Strip */}
       <div className="card" style={{ padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
         {/* Scenario Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#172033' }}>Scenario:</span>
-          <div style={{ display: 'flex', background: '#F1F5F9', padding: 3, borderRadius: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Scenario:</span>
+          <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
             {[
               { id: 'conservative', label: 'Conservative', note: 'No future income counted' },
               { id: 'expected', label: 'Expected', note: 'Confirmed contracts only' },
@@ -72,15 +72,16 @@ export function CashFlowForecast() {
                 key={sc.id}
                 type="button"
                 style={{
-                  border: 'none',
-                  background: scenario === sc.id ? '#FFFFFF' : 'transparent',
-                  color: scenario === sc.id ? '#635BFF' : '#64748B',
+                  border: scenario === sc.id ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+                  background: scenario === sc.id ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)' : 'transparent',
+                  color: scenario === sc.id ? '#FFFFFF' : 'var(--text-secondary)',
                   fontWeight: scenario === sc.id ? 700 : 500,
                   fontSize: 12.5,
-                  padding: '6px 14px',
-                  borderRadius: 6,
+                  padding: '7px 14px',
+                  borderRadius: 8,
                   cursor: 'pointer',
-                  boxShadow: scenario === sc.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: scenario === sc.id ? '0 0 12px rgba(56, 189, 248, 0.2)' : 'none'
                 }}
                 onClick={() => setScenario(sc.id)}
               >
@@ -91,22 +92,24 @@ export function CashFlowForecast() {
         </div>
 
         {/* Time Horizon Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#172033' }}>Horizon:</span>
-          <div style={{ display: 'flex', background: '#F1F5F9', padding: 3, borderRadius: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Horizon:</span>
+          <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
             {[7, 14, 30, 60, 90].map(d => (
               <button
                 key={d}
                 type="button"
                 style={{
-                  border: 'none',
-                  background: timeRange === d ? '#635BFF' : 'transparent',
-                  color: timeRange === d ? '#FFFFFF' : '#64748B',
+                  border: timeRange === d ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+                  background: timeRange === d ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)' : 'transparent',
+                  color: timeRange === d ? '#FFFFFF' : 'var(--text-secondary)',
                   fontWeight: timeRange === d ? 700 : 500,
                   fontSize: 12.5,
-                  padding: '6px 12px',
-                  borderRadius: 6,
-                  cursor: 'pointer'
+                  padding: '7px 12px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: timeRange === d ? '0 0 12px rgba(56, 189, 248, 0.2)' : 'none'
                 }}
                 onClick={() => setTimeRange(d)}
               >
@@ -155,12 +158,12 @@ export function CashFlowForecast() {
 
       {/* Detailed Day-by-Day Forecast Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid #E7EAF2', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <h3 className="card-title-h3">Day-by-Day Financial Breakdown</h3>
             <p className="card-subtitle-p">Chronological cash position and scheduled transactions.</p>
           </div>
-          <span style={{ fontSize: 12, color: '#64748B' }}>Showing {forecastResult.forecast.length} days</span>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Showing {forecastResult.forecast.length} days</span>
         </div>
 
         <div className="table-responsive" style={{ maxHeight: 420 }}>
@@ -183,40 +186,40 @@ export function CashFlowForecast() {
                   <tr
                     key={day.date}
                     style={{
-                      background: day.isNegative ? '#FEF2F2' : day.isBelowBuffer ? '#FFFBEB' : idx % 2 === 0 ? '#FFFFFF' : '#FAFAFC'
+                      background: day.isNegative ? 'rgba(239, 68, 68, 0.12)' : day.isBelowBuffer ? 'rgba(245, 158, 11, 0.08)' : idx % 2 === 0 ? 'rgba(15, 23, 42, 0.35)' : 'rgba(23, 37, 84, 0.15)'
                     }}
                   >
-                    <td style={{ fontWeight: 600, color: '#172033', whiteSpace: 'nowrap' }}>
-                      {day.date} {idx === 0 && <span style={{ color: '#635BFF', fontSize: 11 }}>(Today)</span>}
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                      {day.date} {idx === 0 && <span style={{ color: 'var(--accent-primary)', fontSize: 11, fontWeight: 700 }}>(Today)</span>}
                     </td>
 
                     <td>
                       {totalIn > 0 ? (
                         <div>
-                          <strong style={{ color: '#159A72', fontSize: 13 }}>+{formatINR(totalIn)}</strong>
-                          <div style={{ fontSize: 11, color: '#64748B' }}>
+                          <strong style={{ color: '#10B981', fontSize: 13, textShadow: '0 0 8px rgba(16, 185, 129, 0.3)' }}>+{formatINR(totalIn)}</strong>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
                             {day.incomes.map(i => i.title).join(', ')}
                           </div>
                         </div>
                       ) : (
-                        <span style={{ color: '#CBD5E1' }}>—</span>
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
 
                     <td>
                       {totalOut > 0 ? (
                         <div>
-                          <strong style={{ color: '#D64545', fontSize: 13 }}>-{formatINR(totalOut)}</strong>
-                          <div style={{ fontSize: 11, color: '#64748B' }}>
+                          <strong style={{ color: '#EF4444', fontSize: 13, textShadow: '0 0 8px rgba(239, 68, 68, 0.3)' }}>-{formatINR(totalOut)}</strong>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
                             {day.expenses.map(e => e.title).join(', ')}
                           </div>
                         </div>
                       ) : (
-                        <span style={{ color: '#CBD5E1' }}>—</span>
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
 
-                    <td className="num-val" style={{ color: day.isNegative ? '#D64545' : '#172033', fontSize: 14 }}>
+                    <td className="num-val" style={{ color: day.isNegative ? '#EF4444' : 'var(--text-primary)', fontSize: 14, fontWeight: 700, textShadow: day.isNegative ? '0 0 10px rgba(239, 68, 68, 0.4)' : 'none' }}>
                       {formatINR(day.closingBalance)}
                     </td>
 

@@ -79,13 +79,13 @@ export function OverviewDashboard() {
   if (!hasRecords) {
     return (
       <div className="page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-        <div style={{ width: 64, height: 64, borderRadius: 16, background: '#F0EFFF', color: '#635BFF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-          <Sparkles size={32} />
+        <div style={{ width: 68, height: 68, borderRadius: 18, background: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(56, 189, 248, 0.3)', boxShadow: '0 0 25px rgba(56, 189, 248, 0.2)' }}>
+          <Sparkles size={34} />
         </div>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#172033', marginBottom: 8 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', marginBottom: 8, letterSpacing: -0.4 }}>
           Welcome to Uncertain Income Planner, {user.name}
         </h2>
-        <p style={{ color: '#667085', maxWidth: 460, marginBottom: 28, fontSize: 15, lineHeight: 1.5 }}>
+        <p style={{ color: '#94A3B8', maxWidth: 480, marginBottom: 28, fontSize: 15, lineHeight: 1.6 }}>
           Take the stress out of irregular earnings. Record your current cash, upcoming gigs, and essential bills to see your true Safe-to-Spend.
         </p>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -117,11 +117,11 @@ export function OverviewDashboard() {
       <div className="page-header-row">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', color: '#635BFF', letterSpacing: 0.6 }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'uppercase', color: '#38BDF8', letterSpacing: 0.8, background: 'rgba(56, 189, 248, 0.12)', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(56, 189, 248, 0.25)' }}>
               TREASURY OVERVIEW
             </span>
-            <span style={{ color: '#CBD5E1' }}>•</span>
-            <span style={{ fontSize: 12, color: '#64748B' }}>Irregular Cash-Flow Engine</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>•</span>
+            <span style={{ fontSize: 12, color: '#94A3B8' }}>Irregular Cash-Flow Engine</span>
           </div>
           <h1 className="page-title">Good day, {user.name}</h1>
           <p className="page-subtitle">
@@ -145,30 +145,50 @@ export function OverviewDashboard() {
       {dashboardInsights.primaryInsight && (
         <div
           style={{
-            background: dashboardInsights.primaryInsight.type === 'danger' ? '#FEF2F2' : dashboardInsights.primaryInsight.type === 'warning' ? '#FFFBEB' : '#F0EFFF',
-            border: `1px solid ${dashboardInsights.primaryInsight.type === 'danger' ? '#FECACA' : dashboardInsights.primaryInsight.type === 'warning' ? '#FDE68A' : '#E0E7FF'}`,
+            background: dashboardInsights.primaryInsight.type === 'danger'
+              ? 'rgba(239, 68, 68, 0.14)'
+              : dashboardInsights.primaryInsight.type === 'warning'
+              ? 'rgba(245, 158, 11, 0.14)'
+              : 'rgba(56, 189, 248, 0.12)',
+            border: `1px solid ${
+              dashboardInsights.primaryInsight.type === 'danger'
+                ? 'rgba(239, 68, 68, 0.35)'
+                : dashboardInsights.primaryInsight.type === 'warning'
+                ? 'rgba(245, 158, 11, 0.35)'
+                : 'rgba(56, 189, 248, 0.28)'
+            }`,
+            borderTop: `1px solid ${
+              dashboardInsights.primaryInsight.type === 'danger'
+                ? 'rgba(239, 68, 68, 0.5)'
+                : dashboardInsights.primaryInsight.type === 'warning'
+                ? 'rgba(245, 158, 11, 0.5)'
+                : 'rgba(56, 189, 248, 0.45)'
+            }`,
             borderRadius: 12,
-            padding: '12px 18px',
+            padding: '14px 20px',
             marginBottom: 24,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 12
+            gap: 12,
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {dashboardInsights.primaryInsight.type === 'danger' ? (
-              <AlertTriangle size={18} color="#D64545" />
+              <AlertTriangle size={18} color="#F87171" style={{ filter: 'drop-shadow(0 0 6px rgba(239, 68, 68, 0.4))' }} />
             ) : dashboardInsights.primaryInsight.type === 'warning' ? (
-              <Clock size={18} color="#D99116" />
+              <Clock size={18} color="#FBBF24" style={{ filter: 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.4))' }} />
             ) : (
-              <Sparkles size={18} color="#635BFF" />
+              <Sparkles size={18} color="#38BDF8" style={{ filter: 'drop-shadow(0 0 6px rgba(56, 189, 248, 0.4))' }} />
             )}
             <div>
-              <strong style={{ fontSize: 13, color: '#172033', marginRight: 6 }}>
+              <strong style={{ fontSize: 13, color: '#F8FAFC', marginRight: 8 }}>
                 {dashboardInsights.primaryInsight.title}:
               </strong>
-              <span style={{ fontSize: 13, color: '#475569' }}>
+              <span style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.45 }}>
                 {dashboardInsights.primaryInsight.message}
               </span>
             </div>
@@ -179,13 +199,15 @@ export function OverviewDashboard() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#635BFF',
+              color: '#38BDF8',
               fontWeight: 600,
               fontSize: 12.5,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 4
+              gap: 5,
+              whiteSpace: 'nowrap',
+              transition: 'all 0.15s ease'
             }}
             onClick={() => setActiveRoute('simulator')}
           >
@@ -215,14 +237,21 @@ export function OverviewDashboard() {
         </div>
 
         {/* Card 2: Safe-to-Spend Today */}
-        <div className="kpi-card" onClick={() => setActiveRoute('safe-to-spend')} style={{ borderColor: safeToSpend.safeToSpendToday > 0 ? '#C7D2FE' : '#FECACA' }}>
+        <div
+          className="kpi-card"
+          onClick={() => setActiveRoute('safe-to-spend')}
+          style={{
+            borderColor: safeToSpend.safeToSpendToday > 0 ? 'rgba(56, 189, 248, 0.35)' : 'rgba(239, 68, 68, 0.35)',
+            boxShadow: safeToSpend.safeToSpendToday > 0 ? '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(56, 189, 248, 0.12)' : '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(239, 68, 68, 0.12)'
+          }}
+        >
           <div className="kpi-top-row">
             <span className="kpi-label">Safe-to-Spend Today</span>
             <div className="kpi-icon-container purple">
               <ShieldCheck size={18} />
             </div>
           </div>
-          <div className="kpi-amount-val" style={{ color: safeToSpend.safeToSpendToday > 0 ? '#635BFF' : '#D64545' }}>
+          <div className="kpi-amount-val" style={{ color: safeToSpend.safeToSpendToday > 0 ? '#38BDF8' : '#F87171', textShadow: safeToSpend.safeToSpendToday > 0 ? '0 0 20px rgba(56, 189, 248, 0.4)' : '0 0 20px rgba(239, 68, 68, 0.4)' }}>
             {formatINR(safeToSpend.safeToSpendToday)}
           </div>
           <div className="kpi-subtitle-meta">
@@ -243,7 +272,7 @@ export function OverviewDashboard() {
               <TrendingUp size={18} />
             </div>
           </div>
-          <div className="kpi-amount-val" style={{ color: '#159A72' }}>
+          <div className="kpi-amount-val" style={{ color: '#10B981', textShadow: '0 0 20px rgba(16, 185, 129, 0.35)' }}>
             +{formatINR(confirmedUpcomingIncome)}
           </div>
           <div className="kpi-subtitle-meta">
@@ -260,7 +289,7 @@ export function OverviewDashboard() {
               <Receipt size={18} />
             </div>
           </div>
-          <div className="kpi-amount-val" style={{ color: '#D99116' }}>
+          <div className="kpi-amount-val" style={{ color: '#F59E0B', textShadow: '0 0 20px rgba(245, 158, 11, 0.35)' }}>
             {formatINR(upcomingBillsNext7Days)}
           </div>
           <div className="kpi-subtitle-meta">
@@ -284,7 +313,7 @@ export function OverviewDashboard() {
             <button
               type="button"
               className="btn-secondary"
-              style={{ fontSize: 12, padding: '5px 10px' }}
+              style={{ fontSize: 12, padding: '5px 12px' }}
               onClick={() => setActiveRoute('forecast')}
             >
               <span>Full Forecast</span>
@@ -306,11 +335,11 @@ export function OverviewDashboard() {
           
           {/* Upcoming Bills (Max 5) */}
           <div className="card" style={{ padding: '20px 22px' }}>
-            <div className="card-header-flex" style={{ marginBottom: 12 }}>
+            <div className="card-header-flex" style={{ marginBottom: 14 }}>
               <h3 className="card-title-h3" style={{ fontSize: 15 }}>Upcoming Bills</h3>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: '#635BFF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                 onClick={() => setActiveRoute('expenses')}
               >
                 View all ({expenses.filter(e => e.status !== 'paid').length})
@@ -318,7 +347,7 @@ export function OverviewDashboard() {
             </div>
 
             {upcomingBills.length === 0 ? (
-              <p style={{ color: '#98A2B3', fontSize: 13, margin: '14px 0' }}>No unpaid bills on schedule.</p>
+              <p style={{ color: '#64748B', fontSize: 13, margin: '14px 0' }}>No unpaid bills on schedule.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {upcomingBills.map(bill => (
@@ -328,22 +357,24 @@ export function OverviewDashboard() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '8px 10px',
-                      background: '#F8FAFC',
-                      borderRadius: 8,
-                      border: '1px solid #F1F5F9'
+                      padding: '10px 14px',
+                      background: 'rgba(11, 18, 32, 0.65)',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter: 'blur(8px)',
+                      transition: 'border-color 0.15s'
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#172033' }}>{bill.title}</div>
-                      <div style={{ fontSize: 11, color: '#667085' }}>Due {bill.dueDate} • {bill.category}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F8FAFC' }}>{bill.title}</div>
+                      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>Due {bill.dueDate} • {bill.category}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#172033' }}>{formatINR(bill.amount)}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#F8FAFC', fontFeatureSettings: 'tnum' }}>{formatINR(bill.amount)}</div>
                       {bill.isEssential ? (
-                        <span style={{ fontSize: 10, color: '#D64545', fontWeight: 600 }}>Essential</span>
+                        <span style={{ fontSize: 10, color: '#F87171', fontWeight: 600, background: 'rgba(239, 68, 68, 0.15)', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 2 }}>Essential</span>
                       ) : (
-                        <span style={{ fontSize: 10, color: '#667085' }}>Discretionary</span>
+                        <span style={{ fontSize: 10, color: '#94A3B8', background: 'rgba(255, 255, 255, 0.05)', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 2 }}>Discretionary</span>
                       )}
                     </div>
                   </div>
@@ -354,20 +385,20 @@ export function OverviewDashboard() {
 
           {/* Financial Alerts (Max 3) */}
           <div className="card" style={{ padding: '20px 22px' }}>
-            <div className="card-header-flex" style={{ marginBottom: 12 }}>
+            <div className="card-header-flex" style={{ marginBottom: 14 }}>
               <h3 className="card-title-h3" style={{ fontSize: 15 }}>Financial Alerts</h3>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: '#635BFF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                 onClick={() => setActiveRoute('notifications')}
               >
                 Notification Center
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {dashboardInsights.alerts.length === 0 ? (
-                <div style={{ fontSize: 12, color: '#94A3B8', textAlign: 'center', padding: '16px 8px' }}>
+                <div style={{ fontSize: 12.5, color: '#64748B', textAlign: 'center', padding: '16px 8px' }}>
                   No active alerts. All financial flows are within safe parameters.
                 </div>
               ) : (
@@ -375,29 +406,41 @@ export function OverviewDashboard() {
                   <div
                     key={alert.id}
                     style={{
-                      padding: '10px 12px',
-                      borderRadius: 8,
-                      background: alert.severity === 'critical' ? '#FEF2F2' : alert.severity === 'warning' ? '#FFFBEB' : '#F8FAFC',
-                      border: `1px solid ${alert.severity === 'critical' ? '#FECACA' : alert.severity === 'warning' ? '#FDE68A' : '#E2E8F0'}`,
+                      padding: '12px 14px',
+                      borderRadius: 10,
+                      background: alert.severity === 'critical'
+                        ? 'rgba(239, 68, 68, 0.12)'
+                        : alert.severity === 'warning'
+                        ? 'rgba(245, 158, 11, 0.12)'
+                        : 'rgba(11, 18, 32, 0.65)',
+                      border: `1px solid ${
+                        alert.severity === 'critical'
+                          ? 'rgba(239, 68, 68, 0.3)'
+                          : alert.severity === 'warning'
+                          ? 'rgba(245, 158, 11, 0.3)'
+                          : 'rgba(255, 255, 255, 0.08)'
+                      }`,
                       display: 'flex',
                       alignItems: 'flex-start',
                       justifyContent: 'space-between',
                       gap: 10,
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(8px)',
+                      transition: 'all 0.15s ease'
                     }}
                     onClick={() => alert.actionPage && setActiveRoute(alert.actionPage)}
                   >
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flex: 1 }}>
                       {alert.severity === 'critical' ? (
-                        <AlertTriangle size={15} color="#D64545" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <AlertTriangle size={15} color="#F87171" style={{ flexShrink: 0, marginTop: 2 }} />
                       ) : alert.severity === 'warning' ? (
-                        <Clock size={15} color="#D99116" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <Clock size={15} color="#FBBF24" style={{ flexShrink: 0, marginTop: 2 }} />
                       ) : (
-                        <CheckCircle2 size={15} color="#159A72" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <CheckCircle2 size={15} color="#10B981" style={{ flexShrink: 0, marginTop: 2 }} />
                       )}
                       <div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#172033' }}>{alert.title}</div>
-                        <div style={{ fontSize: 11.5, color: '#64748B', lineHeight: 1.35 }}>{alert.description}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#F8FAFC' }}>{alert.title}</div>
+                        <div style={{ fontSize: 11.5, color: '#94A3B8', lineHeight: 1.4, marginTop: 2 }}>{alert.description}</div>
                       </div>
                     </div>
                     <button
@@ -410,10 +453,10 @@ export function OverviewDashboard() {
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#94A3B8',
+                        color: '#64748B',
                         cursor: 'pointer',
                         padding: '0 4px',
-                        fontSize: 15,
+                        fontSize: 16,
                         lineHeight: 1,
                         borderRadius: 4
                       }}
@@ -442,7 +485,7 @@ export function OverviewDashboard() {
             <button
               type="button"
               className="btn-secondary"
-              style={{ fontSize: 12, padding: '5px 10px' }}
+              style={{ fontSize: 12, padding: '5px 12px' }}
               onClick={() => setActiveRoute('expenses')}
             >
               <span>View all transactions</span>
@@ -464,10 +507,10 @@ export function OverviewDashboard() {
               <tbody>
                 {recentTransactions.map(tx => (
                   <tr key={tx.id}>
-                    <td style={{ fontWeight: 600 }}>{tx.title}</td>
-                    <td style={{ color: '#64748B', fontSize: 12.5 }}>{tx.date}</td>
-                    <td style={{ color: '#64748B', fontSize: 12.5 }}>{tx.category}</td>
-                    <td className="num-val" style={{ color: tx.type === 'income' ? '#159A72' : '#172033' }}>
+                    <td style={{ fontWeight: 600, color: '#F8FAFC' }}>{tx.title}</td>
+                    <td style={{ color: '#94A3B8', fontSize: 12.5 }}>{tx.date}</td>
+                    <td style={{ color: '#94A3B8', fontSize: 12.5 }}>{tx.category}</td>
+                    <td className="num-val" style={{ color: tx.type === 'income' ? '#10B981' : '#F8FAFC' }}>
                       {tx.type === 'income' ? '+' : '-'}{formatINR(tx.amount)}
                     </td>
                     <td>
@@ -492,7 +535,7 @@ export function OverviewDashboard() {
             <button
               type="button"
               className="btn-secondary"
-              style={{ fontSize: 12, padding: '5px 10px' }}
+              style={{ fontSize: 12, padding: '5px 12px' }}
               onClick={() => setActiveRoute('income')}
             >
               <span>Manage</span>
@@ -500,40 +543,40 @@ export function OverviewDashboard() {
           </div>
 
           {/* Segmented Progress Bar */}
-          <div style={{ height: 10, borderRadius: 5, background: '#E2E8F0', overflow: 'hidden', display: 'flex', marginBottom: 20 }}>
-            <div style={{ width: `${(totalReceived / grandTotalPipeline) * 100}%`, background: '#159A72' }} title="Received" />
-            <div style={{ width: `${(totalConfirmed / grandTotalPipeline) * 100}%`, background: '#635BFF' }} title="Confirmed" />
-            <div style={{ width: `${(totalUncertain / grandTotalPipeline) * 100}%`, background: '#D99116' }} title="Uncertain" />
+          <div style={{ height: 10, borderRadius: 5, background: 'rgba(255, 255, 255, 0.08)', overflow: 'hidden', display: 'flex', marginBottom: 20 }}>
+            <div style={{ width: `${(totalReceived / grandTotalPipeline) * 100}%`, background: '#10B981' }} title="Received" />
+            <div style={{ width: `${(totalConfirmed / grandTotalPipeline) * 100}%`, background: '#38BDF8' }} title="Confirmed" />
+            <div style={{ width: `${(totalUncertain / grandTotalPipeline) * 100}%`, background: '#F59E0B' }} title="Uncertain" />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#159A72' }}></span>
-                <span style={{ color: '#172033', fontWeight: 600 }}>Received (In Cash)</span>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }}></span>
+                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Received (In Cash)</span>
               </div>
-              <strong style={{ color: '#159A72', fontFeatureSettings: 'tnum' }}>{formatINR(totalReceived)}</strong>
+              <strong style={{ color: '#10B981', fontFeatureSettings: 'tnum' }}>{formatINR(totalReceived)}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#635BFF' }}></span>
-                <span style={{ color: '#172033', fontWeight: 600 }}>Confirmed (Invoices/Contracts)</span>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 6px #38BDF8' }}></span>
+                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Confirmed (Invoices/Contracts)</span>
               </div>
-              <strong style={{ color: '#635BFF', fontFeatureSettings: 'tnum' }}>{formatINR(totalConfirmed)}</strong>
+              <strong style={{ color: '#38BDF8', fontFeatureSettings: 'tnum' }}>{formatINR(totalConfirmed)}</strong>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#D99116' }}></span>
-                <span style={{ color: '#172033', fontWeight: 600 }}>Uncertain (Pipeline/Pitches)</span>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 6px #F59E0B' }}></span>
+                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Uncertain (Pipeline/Pitches)</span>
               </div>
-              <strong style={{ color: '#D99116', fontFeatureSettings: 'tnum' }}>{formatINR(totalUncertain)}</strong>
+              <strong style={{ color: '#F59E0B', fontFeatureSettings: 'tnum' }}>{formatINR(totalUncertain)}</strong>
             </div>
           </div>
 
-          <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid #F1F5F9', fontSize: 12, color: '#667085', lineHeight: 1.5 }}>
-            <span style={{ fontWeight: 600, color: '#172033' }}>Rule of Thumb:</span> Only Received cash is spent today. Confirmed income powers upcoming obligations; Uncertain income is excluded from baseline safety.
+          <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(255, 255, 255, 0.08)', fontSize: 12, color: '#94A3B8', lineHeight: 1.5 }}>
+            <span style={{ fontWeight: 600, color: '#F8FAFC' }}>Rule of Thumb:</span> Only Received cash is spent today. Confirmed income powers upcoming obligations; Uncertain income is excluded from baseline safety.
           </div>
         </div>
 

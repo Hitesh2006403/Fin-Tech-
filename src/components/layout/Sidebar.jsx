@@ -92,10 +92,12 @@ export function Sidebar() {
                   marginLeft: 'auto',
                   fontSize: 10,
                   fontWeight: 700,
-                  background: '#EEF2FF',
-                  color: '#635BFF',
-                  padding: '2px 6px',
-                  borderRadius: 10
+                  background: 'rgba(56, 189, 248, 0.15)',
+                  color: '#38BDF8',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  padding: '2px 7px',
+                  borderRadius: 10,
+                  boxShadow: '0 0 10px rgba(56, 189, 248, 0.15)'
                 }}>
                   {item.badge}
                 </span>

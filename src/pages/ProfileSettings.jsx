@@ -8,6 +8,7 @@ import {
   Shield,
   Download,
   RotateCcw,
+  RefreshCw,
   LogOut,
   CheckCircle2,
   Lock,
@@ -25,6 +26,8 @@ export function ProfileSettings() {
     incomes,
     expenses,
     standardForecast,
+    refreshData,
+    isSyncing,
     resetToDemoData,
     clearUserData,
     logout
@@ -108,21 +111,21 @@ export function ProfileSettings() {
         <button
           type="button"
           className="btn-secondary"
-          style={{ color: '#635BFF', borderColor: '#C7D2FE' }}
-          onClick={() => {
-            resetToDemoData();
-            showToast('All records reset to pristine hackathon demo dataset!');
+          style={{ color: 'var(--accent-primary)', borderColor: 'rgba(56, 189, 248, 0.4)', background: 'rgba(56, 189, 248, 0.08)' }}
+          onClick={async () => {
+            await refreshData();
+            showToast('All financial records synchronized directly from backend server!');
           }}
         >
-          <RotateCcw size={15} />
-          <span>Reset Sample Demo Data</span>
+          <RefreshCw size={15} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+          <span>{isSyncing ? 'Syncing Server...' : 'Sync Cloud Data'}</span>
         </button>
       </div>
 
       {toastMsg && (
-        <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '10px 16px', borderRadius: 10, marginBottom: 20, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34D399', padding: '12px 18px', borderRadius: 10, marginBottom: 20, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, backdropFilter: 'blur(10px)', boxShadow: '0 0 20px rgba(16, 185, 129, 0.15)' }}>
           <CheckCircle2 size={16} />
-          <span>{toastMsg}</span>
+          <span style={{ fontWeight: 600 }}>{toastMsg}</span>
         </div>
       )}
 
@@ -202,7 +205,7 @@ export function ProfileSettings() {
                       className="form-input-control"
                       value="INR (₹) — Indian Rupee"
                       disabled
-                      style={{ background: '#F8FAFC' }}
+                      style={{ background: 'rgba(15, 23, 42, 0.6)', color: 'var(--text-secondary)' }}
                     />
                   </div>
                 </div>
@@ -244,7 +247,7 @@ export function ProfileSettings() {
                       onChange={(e) => setStartingBalance(e.target.value)}
                       required
                     />
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Live balance before added received income and bills.</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'block' }}>Live balance before added received income and bills.</span>
                   </div>
 
                   <div className="form-group-item">
@@ -257,7 +260,7 @@ export function ProfileSettings() {
                       onChange={(e) => setSafetyBuffer(e.target.value)}
                       required
                     />
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Emergency cash threshold protected from Safe-to-Spend.</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'block' }}>Emergency cash threshold protected from Safe-to-Spend.</span>
                   </div>
                 </div>
 
@@ -344,7 +347,7 @@ export function ProfileSettings() {
                   <button type="submit" className="btn-primary">
                     Update Security Password
                   </button>
-                  <button type="button" className="btn-secondary" style={{ color: '#D64545' }} onClick={logout}>
+                  <button type="button" className="btn-secondary" style={{ color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.4)' }} onClick={logout}>
                     Sign Out All Sessions
                   </button>
                 </div>
@@ -361,9 +364,9 @@ export function ProfileSettings() {
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div style={{ padding: '18px', border: '1px solid #E2E8F0', borderRadius: 10, background: '#F8FAFC' }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0' }}>Transaction Ledger</h4>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 16px 0' }}>
+                <div style={{ padding: '20px', border: '1px solid var(--border-glass)', borderRadius: 12, background: 'rgba(15, 23, 42, 0.6)' }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>Transaction Ledger</h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 16px 0', lineHeight: 1.45 }}>
                     All recorded received income, signed milestone contracts, and planned essential bills.
                   </p>
                   <button
@@ -376,9 +379,9 @@ export function ProfileSettings() {
                   </button>
                 </div>
 
-                <div style={{ padding: '18px', border: '1px solid #E2E8F0', borderRadius: 10, background: '#F8FAFC' }}>
-                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0' }}>30-Day Forecast Model</h4>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 16px 0' }}>
+                <div style={{ padding: '20px', border: '1px solid var(--border-glass)', borderRadius: 12, background: 'rgba(15, 23, 42, 0.6)' }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>30-Day Forecast Model</h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 16px 0', lineHeight: 1.45 }}>
                     Day-by-day projected closing balance, deficit markers, and safety buffer audits.
                   </p>
                   <button
@@ -392,37 +395,37 @@ export function ProfileSettings() {
                 </div>
               </div>
 
-              {/* Data Isolation & Sample Controls */}
-              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #E2E8F0' }}>
-                <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: '#172033' }}>
-                  Financial Dataset & Demo Controls
+              {/* Cloud Synchronization & Ledger Controls */}
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border-glass)' }}>
+                <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>
+                  Cloud Synchronization & Ledger Controls
                 </h4>
-                <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 16px 0' }}>
-                  Switch between the hackathon sample dataset with benchmark milestones or start completely fresh with zero records.
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 16px 0', lineHeight: 1.45 }}>
+                  Pull the latest authenticated financial transactions directly from the backend server database, or reset to a completely fresh ledger.
                 </p>
 
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button
                     type="button"
                     className="btn-secondary"
-                    style={{ color: '#635BFF', borderColor: '#C7D2FE' }}
-                    onClick={() => {
-                      resetToDemoData();
-                      showToast('Dataset reset to benchmark demo records.');
+                    style={{ color: 'var(--accent-primary)', borderColor: 'rgba(56, 189, 248, 0.4)', background: 'rgba(56, 189, 248, 0.08)' }}
+                    onClick={async () => {
+                      await refreshData();
+                      showToast('Latest financial records fetched directly from backend database.');
                     }}
                   >
-                    <RotateCcw size={14} />
-                    <span>Reset Sample Demo Data</span>
+                    <RefreshCw size={14} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                    <span>{isSyncing ? 'Syncing...' : 'Sync Live Data'}</span>
                   </button>
 
                   <button
                     type="button"
                     className="btn-secondary"
-                    style={{ color: '#D64545', borderColor: '#FECACA' }}
+                    style={{ color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.08)' }}
                     onClick={() => {
-                      if (window.confirm('Clear all income, expense, and savings entries to start with a blank personal ledger?')) {
+                      if (window.confirm('Clear all income, expense, and savings entries on the server to start with a blank personal ledger?')) {
                         clearUserData();
-                        showToast('All financial records cleared. Fresh start ready.');
+                        showToast('All financial records cleared from backend. Fresh start ready.');
                       }
                     }}
                   >

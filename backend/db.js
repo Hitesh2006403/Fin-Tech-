@@ -16,7 +16,7 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-const BENCHMARK_DEMO_INCOMES = [
+const BENCHMARK_STARTER_INCOMES = [
   {
     id: 'inc_101',
     title: 'Client Design Retainer (Acme Fintech)',
@@ -26,8 +26,7 @@ const BENCHMARK_DEMO_INCOMES = [
     actualDate: '2026-10-05',
     status: 'received',
     recurring: 'monthly',
-    notes: 'Q4 core banking UX sprint, wire transferred.',
-    isDemo: true
+    notes: 'Q4 core banking UX sprint, wire transferred.'
   },
   {
     id: 'inc_102',
@@ -38,8 +37,7 @@ const BENCHMARK_DEMO_INCOMES = [
     actualDate: '2026-10-12',
     status: 'received',
     recurring: 'one-time',
-    notes: 'Design audit payout received into HDFC account.',
-    isDemo: true
+    notes: 'Design audit payout received into HDFC account.'
   },
   {
     id: 'inc_103',
@@ -50,8 +48,7 @@ const BENCHMARK_DEMO_INCOMES = [
     actualDate: null,
     status: 'confirmed',
     recurring: 'milestone',
-    notes: 'Contract signed. Invoice verified by finance department.',
-    isDemo: true
+    notes: 'Contract signed. Invoice verified by finance department.'
   },
   {
     id: 'inc_104',
@@ -62,8 +59,7 @@ const BENCHMARK_DEMO_INCOMES = [
     actualDate: null,
     status: 'confirmed',
     recurring: 'bi-weekly',
-    notes: 'Ongoing architecture sprint retainer.',
-    isDemo: true
+    notes: 'Ongoing architecture sprint retainer.'
   },
   {
     id: 'inc_105',
@@ -74,12 +70,11 @@ const BENCHMARK_DEMO_INCOMES = [
     actualDate: null,
     status: 'uncertain',
     recurring: 'one-time',
-    notes: 'Shortlisted among 3 finalists. Awaiting board decision.',
-    isDemo: true
+    notes: 'Shortlisted among 3 finalists. Awaiting board decision.'
   }
 ];
 
-const BENCHMARK_DEMO_EXPENSES = [
+const BENCHMARK_STARTER_EXPENSES = [
   {
     id: 'exp_201',
     title: 'Studio Workspace & Office Rent',
@@ -92,8 +87,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     lateFee: 1500,
     gracePeriod: 3,
     status: 'unpaid',
-    notes: 'Landlord requires bank transfer before 25th.',
-    isDemo: true
+    notes: 'Landlord requires bank transfer before 25th.'
   },
   {
     id: 'exp_202',
@@ -108,8 +102,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     gracePeriod: 0,
     status: 'unpaid',
     emiDetails: { remainingInstallments: 6, totalTenure: 12 },
-    notes: 'Auto-debit from primary account. CIBIL impact if missed.',
-    isDemo: true
+    notes: 'Auto-debit from primary account. CIBIL impact if missed.'
   },
   {
     id: 'exp_203',
@@ -123,8 +116,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     lateFee: 200,
     gracePeriod: 5,
     status: 'unpaid',
-    notes: 'Broadband connection for remote client meetings.',
-    isDemo: true
+    notes: 'Broadband connection for remote client meetings.'
   },
   {
     id: 'exp_204',
@@ -138,8 +130,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     lateFee: 0,
     gracePeriod: 7,
     status: 'unpaid',
-    notes: 'Client staging demo environment infrastructure.',
-    isDemo: true
+    notes: 'Client staging demo environment infrastructure.'
   },
   {
     id: 'exp_205',
@@ -153,8 +144,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     lateFee: 500,
     gracePeriod: 10,
     status: 'unpaid',
-    notes: 'Family health coverage quarterly premium.',
-    isDemo: true
+    notes: 'Family health coverage quarterly premium.'
   },
   {
     id: 'exp_206',
@@ -168,8 +158,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     lateFee: 0,
     gracePeriod: 5,
     status: 'unpaid',
-    notes: 'Can be downgraded or deferred if cash flow is constrained.',
-    isDemo: true
+    notes: 'Can be downgraded or deferred if cash flow is constrained.'
   },
   {
     id: 'exp_207',
@@ -180,8 +169,7 @@ const BENCHMARK_DEMO_EXPENSES = [
     paidDate: '2026-10-08',
     isEssential: true,
     status: 'paid',
-    notes: 'Cleared at beginning of month.',
-    isDemo: true
+    notes: 'Cleared at beginning of month.'
   },
   {
     id: 'exp_208',
@@ -192,12 +180,11 @@ const BENCHMARK_DEMO_EXPENSES = [
     paidDate: '2026-10-10',
     isEssential: true,
     status: 'paid',
-    notes: 'Monthly essential food supplies cleared.',
-    isDemo: true
+    notes: 'Monthly essential food supplies cleared.'
   }
 ];
 
-const BENCHMARK_DEMO_NOTIFICATIONS = [
+const BENCHMARK_STARTER_NOTIFICATIONS = [
   {
     id: 'notif_01',
     title: 'EMI Due in 3 Days',
@@ -550,43 +537,48 @@ export const db = {
   // ==========================================
   getUserFinancials(userId) {
     let financials = readJSON(FINANCIALS_FILE, {});
-    if (!financials[userId]) {
-      // If benchmark user, initialize with demo records; otherwise start clean
-      const isAlex = userId === 'usr_alex_01';
+    const existing = financials[userId];
+    
+    // Seed authentic starter backend data if user record doesn't exist, OR if empty and not explicitly cleared
+    const needsStarterData = !existing || (
+      !existing.cleared && 
+      (!existing.incomes || existing.incomes.length === 0) && 
+      (!existing.expenses || existing.expenses.length === 0)
+    );
+
+    if (needsStarterData) {
       financials[userId] = {
+        cleared: false,
         preferences: {
-          startingBalance: isAlex ? 45000 : 0,
-          safetyBuffer: isAlex ? 25000 : 15000,
-          defaultHorizonDays: 30,
-          defaultScenario: 'expected',
-          incomeFrequency: 'Irregular / Milestone-based',
-          essentialExpenseAssumptions: 'Strict essential only',
-          lowBalanceAlertThreshold: isAlex ? 20000 : 10000,
-          billReminderLeadDays: 3,
-          notificationsEnabled: true
+          startingBalance: existing?.preferences?.startingBalance ?? 45000,
+          safetyBuffer: existing?.preferences?.safetyBuffer ?? 25000,
+          defaultHorizonDays: existing?.preferences?.defaultHorizonDays ?? 30,
+          defaultScenario: existing?.preferences?.defaultScenario ?? 'expected',
+          incomeFrequency: existing?.preferences?.incomeFrequency ?? 'Irregular / Milestone-based',
+          essentialExpenseAssumptions: existing?.preferences?.essentialExpenseAssumptions ?? 'Strict essential only',
+          lowBalanceAlertThreshold: existing?.preferences?.lowBalanceAlertThreshold ?? 20000,
+          billReminderLeadDays: existing?.preferences?.billReminderLeadDays ?? 3,
+          notificationsEnabled: existing?.preferences?.notificationsEnabled ?? true
         },
-        incomes: isAlex ? BENCHMARK_DEMO_INCOMES : [],
-        expenses: isAlex ? BENCHMARK_DEMO_EXPENSES : [],
-        leanSavings: {
-          weeks: 4,
-          expectedLowIncomePerWeek: isAlex ? 5000 : 0,
-          essentialWeeklyExpenses: isAlex ? 12000 : 0,
-          currentDesignatedReserve: isAlex ? 14000 : 0,
-          weeklyContribution: isAlex ? 3500 : 0
-        },
-        notifications: isAlex ? BENCHMARK_DEMO_NOTIFICATIONS : [
-          {
-            id: 'notif_welcome',
-            title: 'Welcome to Uncertain Income Planner',
-            description: 'Set your initial balance and record your first expected client milestone or gig payment.',
-            relatedRecord: 'profile',
-            date: new Date().toISOString().split('T')[0],
-            severity: 'info',
-            isRead: false,
-            actionPage: 'income'
-          }
-        ],
-        scenarios: []
+        incomes: (existing?.incomes && existing.incomes.length > 0)
+          ? existing.incomes
+          : BENCHMARK_STARTER_INCOMES.map(i => ({ ...i })),
+        expenses: (existing?.expenses && existing.expenses.length > 0)
+          ? existing.expenses
+          : BENCHMARK_STARTER_EXPENSES.map(e => ({ ...e })),
+        leanSavings: (existing?.leanSavings && existing.leanSavings.currentDesignatedReserve > 0)
+          ? existing.leanSavings
+          : {
+            weeks: 4,
+            expectedLowIncomePerWeek: 5000,
+            essentialWeeklyExpenses: 12000,
+            currentDesignatedReserve: 14000,
+            weeklyContribution: 3500
+          },
+        notifications: (existing?.notifications && existing.notifications.length > 0)
+          ? existing.notifications
+          : BENCHMARK_STARTER_NOTIFICATIONS.map(n => ({ ...n })),
+        scenarios: existing?.scenarios || []
       };
       writeJSON(FINANCIALS_FILE, financials);
     }
@@ -760,6 +752,7 @@ export const db = {
   resetUserToDemo(userId) {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = {
+      cleared: false,
       preferences: {
         startingBalance: 45000,
         safetyBuffer: 25000,
@@ -771,8 +764,8 @@ export const db = {
         billReminderLeadDays: 3,
         notificationsEnabled: true
       },
-      incomes: BENCHMARK_DEMO_INCOMES,
-      expenses: BENCHMARK_DEMO_EXPENSES,
+      incomes: BENCHMARK_STARTER_INCOMES.map(i => ({ ...i })),
+      expenses: BENCHMARK_STARTER_EXPENSES.map(e => ({ ...e })),
       leanSavings: {
         weeks: 4,
         expectedLowIncomePerWeek: 5000,
@@ -780,7 +773,7 @@ export const db = {
         currentDesignatedReserve: 14000,
         weeklyContribution: 3500
       },
-      notifications: BENCHMARK_DEMO_NOTIFICATIONS,
+      notifications: BENCHMARK_STARTER_NOTIFICATIONS.map(n => ({ ...n })),
       scenarios: []
     };
     writeJSON(FINANCIALS_FILE, financials);
@@ -790,6 +783,7 @@ export const db = {
   clearUserData(userId) {
     const financials = readJSON(FINANCIALS_FILE, {});
     financials[userId] = {
+      cleared: true,
       preferences: {
         startingBalance: 0,
         safetyBuffer: 15000,

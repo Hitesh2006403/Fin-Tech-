@@ -75,7 +75,7 @@ export function NotificationsPage() {
           <button
             type="button"
             className="btn-secondary"
-            style={{ color: '#D64545' }}
+            style={{ color: '#EF4444' }}
             onClick={clearNotifications}
             disabled={notifications.length === 0}
           >
@@ -87,7 +87,7 @@ export function NotificationsPage() {
 
       {/* Config Drawer (Expandable) */}
       {showConfig && (
-        <div className="card" style={{ marginBottom: 24, background: '#F8FAFC', border: '1px solid #CBD5E1' }}>
+        <div className="card" style={{ marginBottom: 24, background: 'rgba(15, 23, 42, 0.75)', border: '1px solid var(--border-glass)' }}>
           <h3 className="card-title-h3" style={{ marginBottom: 14 }}>Notification Configuration</h3>
           
           <div className="form-grid-2">
@@ -100,7 +100,7 @@ export function NotificationsPage() {
                 value={preferences.lowBalanceAlertThreshold}
                 onChange={(e) => setPreferences({ ...preferences, lowBalanceAlertThreshold: Number(e.target.value) })}
               />
-              <span style={{ fontSize: 11, color: '#64748B' }}>Triggers warning when projected balance falls below this number.</span>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, display: 'block' }}>Triggers warning when projected balance falls below this number.</span>
             </div>
 
             <div className="form-group-item">
@@ -120,7 +120,7 @@ export function NotificationsPage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 20, background: '#F1F5F9', padding: 3, borderRadius: 8, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20, background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', width: 'fit-content' }}>
         {[
           { id: 'all', label: `All Alerts (${notifications.length})` },
           { id: 'unread', label: `Unread (${notifications.filter(n => !n.isRead).length})` },
@@ -130,14 +130,16 @@ export function NotificationsPage() {
             key={tab.id}
             type="button"
             style={{
-              border: 'none',
-              background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
-              color: activeTab === tab.id ? '#635BFF' : '#64748B',
+              border: activeTab === tab.id ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+              background: activeTab === tab.id ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)' : 'transparent',
+              color: activeTab === tab.id ? '#FFFFFF' : 'var(--text-secondary)',
               fontWeight: activeTab === tab.id ? 700 : 500,
               fontSize: 12.5,
               padding: '6px 14px',
-              borderRadius: 6,
-              cursor: 'pointer'
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              boxShadow: activeTab === tab.id ? '0 0 12px rgba(56, 189, 248, 0.2)' : 'none'
             }}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -149,10 +151,10 @@ export function NotificationsPage() {
       {/* Notification List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filteredNotifications.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: 48, color: '#98A2B3' }}>
-            <CheckCircle2 size={36} color="#159A72" style={{ margin: '0 auto 12px auto' }} />
-            <h4 style={{ fontSize: 16, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>All Caught Up</h4>
-            <p style={{ fontSize: 13, color: '#64748B', margin: 0 }}>No notifications in this filter category.</p>
+          <div className="card" style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
+            <CheckCircle2 size={36} color="#10B981" style={{ margin: '0 auto 12px auto' }} />
+            <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px 0' }}>All Caught Up</h4>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>No notifications in this filter category.</p>
           </div>
         ) : (
           filteredNotifications.map(notif => {
@@ -167,9 +169,10 @@ export function NotificationsPage() {
                   alignItems: 'flex-start',
                   justifyContent: 'space-between',
                   gap: 16,
-                  background: notif.isRead ? '#FFFFFF' : '#FAFAFC',
+                  background: notif.isRead ? 'rgba(15, 23, 42, 0.55)' : 'rgba(23, 37, 84, 0.35)',
                   borderLeftWidth: 4,
-                  borderLeftColor: isCritical ? '#D64545' : '#635BFF',
+                  borderLeftColor: isCritical ? '#EF4444' : 'var(--accent-primary)',
+                  boxShadow: notif.isRead ? 'var(--shadow-sm)' : '0 8px 24px -4px rgba(56, 189, 248, 0.15)',
                   cursor: 'pointer'
                 }}
                 onClick={() => handleNotificationClick(notif)}
@@ -177,11 +180,12 @@ export function NotificationsPage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                   <div
                     style={{
-                      width: 36,
-                      height: 36,
+                      width: 38,
+                      height: 38,
                       borderRadius: 10,
-                      background: isCritical ? '#FEF2F2' : '#F0EFFF',
-                      color: isCritical ? '#D64545' : '#635BFF',
+                      background: isCritical ? 'rgba(239, 68, 68, 0.15)' : 'rgba(56, 189, 248, 0.15)',
+                      color: isCritical ? '#EF4444' : 'var(--accent-primary)',
+                      border: `1px solid ${isCritical ? 'rgba(239, 68, 68, 0.3)' : 'rgba(56, 189, 248, 0.3)'}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -193,24 +197,24 @@ export function NotificationsPage() {
 
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <h4 style={{ fontSize: 14.5, fontWeight: notif.isRead ? 600 : 700, color: '#172033', margin: 0 }}>
+                      <h4 style={{ fontSize: 14.5, fontWeight: notif.isRead ? 600 : 700, color: 'var(--text-primary)', margin: 0 }}>
                         {notif.title}
                       </h4>
                       {!notif.isRead && (
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#635BFF' }} />
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 6px var(--accent-primary)' }} />
                       )}
                     </div>
-                    <p style={{ fontSize: 13, color: '#475569', margin: '0 0 6px 0', lineHeight: 1.45 }}>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 6px 0', lineHeight: 1.45 }}>
                       {notif.description}
                     </p>
-                    <span style={{ fontSize: 11, color: '#98A2B3' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                       {notif.date}
                     </span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#635BFF', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span>Resolve</span>
                     <ArrowRight size={13} />
                   </span>

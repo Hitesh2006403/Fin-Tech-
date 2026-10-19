@@ -17,6 +17,8 @@ import { NotificationsPage } from './pages/NotificationsPage.jsx';
 import { ProfileSettings } from './pages/ProfileSettings.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 
+import { Background3D } from './components/common/Background3D.jsx';
+
 import './App.css';
 
 function MainAppShell() {
@@ -25,10 +27,11 @@ function MainAppShell() {
   // Session check in progress
   if (authLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F8FC' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 36, height: 36, border: '3px solid #E2E8F0', borderTopColor: '#635BFF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <div style={{ fontSize: 13.5, color: '#64748B', fontWeight: 500 }}>Verifying secure session...</div>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B1220', position: 'relative' }}>
+        <Background3D />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+          <div style={{ width: 38, height: 38, border: '3px solid rgba(56, 189, 248, 0.2)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'spin 0.8s linear infinite', boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)' }} />
+          <div style={{ fontSize: 13.5, color: '#94A3B8', fontWeight: 500 }}>Verifying secure session...</div>
         </div>
       </div>
     );
@@ -74,6 +77,9 @@ function MainAppShell() {
 
   return (
     <div className="app-shell">
+      {/* 0. Elegant 3D Animated Background */}
+      <Background3D />
+
       {/* 1. Left Collapsible Sidebar */}
       <Sidebar />
 

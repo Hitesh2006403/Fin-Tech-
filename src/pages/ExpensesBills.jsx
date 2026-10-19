@@ -98,52 +98,52 @@ export function ExpensesBills() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         <div className="card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Unpaid</span>
-            <Receipt size={16} color="#635BFF" />
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Unpaid</span>
+            <Receipt size={16} color="var(--accent-primary)" />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#172033', fontFeatureSettings: 'tnum' }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', fontFeatureSettings: 'tnum' }}>
             {formatINR(totalUnpaid)}
           </div>
-          <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 4 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 4 }}>
             {unpaidBills.length} active bills scheduled
           </div>
         </div>
 
         <div className="card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Due in 7 Days</span>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D99116' }}></span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Due in 7 Days</span>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px rgba(245, 158, 11, 0.7)' }}></span>
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#D99116', fontFeatureSettings: 'tnum' }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#F59E0B', fontFeatureSettings: 'tnum', textShadow: '0 0 14px rgba(245, 158, 11, 0.35)' }}>
             {formatINR(totalDue7Days)}
           </div>
-          <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 4 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 4 }}>
             {due7Days.length} urgent upcoming commitments
           </div>
         </div>
 
-        <div className="card" style={{ padding: '18px 20px', borderColor: overdueBills.length > 0 ? '#FECACA' : '#E7EAF2' }}>
+        <div className="card" style={{ padding: '18px 20px', borderColor: overdueBills.length > 0 ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-glass)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase' }}>Overdue Bills</span>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D64545' }}></span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: overdueBills.length > 0 ? '#FCA5A5' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Overdue Bills</span>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', boxShadow: '0 0 8px rgba(239, 68, 68, 0.7)' }}></span>
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#D64545', fontFeatureSettings: 'tnum' }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#EF4444', fontFeatureSettings: 'tnum', textShadow: '0 0 14px rgba(239, 68, 68, 0.4)' }}>
             {formatINR(totalOverdue)}
           </div>
-          <div style={{ fontSize: 11.5, color: '#B91C1C', marginTop: 4 }}>
+          <div style={{ fontSize: 11.5, color: overdueBills.length > 0 ? '#FCA5A5' : 'var(--text-secondary)', marginTop: 4 }}>
             {overdueBills.length > 0 ? `${overdueBills.length} past due (penalty risk)` : 'Zero overdue payments'}
           </div>
         </div>
 
         <div className="card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Essential Commitments</span>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#635BFF' }}></span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Essential Commitments</span>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-secondary)', boxShadow: '0 0 8px rgba(167, 139, 250, 0.7)' }}></span>
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#635BFF', fontFeatureSettings: 'tnum' }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--accent-secondary)', fontFeatureSettings: 'tnum', textShadow: '0 0 14px rgba(167, 139, 250, 0.35)' }}>
             {formatINR(totalEssentialUnpaid)}
           </div>
-          <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 4 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 4 }}>
             Housing, EMI & utilities protected
           </div>
         </div>
@@ -180,7 +180,7 @@ export function ExpensesBills() {
           </select>
 
           {/* Status Tabs */}
-          <div style={{ display: 'flex', background: '#F1F5F9', padding: 3, borderRadius: 8 }}>
+          <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
             {[
               { id: 'unpaid', label: 'Unpaid' },
               { id: 'overdue', label: 'Overdue' },
@@ -191,14 +191,16 @@ export function ExpensesBills() {
                 key={tab.id}
                 type="button"
                 style={{
-                  border: 'none',
-                  background: statusFilter === tab.id ? '#FFFFFF' : 'transparent',
-                  color: statusFilter === tab.id ? '#635BFF' : '#64748B',
+                  border: statusFilter === tab.id ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid transparent',
+                  background: statusFilter === tab.id ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)' : 'transparent',
+                  color: statusFilter === tab.id ? '#FFFFFF' : 'var(--text-secondary)',
                   fontWeight: statusFilter === tab.id ? 700 : 500,
                   fontSize: 12.5,
-                  padding: '6px 12px',
-                  borderRadius: 6,
-                  cursor: 'pointer'
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: statusFilter === tab.id ? '0 0 12px rgba(56, 189, 248, 0.2)' : 'none'
                 }}
                 onClick={() => setStatusFilter(tab.id)}
               >
@@ -228,7 +230,7 @@ export function ExpensesBills() {
             <tbody>
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#98A2B3' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
                     No expense records found matching your filters.
                   </td>
                 </tr>
@@ -238,34 +240,31 @@ export function ExpensesBills() {
                   return (
                     <tr key={exp.id}>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#172033', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span>{exp.title}</span>
-                          {exp.isDemo && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#635BFF', background: '#F0EFFF', padding: '1px 5px', borderRadius: 4 }}>DEMO</span>
-                          )}
                         </div>
                         {exp.emiDetails && (
-                          <div style={{ fontSize: 11.5, color: '#635BFF', fontWeight: 600, marginTop: 2 }}>
+                          <div style={{ fontSize: 11.5, color: 'var(--accent-primary)', fontWeight: 600, marginTop: 2 }}>
                             EMI: {exp.emiDetails.remainingInstallments} installments remaining
                           </div>
                         )}
                         {exp.notes && (
-                          <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 2 }}>{exp.notes}</div>
+                          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2 }}>{exp.notes}</div>
                         )}
                       </td>
 
-                      <td style={{ color: '#475569', fontSize: 13 }}>{exp.category}</td>
+                      <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{exp.category}</td>
 
-                      <td className="num-val" style={{ color: '#172033', fontSize: 14 }}>
+                      <td className="num-val" style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
                         {formatINR(exp.amount)}
                       </td>
 
                       <td style={{ fontSize: 13 }}>
-                        <span style={{ color: isOverdue ? '#D64545' : '#475569', fontWeight: isOverdue ? 700 : 500 }}>
+                        <span style={{ color: isOverdue ? '#EF4444' : 'var(--text-secondary)', fontWeight: isOverdue ? 700 : 500, textShadow: isOverdue ? '0 0 8px rgba(239, 68, 68, 0.4)' : 'none' }}>
                           {exp.dueDate}
                         </span>
                         {isOverdue && (
-                          <div style={{ fontSize: 11, color: '#D64545', fontWeight: 600 }}>Past Due</div>
+                          <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 600 }}>Past Due</div>
                         )}
                       </td>
 
@@ -281,16 +280,16 @@ export function ExpensesBills() {
                         )}
                       </td>
 
-                      <td style={{ fontSize: 12, color: '#64748B' }}>
+                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                         {exp.lateFee > 0 ? (
-                          <span style={{ color: '#D64545', fontWeight: 600 }}>
+                          <span style={{ color: '#EF4444', fontWeight: 600 }}>
                             ₹{formatINR(exp.lateFee)} penalty
                           </span>
                         ) : (
-                          <span>No penalty</span>
+                          <span style={{ color: 'var(--text-muted)' }}>No penalty</span>
                         )}
                         {exp.gracePeriod > 0 && (
-                          <div>{exp.gracePeriod}d grace</div>
+                          <div style={{ color: 'var(--text-secondary)' }}>{exp.gracePeriod}d grace</div>
                         )}
                       </td>
 
@@ -319,7 +318,7 @@ export function ExpensesBills() {
                             <button
                               type="button"
                               className="btn-secondary"
-                              style={{ fontSize: 11.5, padding: '4px 8px', color: '#159A72', borderColor: '#A7F3D0' }}
+                              style={{ fontSize: 11.5, padding: '5px 10px', color: '#10B981', borderColor: 'rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.1)' }}
                               title="Record payment of this bill"
                               onClick={() => setPayModalExpense(exp)}
                             >
@@ -331,7 +330,7 @@ export function ExpensesBills() {
                           <button
                             type="button"
                             className="btn-secondary"
-                            style={{ fontSize: 11.5, padding: '5px 8px' }}
+                            style={{ fontSize: 11.5, padding: '6px 9px' }}
                             onClick={() => setEditingExpense(exp)}
                             title="Edit bill"
                           >
@@ -341,7 +340,7 @@ export function ExpensesBills() {
                           <button
                             type="button"
                             className="btn-secondary"
-                            style={{ fontSize: 11.5, padding: '5px 8px', color: '#D64545' }}
+                            style={{ fontSize: 11.5, padding: '6px 9px', color: '#EF4444' }}
                             onClick={() => setDeleteConfirmId(exp.id)}
                             title="Delete bill"
                           >
@@ -363,11 +362,11 @@ export function ExpensesBills() {
         <div className="modal-backdrop" onClick={() => setPayModalExpense(null)}>
           <div className="modal-content-card" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-bar">
-              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#159A72' }}>Record Bill Payment</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#10B981' }}>Record Bill Payment</h3>
             </div>
             <div className="modal-body-area">
-              <p style={{ fontSize: 13.5, color: '#475569', marginBottom: 16 }}>
-                Record payment of <strong>{formatINR(payModalExpense.amount)}</strong> for <strong>{payModalExpense.title}</strong>. This will deduct the payment from your live available cash balance exactly once.
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Record payment of <strong style={{ color: 'var(--text-primary)' }}>{formatINR(payModalExpense.amount)}</strong> for <strong style={{ color: 'var(--text-primary)' }}>{payModalExpense.title}</strong>. This will deduct the payment from your live available cash balance exactly once.
               </p>
 
               <div className="form-group-item">
@@ -384,7 +383,7 @@ export function ExpensesBills() {
               <button type="button" className="btn-secondary" onClick={() => setPayModalExpense(null)}>
                 Cancel
               </button>
-              <button type="button" className="btn-primary" style={{ background: '#159A72' }} onClick={handleConfirmPay}>
+              <button type="button" className="btn-primary" style={{ background: '#10B981', border: '1px solid rgba(16, 185, 129, 0.5)', boxShadow: '0 0 16px rgba(16, 185, 129, 0.3)' }} onClick={handleConfirmPay}>
                 Confirm Paid
               </button>
             </div>
@@ -397,10 +396,10 @@ export function ExpensesBills() {
         <div className="modal-backdrop" onClick={() => setDeleteConfirmId(null)}>
           <div className="modal-content-card" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-bar">
-              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#B91C1C' }}>Delete Bill</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#EF4444' }}>Delete Bill</h3>
             </div>
             <div className="modal-body-area">
-              <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
                 Are you sure you want to remove this bill? This will adjust your upcoming obligation forecast.
               </p>
             </div>

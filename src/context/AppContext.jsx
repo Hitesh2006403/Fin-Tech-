@@ -60,10 +60,10 @@ export function AppProvider({ children }) {
     }
   });
 
-  // Active navigation route: 'dashboard' | 'income' | 'expenses' | 'safe-to-spend' | 'forecast' | 'simulator' | 'prioritization' | 'savings' | 'notifications' | 'settings'
   const [activeRoute, setActiveRoute] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickAddModalOpen, setQuickAddModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Check HttpOnly session on initial load from backend
   useEffect(() => {
@@ -342,25 +342,30 @@ export function AppProvider({ children }) {
     });
   };
 
-  // User & Reset Actions
-  const resetToDemoData = async () => {
-    storageService.resetAll();
+  // Live Cloud Synchronization: Directly pulls user financial dataset from backend REST API
+  const refreshData = async () => {
+    if (!user?.id) return;
+    setIsSyncing(true);
     try {
-      const demoData = await apiService.resetToDemo(user?.id);
-      if (demoData) {
-        if (demoData.preferences) setPreferencesState(demoData.preferences);
-        if (demoData.incomes) setIncomes(demoData.incomes);
-        if (demoData.expenses) setExpenses(demoData.expenses);
-        if (demoData.savingsGoals) setLeanSavings(demoData.savingsGoals);
-        if (demoData.notifications) setNotifications(demoData.notifications);
+      const data = await apiService.getFinancials(user.id);
+      if (data) {
+        if (data.preferences) setPreferencesState(data.preferences);
+        if (data.incomes) setIncomes(data.incomes);
+        if (data.expenses) setExpenses(data.expenses);
+        if (data.savingsGoals) setLeanSavings(data.savingsGoals);
+        if (data.notifications) setNotifications(data.notifications);
       }
-    } catch {
-      setPreferencesState(INITIAL_PREFERENCES);
-      setIncomes(INITIAL_INCOMES);
-      setExpenses(INITIAL_EXPENSES);
-      setLeanSavings(INITIAL_LEAN_SAVINGS);
-      setNotifications(INITIAL_NOTIFICATIONS);
+      return data;
+    } catch (err) {
+      console.warn('Live backend sync error:', err);
+    } finally {
+      setIsSyncing(false);
     }
+  };
+
+  // Backwards compatibility alias for reset/sync
+  const resetToDemoData = async () => {
+    await refreshData();
     setDismissedAlertIds([]);
     try {
       localStorage.removeItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
@@ -509,6 +514,8 @@ export function AppProvider({ children }) {
         dismissAlert,
 
         resetToDemoData,
+        refreshData,
+        isSyncing,
         clearUserData,
         loginWithGoogle,
         linkGoogleAccount,

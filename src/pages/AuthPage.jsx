@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Check
 } from 'lucide-react';
+import { Background3D } from '../components/common/Background3D.jsx';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 
@@ -274,46 +275,51 @@ export function AuthPage({ initialMode = 'login' }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#F7F8FC' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#0B1220', position: 'relative', overflow: 'hidden' }}>
+      {/* Background 3D Animated Scene */}
+      <Background3D />
       
-      {/* Left Showcase Panel (Fintech Hackathon Presentation Quality) */}
+      {/* Left Showcase Panel */}
       <div
         style={{
           flex: 1.15,
-          background: 'radial-gradient(circle at 15% 15%, #131b31 0%, #0c1222 50%, #070a14 100%)',
+          background: 'radial-gradient(circle at 15% 15%, rgba(19, 27, 49, 0.75) 0%, rgba(12, 18, 34, 0.85) 50%, rgba(7, 10, 20, 0.95) 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           padding: '60px 64px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          color: '#FFFFFF',
+          color: '#F8FAFC',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          zIndex: 1
         }}
       >
         {/* Glow & Curve background */}
-        <div style={{ position: 'absolute', top: -100, left: -100, width: 450, height: 450, background: 'radial-gradient(circle, rgba(99, 91, 255, 0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -100, left: -100, width: 450, height: 450, background: 'radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Brand Header */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #635BFF 0%, #4338CA 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(99, 91, 255, 0.4)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #38BDF8 0%, #6366F1 50%, #A78BFA 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(56, 189, 248, 0.45)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B1220" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                 <polyline points="16 7 22 7 22 13" />
               </svg>
             </div>
-            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.4 }}>FinSight</span>
-            <span style={{ background: 'rgba(99, 91, 255, 0.18)', border: '1px solid rgba(129, 140, 248, 0.35)', color: '#A5B4FC', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, padding: '3px 8px', borderRadius: 6 }}>
+            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.4, color: '#F8FAFC' }}>FinSight</span>
+            <span style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38BDF8', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.8, padding: '3px 8px', borderRadius: 6, boxShadow: '0 0 10px rgba(56, 189, 248, 0.15)' }}>
               UNCERTAIN INCOME PLANNER
             </span>
           </div>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(99, 91, 255, 0.14)', border: '1px solid rgba(99, 91, 255, 0.28)', borderRadius: 20, padding: '6px 14px', color: '#A5B4FC', fontSize: 12.5, fontWeight: 600, marginBottom: 20 }}>
-            <Sparkles size={14} color="#818CF8" />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: 20, padding: '6px 14px', color: '#38BDF8', fontSize: 12.5, fontWeight: 600, marginBottom: 20 }}>
+            <Sparkles size={14} color="#38BDF8" />
             <span>Built for Freelancers, Creators & Milestone Professionals</span>
           </div>
 
-          <h1 style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.18, letterSpacing: -0.8, marginBottom: 18, maxWidth: 520 }}>
+          <h1 style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.16, letterSpacing: -0.8, marginBottom: 18, maxWidth: 520, color: '#F8FAFC' }}>
             Make smarter decisions with irregular money.
           </h1>
 
@@ -323,22 +329,22 @@ export function AuthPage({ initialMode = 'login' }) {
 
           {/* Feature Highlights */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 480 }}>
-            <div style={{ background: 'rgba(15, 23, 42, 0.55)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(99, 91, 255, 0.16)', color: '#818CF8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(16px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(56, 189, 248, 0.14)', color: '#38BDF8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(56, 189, 248, 0.25)', boxShadow: '0 0 12px rgba(56, 189, 248, 0.15)' }}>
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>True Safe-to-Spend Engine</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: '#F8FAFC' }}>True Safe-to-Spend Engine</div>
                 <div style={{ fontSize: 12, color: '#94A3B8' }}>Separates actual bank cash from unreceived promises.</div>
               </div>
             </div>
 
-            <div style={{ background: 'rgba(15, 23, 42, 0.55)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(217, 145, 22, 0.16)', color: '#FBBF24', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(16px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(245, 158, 11, 0.14)', color: '#FBBF24', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(245, 158, 11, 0.25)', boxShadow: '0 0 12px rgba(245, 158, 11, 0.15)' }}>
                 <Sliders size={18} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>Payment Delay Stress-Tester</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: '#F8FAFC' }}>Payment Delay Stress-Tester</div>
                 <div style={{ fontSize: 12, color: '#94A3B8' }}>Simulate 10–30 day invoice delays before they trigger panic.</div>
               </div>
             </div>
@@ -346,7 +352,7 @@ export function AuthPage({ initialMode = 'login' }) {
         </div>
 
         {/* Footer */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: 20, fontSize: 12, color: '#64748B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: 20, fontSize: 12, color: '#94A3B8' }}>
           <span>Indian Currency Architecture (₹ INR)</span>
           <span>Google OAuth 2.0 & SOC-2 Verified</span>
         </div>
@@ -356,13 +362,17 @@ export function AuthPage({ initialMode = 'login' }) {
       <div
         style={{
           flex: 0.95,
-          background: '#FFFFFF',
+          background: 'rgba(11, 18, 32, 0.82)',
+          backdropFilter: 'blur(32px)',
+          WebkitBackdropFilter: 'blur(32px)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           padding: '40px',
-          position: 'relative'
+          position: 'relative',
+          zIndex: 1
         }}
       >
         <div style={{ width: '100%', maxWidth: 440 }}>
@@ -371,8 +381,8 @@ export function AuthPage({ initialMode = 'login' }) {
           {authError && (
             <div
               style={{
-                background: '#FEF2F2',
-                border: '1px solid #FCA5A5',
+                background: 'rgba(239, 68, 68, 0.14)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
                 borderRadius: '8px',
                 padding: '12px 14px',
                 marginBottom: '18px',
@@ -380,7 +390,8 @@ export function AuthPage({ initialMode = 'login' }) {
                 alignItems: 'flex-start',
                 gap: '10px',
                 fontSize: '13px',
-                color: '#991B1B'
+                color: '#FCA5A5',
+                backdropFilter: 'blur(8px)'
               }}
             >
               <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -388,7 +399,7 @@ export function AuthPage({ initialMode = 'login' }) {
               <button
                 type="button"
                 onClick={() => setAuthError(null)}
-                style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontWeight: 700 }}
+                style={{ background: 'none', border: 'none', color: '#FCA5A5', cursor: 'pointer', fontWeight: 700 }}
               >
                 ×
               </button>
@@ -398,8 +409,8 @@ export function AuthPage({ initialMode = 'login' }) {
           {authNotice && (
             <div
               style={{
-                background: '#ECFDF5',
-                border: '1px solid #A7F3D0',
+                background: 'rgba(16, 185, 129, 0.14)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
                 borderRadius: '8px',
                 padding: '12px 14px',
                 marginBottom: '18px',
@@ -407,7 +418,8 @@ export function AuthPage({ initialMode = 'login' }) {
                 alignItems: 'center',
                 gap: '10px',
                 fontSize: '13px',
-                color: '#065F46'
+                color: '#6EE7B7',
+                backdropFilter: 'blur(8px)'
               }}
             >
               <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
@@ -419,7 +431,7 @@ export function AuthPage({ initialMode = 'login' }) {
           {mode === 'login' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: 0 }}>
+                <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: 0, letterSpacing: -0.3 }}>
                   Welcome back
                 </h2>
                 <button
@@ -428,14 +440,16 @@ export function AuthPage({ initialMode = 'login' }) {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 5,
-                    background: '#F5F3FF',
-                    border: '1px solid #E0E7FF',
-                    color: '#635BFF',
+                    background: 'rgba(56, 189, 248, 0.12)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    color: '#38BDF8',
                     fontSize: 11.5,
                     fontWeight: 600,
                     padding: '4px 10px',
                     borderRadius: 6,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    boxShadow: '0 0 10px rgba(56, 189, 248, 0.15)',
+                    transition: 'all 0.15s ease'
                   }}
                   onClick={() => {
                     setEmail('alex@example.com');
@@ -448,13 +462,13 @@ export function AuthPage({ initialMode = 'login' }) {
                 </button>
               </div>
 
-              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 20px 0' }}>
+              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 20px 0' }}>
                 Sign in to continue to your financial dashboard.
               </p>
 
               {/* Google SSO Button Container (Preserves exact design + Real GIS Account Chooser) */}
               <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
-                {/* Visual presentation exactly matches existing design */}
+                {/* Visual presentation matching 3D dark glass theme */}
                 <button
                   type="button"
                   className="btn-google-sso"
@@ -462,23 +476,25 @@ export function AuthPage({ initialMode = 'login' }) {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
+                    background: 'rgba(15, 23, 42, 0.85)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.22)',
                     borderRadius: '10px',
-                    padding: '10px 16px',
+                    padding: '11px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
                     cursor: loading ? 'wait' : 'pointer',
                     transition: 'all 0.2s ease',
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
-                    opacity: loading ? 0.7 : 1
+                    boxShadow: '0 4px 18px rgba(0, 0, 0, 0.35)',
+                    opacity: loading ? 0.7 : 1,
+                    backdropFilter: 'blur(10px)'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {loading ? (
-                      <RefreshCw size={18} className="spin" color="#635BFF" />
+                      <RefreshCw size={18} className="spin" color="#38BDF8" />
                     ) : (
                       <svg width="18" height="18" viewBox="0 0 24 24">
                         <path
@@ -499,7 +515,7 @@ export function AuthPage({ initialMode = 'login' }) {
                         />
                       </svg>
                     )}
-                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#1E293B' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#F8FAFC' }}>
                       {loading ? 'Authenticating with Google...' : 'Continue with Google'}
                     </span>
                   </div>
@@ -529,16 +545,16 @@ export function AuthPage({ initialMode = 'login' }) {
 
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '12px' }}>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
-                <span style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.9px', color: '#94A3B8', textTransform: 'uppercase' }}>
+                <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }} />
+                <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1px', color: '#94A3B8', textTransform: 'uppercase' }}>
                   OR CONTINUE WITH EMAIL
                 </span>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
+                <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }} />
               </div>
 
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group-item">
-                  <label className="form-label-title">Email Address</label>
+                  <label className="form-label-title" style={{ color: '#F8FAFC' }}>Email Address</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type="email"
@@ -554,10 +570,10 @@ export function AuthPage({ initialMode = 'login' }) {
 
                 <div className="form-group-item">
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <label className="form-label-title" style={{ margin: 0 }}>Password</label>
+                    <label className="form-label-title" style={{ margin: 0, color: '#F8FAFC' }}>Password</label>
                     <a
                       href="#forgot"
-                      style={{ fontSize: 12, color: '#635BFF', textDecoration: 'none', fontWeight: 600 }}
+                      style={{ fontSize: 12, color: '#38BDF8', textDecoration: 'none', fontWeight: 600 }}
                       onClick={(e) => { e.preventDefault(); setMode('forgot'); }}
                     >
                       Forgot password?
@@ -585,8 +601,8 @@ export function AuthPage({ initialMode = 'login' }) {
 
                 {/* Remember this device */}
                 <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0 20px 0' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 13, color: '#334155', fontWeight: 500 }}>
-                    <input type="checkbox" defaultChecked style={{ accentColor: '#EA580C', width: 16, height: 16, borderRadius: 4 }} />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                    <input type="checkbox" defaultChecked style={{ accentColor: '#38BDF8', width: 16, height: 16, borderRadius: 4 }} />
                     <span>Remember this device</span>
                   </label>
                 </div>
@@ -608,11 +624,11 @@ export function AuthPage({ initialMode = 'login' }) {
                 </button>
               </form>
 
-              <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#667085' }}>
+              <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#94A3B8' }}>
                 Don't have an account?{' '}
                 <a
                   href="#register"
-                  style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                  style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
                   onClick={(e) => { e.preventDefault(); setMode('register'); }}
                 >
                   Create account
@@ -624,10 +640,10 @@ export function AuthPage({ initialMode = 'login' }) {
           {/* Mode 2: Register */}
           {mode === 'register' && (
             <div>
-              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Create Your Account
               </h2>
-              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 22px 0' }}>
+              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 22px 0' }}>
                 Set up your uncertain income workspace in 60 seconds.
               </p>
 
@@ -635,7 +651,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 {/* 1. Personal Information Section */}
                 <div style={{ marginBottom: 16 }}>
                   <div className="form-group-item">
-                    <label className="form-label-title">Full Name</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Full Name</label>
                     <input
                       type="text"
                       className="form-input-control"
@@ -648,7 +664,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   </div>
 
                   <div className="form-group-item">
-                    <label className="form-label-title">Email Address</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Email Address</label>
                     <input
                       type="email"
                       className="form-input-control"
@@ -665,7 +681,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 <div style={{ marginBottom: 12 }}>
                   <div className="form-group-item">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <label className="form-label-title" style={{ margin: 0 }}>Create Password</label>
+                      <label className="form-label-title" style={{ margin: 0, color: '#F8FAFC' }}>Create Password</label>
                       {password && (
                         <span style={{ fontSize: 11.5, fontWeight: 600, color: passwordStrength.color }}>
                           {passwordStrength.label}
@@ -713,7 +729,7 @@ export function AuthPage({ initialMode = 'login' }) {
                               flex: 1,
                               height: 3,
                               borderRadius: 2,
-                              background: passwordStrength.score >= step ? passwordStrength.color : '#E2E8F0',
+                              background: passwordStrength.score >= step ? passwordStrength.color : 'rgba(255, 255, 255, 0.1)',
                               transition: 'background 0.2s ease'
                             }}
                           />
@@ -725,7 +741,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   {/* Confirm Password Field */}
                   <div className="form-group-item">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <label className="form-label-title" style={{ margin: 0 }}>Confirm Password</label>
+                      <label className="form-label-title" style={{ margin: 0, color: '#F8FAFC' }}>Confirm Password</label>
                       {confirmPassword && (
                         <span style={{
                           fontSize: 11.5,
@@ -758,7 +774,7 @@ export function AuthPage({ initialMode = 'login' }) {
                         style={{
                           letterSpacing: showConfirmPassword ? 'normal' : '1.5px',
                           paddingRight: 40,
-                          borderColor: passwordMismatch ? '#FCA5A5' : (passwordsMatch ? '#86EFAC' : undefined)
+                          borderColor: passwordMismatch ? 'rgba(239, 68, 68, 0.5)' : (passwordsMatch ? 'rgba(16, 185, 129, 0.5)' : undefined)
                         }}
                       />
                       <button
@@ -784,16 +800,16 @@ export function AuthPage({ initialMode = 'login' }) {
                 </div>
 
                 {/* Terms & Conditions Agreement */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0 18px 0', fontSize: 12.5, color: '#475569' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0 18px 0', fontSize: 12.5, color: '#94A3B8' }}>
                   <input
                     type="checkbox"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    style={{ accentColor: '#635BFF', width: 16, height: 16, borderRadius: 4, cursor: 'pointer' }}
+                    style={{ accentColor: '#38BDF8', width: 16, height: 16, borderRadius: 4, cursor: 'pointer' }}
                     id="agreeTerms"
                   />
                   <label htmlFor="agreeTerms" style={{ cursor: 'pointer', userSelect: 'none' }}>
-                    I agree to the <span style={{ color: '#635BFF', fontWeight: 600 }}>Terms of Service</span> & <span style={{ color: '#635BFF', fontWeight: 600 }}>Privacy Policy</span>
+                    I agree to the <span style={{ color: '#38BDF8', fontWeight: 600 }}>Terms of Service</span> & <span style={{ color: '#38BDF8', fontWeight: 600 }}>Privacy Policy</span>
                   </label>
                 </div>
 
@@ -806,9 +822,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     width: '100%',
                     justifyContent: 'center',
                     padding: '12.5px',
-                    fontSize: 14.5,
-                    background: 'linear-gradient(135deg, #635BFF 0%, #4F46E5 100%)',
-                    boxShadow: '0 4px 14px rgba(99, 91, 255, 0.28)'
+                    fontSize: 14.5
                   }}
                 >
                   {loading ? (
@@ -823,22 +837,22 @@ export function AuthPage({ initialMode = 'login' }) {
               </form>
 
               {/* 6. Footer Navigation Links */}
-              <div style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: '#667085', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: '#94A3B8', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div>
                   Already registered?{' '}
                   <a
                     href="#login"
-                    style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                    style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
                     onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('login'); }}
                   >
                     Sign in
                   </a>
                 </div>
-                <div style={{ fontSize: 12, color: '#94A3B8' }}>
+                <div style={{ fontSize: 12, color: '#64748B' }}>
                   Trouble logging in?{' '}
                   <a
                     href="#forgot"
-                    style={{ color: '#635BFF', fontWeight: 500, textDecoration: 'none' }}
+                    style={{ color: '#38BDF8', fontWeight: 500, textDecoration: 'none' }}
                     onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('forgot'); }}
                   >
                     Forgot password
@@ -851,32 +865,32 @@ export function AuthPage({ initialMode = 'login' }) {
           {/* Mode: Account Linking Modal (Requirement 8) */}
           {mode === 'link_account' && (
             <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#4338CA', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38BDF8', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
                 <Link2 size={14} />
                 <span>Account Linking Required</span>
               </div>
 
-              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#172033', margin: '0 0 6px 0' }}>
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0' }}>
                 Link Google Account
               </h2>
-              <p style={{ fontSize: 13.5, color: '#667085', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 13.5, color: '#94A3B8', margin: '0 0 20px 0', lineHeight: 1.5 }}>
                 An existing account with <strong>{conflictData?.email}</strong> already exists. To securely connect your Google credentials and prevent unauthorized access, please confirm your account password.
               </p>
 
               <form onSubmit={handleAccountLinkSubmit}>
                 <div className="form-group-item">
-                  <label className="form-label-title">Account Email</label>
+                  <label className="form-label-title" style={{ color: '#F8FAFC' }}>Account Email</label>
                   <input
                     type="email"
                     className="form-input-control"
                     value={conflictData?.email || ''}
                     disabled
-                    style={{ background: '#F8FAFC', cursor: 'not-allowed' }}
+                    style={{ background: 'rgba(15, 23, 42, 0.5)', cursor: 'not-allowed', color: '#94A3B8' }}
                   />
                 </div>
 
                 <div className="form-group-item">
-                  <label className="form-label-title">Existing Account Password</label>
+                  <label className="form-label-title" style={{ color: '#F8FAFC' }}>Existing Account Password</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type={showLinkPassword ? 'text' : 'password'}
@@ -916,7 +930,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                 <button
                   type="button"
-                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', color: '#667085', fontSize: 12.5, marginTop: 14, cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', color: '#94A3B8', fontSize: 12.5, marginTop: 14, cursor: 'pointer' }}
                   onClick={() => {
                     setMode('login');
                     setConflictData(null);
@@ -932,22 +946,22 @@ export function AuthPage({ initialMode = 'login' }) {
           {/* Mode 3: Forgot Password */}
           {mode === 'forgot' && (
             <div>
-              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#172033', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Reset Password
               </h2>
-              <p style={{ fontSize: 14, color: '#667085', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 24px 0', lineHeight: 1.5 }}>
                 Enter your account email and we'll send you an instant link to recover your access.
               </p>
 
               {forgotSubmitted ? (
-                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '24px 20px', borderRadius: 12, textAlign: 'center' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '24px 20px', borderRadius: 12, textAlign: 'center', backdropFilter: 'blur(12px)' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.2)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
                     <CheckCircle2 size={24} />
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#166534', margin: '0 0 6px 0' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0' }}>
                     Recovery Link Dispatched
                   </h3>
-                  <p style={{ fontSize: 13, color: '#475569', margin: '0 0 18px 0', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 13, color: '#94A3B8', margin: '0 0 18px 0', lineHeight: 1.5 }}>
                     We've sent a password reset link to <strong>{email}</strong>. Please check your inbox.
                   </p>
                   <button
@@ -962,7 +976,7 @@ export function AuthPage({ initialMode = 'login' }) {
               ) : (
                 <form onSubmit={(e) => { e.preventDefault(); setForgotSubmitted(true); }}>
                   <div className="form-group-item">
-                    <label className="form-label-title">Email Address</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Email Address</label>
                     <input
                       type="email"
                       className="form-input-control"
@@ -981,8 +995,6 @@ export function AuthPage({ initialMode = 'login' }) {
                       justifyContent: 'center',
                       padding: '12px',
                       fontSize: 14.5,
-                      background: 'linear-gradient(135deg, #635BFF 0%, #4F46E5 100%)',
-                      boxShadow: '0 4px 14px rgba(99, 91, 255, 0.28)',
                       marginTop: 6
                     }}
                   >
@@ -999,25 +1011,15 @@ export function AuthPage({ initialMode = 'login' }) {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 6,
-                          background: '#F8FAFC',
-                          border: '1px solid #E2E8F0',
-                          color: '#475569',
+                          background: 'rgba(15, 23, 42, 0.65)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          color: '#F8FAFC',
                           fontSize: 13,
                           fontWeight: 600,
                           cursor: 'pointer',
                           padding: '7px 14px',
                           borderRadius: 6,
                           transition: 'all 0.15s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#0F172A';
-                          e.currentTarget.style.borderColor = '#CBD5E1';
-                          e.currentTarget.style.background = '#F1F5F9';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = '#475569';
-                          e.currentTarget.style.borderColor = '#E2E8F0';
-                          e.currentTarget.style.background = '#F8FAFC';
                         }}
                         onClick={() => { setAuthError(null); setMode('login'); }}
                       >
@@ -1030,7 +1032,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       Don't have an account yet?{' '}
                       <a
                         href="#register"
-                        style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                        style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
                         onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('register'); }}
                       >
                         Create an account
@@ -1046,23 +1048,23 @@ export function AuthPage({ initialMode = 'login' }) {
           {mode === 'onboarding' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#635BFF', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', textTransform: 'uppercase', background: 'rgba(56, 189, 248, 0.12)', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(56, 189, 248, 0.25)' }}>
                   Setup Wizard • Step {onboardingStep} of 2
                 </span>
-                <span style={{ fontSize: 12, color: '#667085' }}>Currency: INR (₹)</span>
+                <span style={{ fontSize: 12, color: '#94A3B8' }}>Currency: INR (₹)</span>
               </div>
 
               {onboardingStep === 1 ? (
                 <div>
-                  <h3 style={{ fontSize: 20, fontWeight: 700, color: '#172033', marginBottom: 6 }}>
+                  <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F8FAFC', marginBottom: 6 }}>
                     Baseline Cash & Safety Buffer
                   </h3>
-                  <p style={{ fontSize: 13, color: '#667085', marginBottom: 18 }}>
+                  <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 18 }}>
                     Establish your true recorded available balance and minimum comfort reserve.
                   </p>
 
                   <div className="form-group-item">
-                    <label className="form-label-title">Current Recorded Bank Balance (₹ INR) *</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Current Recorded Bank Balance (₹ INR) *</label>
                     <input
                       type="number"
                       className="form-input-control"
@@ -1073,7 +1075,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   </div>
 
                   <div className="form-group-item">
-                    <label className="form-label-title">Minimum Safety Buffer Target (₹ INR) *</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Minimum Safety Buffer Target (₹ INR) *</label>
                     <input
                       type="number"
                       className="form-input-control"
@@ -1084,7 +1086,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   </div>
 
                   <div className="form-group-item">
-                    <label className="form-label-title">Typical Income Frequency</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Typical Income Frequency</label>
                     <select
                       className="form-input-control"
                       value={obFrequency}
@@ -1109,15 +1111,15 @@ export function AuthPage({ initialMode = 'login' }) {
                 </div>
               ) : (
                 <div>
-                  <h3 style={{ fontSize: 20, fontWeight: 700, color: '#172033', marginBottom: 6 }}>
+                  <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F8FAFC', marginBottom: 6 }}>
                     Alert Thresholds & Review
                   </h3>
-                  <p style={{ fontSize: 13, color: '#667085', marginBottom: 18 }}>
+                  <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 18 }}>
                     Configure automated notifications when liquidity drops below safe levels.
                   </p>
 
                   <div className="form-group-item">
-                    <label className="form-label-title">Low Balance Warning Trigger (₹ INR)</label>
+                    <label className="form-label-title" style={{ color: '#F8FAFC' }}>Low Balance Warning Trigger (₹ INR)</label>
                     <input
                       type="number"
                       className="form-input-control"
@@ -1126,10 +1128,10 @@ export function AuthPage({ initialMode = 'login' }) {
                     />
                   </div>
 
-                  <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 10, border: '1px solid #E2E8F0', marginBottom: 20, fontSize: 12.5, color: '#475569', lineHeight: 1.5 }}>
-                    <div style={{ fontWeight: 700, color: '#172033', marginBottom: 4 }}>Ready to calculate Safe-to-Spend!</div>
-                    Starting Balance: <strong>{formatINR(Number(obBalance))}</strong><br />
-                    Protected Safety Buffer: <strong>{formatINR(Number(obBuffer))}</strong>
+                  <div style={{ background: 'rgba(15, 23, 42, 0.65)', padding: 16, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 20, fontSize: 12.5, color: '#94A3B8', lineHeight: 1.5 }}>
+                    <div style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: 6 }}>Ready to calculate Safe-to-Spend!</div>
+                    Starting Balance: <strong style={{ color: '#F8FAFC' }}>{formatINR(Number(obBalance))}</strong><br />
+                    Protected Safety Buffer: <strong style={{ color: '#38BDF8' }}>{formatINR(Number(obBuffer))}</strong>
                   </div>
 
                   <div style={{ display: 'flex', gap: 10 }}>
