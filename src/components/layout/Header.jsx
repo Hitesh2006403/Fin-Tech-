@@ -8,7 +8,8 @@ import {
   Calendar,
   LogOut,
   Settings,
-  RefreshCw
+  RefreshCw,
+  ShieldAlert
 } from 'lucide-react';
 
 export function Header() {
@@ -163,15 +164,49 @@ export function Header() {
                   background: 'transparent',
                   color: '#38BDF8',
                   fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.14)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                onClick={() => {
+                  setActiveRoute('admin');
+                  setProfileDropdownOpen(false);
+                }}
+              >
+                <ShieldAlert size={15} color="#38BDF8" />
+                <span>Admin Portal</span>
+              </button>
+
+              <button
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#94A3B8',
+                  fontSize: 13,
                   fontWeight: 600,
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.12)';
+                  e.currentTarget.style.color = '#F8FAFC';
+                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.08)';
                 }}
                 onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#94A3B8';
                   e.currentTarget.style.background = 'transparent';
                 }}
                 onClick={async () => {

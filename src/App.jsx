@@ -17,12 +17,56 @@ import { NotificationsPage } from './pages/NotificationsPage.jsx';
 import { ProfileSettings } from './pages/ProfileSettings.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 
+import { AdminPortal } from './pages/admin/AdminPortal.jsx';
+
 import { Background3D } from './components/common/Background3D.jsx';
 
 import './App.css';
 
 function MainAppShell() {
-  const { user, authLoading, activeRoute } = useApp();
+  const { user, authLoading, activeRoute, setActiveRoute } = useApp();
+
+  // Support direct URL access via ?admin=true or hash #admin
+  const [isAdminMode, setIsAdminMode] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('admin') === 'true' || window.location.hash === '#admin';
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+    const handleHash = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || window.location.hash === '#admin') {
+        setIsAdminMode(true);
+      }
+    };
+    window.addEventListener('popstate', handleHash);
+    window.addEventListener('hashchange', handleHash);
+    return () => {
+      window.removeEventListener('popstate', handleHash);
+      window.removeEventListener('hashchange', handleHash);
+    };
+  }, []);
+
+  // Dedicated Admin Portal view
+  if (isAdminMode || activeRoute === 'admin') {
+    return (
+      <AdminPortal
+        onReturnToClient={() => {
+          setIsAdminMode(false);
+          setActiveRoute('dashboard');
+          if (typeof window !== 'undefined' && window.history.pushState) {
+            const url = new URL(window.location);
+            url.searchParams.delete('admin');
+            if (url.hash === '#admin') url.hash = '';
+            window.history.pushState({}, '', url);
+          }
+        }}
+      />
+    );
+  }
 
   // Session check in progress
   if (authLoading) {
@@ -39,7 +83,7 @@ function MainAppShell() {
 
   // If user is not authenticated, display login/register/onboarding
   if (!user || !user.isAuthenticated) {
-    return <AuthPage />;
+    return <AuthPage onOpenAdmin={() => setIsAdminMode(true)} />;
   }
 
   // If authenticated but onboarding is incomplete, redirect to onboarding first (Requirement 10)

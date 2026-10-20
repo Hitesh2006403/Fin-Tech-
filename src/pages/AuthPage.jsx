@@ -13,13 +13,15 @@ import {
   AlertCircle,
   Link2,
   RefreshCw,
-  Check
+  Check,
+  User,
+  ShieldAlert
 } from 'lucide-react';
 import { Background3D } from '../components/common/Background3D.jsx';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 
-export function AuthPage({ initialMode = 'login' }) {
+export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   const {
     loginWithGoogle,
     linkGoogleAccount,
@@ -427,6 +429,74 @@ export function AuthPage({ initialMode = 'login' }) {
             </div>
           )}
           
+          {/* Top Portal Switcher: User Portal vs Admin Portal */}
+          {onOpenAdmin && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 6,
+              background: 'rgba(11, 18, 32, 0.85)',
+              padding: 5,
+              borderRadius: 14,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              marginBottom: 24,
+              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)'
+            }}>
+              <button
+                type="button"
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: '1px solid rgba(56, 189, 248, 0.4)',
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.22) 100%)',
+                  color: '#F8FAFC',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor: 'default',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.25)'
+                }}
+              >
+                <User size={15} color="#38BDF8" />
+                <span>User Portal</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenAdmin}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#94A3B8',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#F8FAFC';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#94A3B8';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <ShieldAlert size={15} />
+                <span>Admin Portal</span>
+              </button>
+            </div>
+          )}
+
           {/* Mode 1: Login */}
           {mode === 'login' && (
             <div>
@@ -634,6 +704,92 @@ export function AuthPage({ initialMode = 'login' }) {
                   Create account
                 </a>
               </div>
+
+              {onOpenAdmin && (
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1.2,
+                    color: '#64748B',
+                    marginBottom: 10,
+                    textAlign: 'center'
+                  }}>
+                    Administrative Gateway
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onOpenAdmin}
+                    style={{
+                      width: '100%',
+                      padding: '14px 18px',
+                      background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.22) 100%)',
+                      border: '1.5px solid rgba(56, 189, 248, 0.45)',
+                      borderRadius: 14,
+                      color: '#F8FAFC',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 24px rgba(56, 189, 248, 0.2)',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.26) 0%, rgba(37, 99, 235, 0.32) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.75)';
+                      e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.5), 0 0 32px rgba(56, 189, 248, 0.35)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.22) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.45)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 24px rgba(56, 189, 248, 0.2)';
+                      e.currentTarget.style.transform = 'none';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 10,
+                        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.25) 100%)',
+                        border: '1px solid rgba(56, 189, 248, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 14px rgba(56, 189, 248, 0.35)',
+                        flexShrink: 0
+                      }}>
+                        <ShieldAlert size={20} color="#38BDF8" />
+                      </div>
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, color: '#F8FAFC', letterSpacing: -0.2 }}>
+                          Admin Portal
+                        </div>
+                        <div style={{ fontSize: 12, color: '#94A3B8' }}>
+                          Restricted Platform Console & Controls
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      padding: '5px 10px',
+                      borderRadius: 8,
+                      border: '1px solid rgba(56, 189, 248, 0.3)'
+                    }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: '#38BDF8' }}>Access</span>
+                      <ArrowRight size={14} color="#38BDF8" />
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

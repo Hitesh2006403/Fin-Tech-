@@ -11,7 +11,8 @@ import {
   PiggyBank,
   Bell,
   Settings,
-  X
+  X,
+  ShieldAlert
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -119,6 +120,42 @@ export function Sidebar() {
           <span className="env-label">Mode: Live Treasury</span>
           <span className="env-status-dot"></span>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveRoute('admin')}
+          style={{
+            marginTop: 10,
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            padding: '11px 14px',
+            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.16) 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
+            borderRadius: 10,
+            color: '#F8FAFC',
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.25) 100%)';
+            e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.6)';
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.16) 100%)';
+            e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.35)';
+          }}
+        >
+          <ShieldAlert size={16} color="#38BDF8" />
+          <span>Admin Portal</span>
+        </button>
       </div>
     </aside>
   );

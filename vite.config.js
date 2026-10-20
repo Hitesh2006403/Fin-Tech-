@@ -44,8 +44,8 @@ function autoBackendPlugin() {
 export default defineConfig({
   plugins: [react(), autoBackendPlugin()],
   server: {
-    port: 5174,
-    strictPort: false,
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

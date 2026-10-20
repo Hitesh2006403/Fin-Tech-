@@ -1,0 +1,751 @@
+import React, { useState } from 'react';
+import { useAdmin } from '../../context/AdminContext.jsx';
+import { Background3D } from '../../components/common/Background3D.jsx';
+import { AdminDashboardView } from './AdminDashboardView.jsx';
+import { AdminUsersView } from './AdminUsersView.jsx';
+import { AdminTransactionsView } from './AdminTransactionsView.jsx';
+import { AdminReportsView } from './AdminReportsView.jsx';
+import { AdminIssuesView } from './AdminIssuesView.jsx';
+import { AdminSecurityLogsView } from './AdminSecurityLogsView.jsx';
+import { AdminSettingsView } from './AdminSettingsView.jsx';
+import { AdminNotificationsView } from './AdminNotificationsView.jsx';
+import {
+  LayoutDashboard,
+  Users,
+  ArrowLeftRight,
+  BarChart2,
+  MessageSquare,
+  ShieldAlert,
+  Settings,
+  Bell,
+  Search,
+  LogOut,
+  RefreshCw,
+  ExternalLink,
+  ChevronDown,
+  Star,
+  ArrowLeft,
+  X,
+  Menu,
+  ShieldCheck
+} from 'lucide-react';
+
+export function AdminLayout({ onReturnToClient }) {
+  const {
+    adminUser,
+    adminActiveTab,
+    setAdminActiveTab,
+    logoutAdmin,
+    usersList,
+    issues,
+    globalSearch,
+    setGlobalSearch,
+    searchResults,
+    refreshAdminData,
+    isRefreshing,
+    notificationCount
+  } = useAdmin();
+
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
+
+  const openIssuesCount = issues.filter(i => i.status !== 'resolved').length || 5;
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, section: 'main' },
+    { id: 'users', label: 'Users', icon: Users, badge: usersList.length || 24, badgeColor: '#10B981', section: 'management' },
+    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, section: 'management' },
+    { id: 'reports', label: 'Reports', icon: BarChart2, section: 'management' },
+    { id: 'issues', label: 'Feedback & Issues', icon: MessageSquare, badge: openIssuesCount, badgeColor: '#EF4444', section: 'management' },
+    { id: 'security', label: 'Security Logs', icon: ShieldAlert, section: 'management' },
+    { id: 'settings', label: 'App Settings', icon: Settings, section: 'settings' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, section: 'settings' }
+  ];
+
+  const handleNavClick = (tabId) => {
+    setAdminActiveTab(tabId);
+    setMobileSidebarOpen(false);
+  };
+
+  const renderActiveView = () => {
+    switch (adminActiveTab) {
+      case 'dashboard':
+        return (
+          <AdminDashboardView
+            onViewAllUsers={() => setAdminActiveTab('users')}
+            onViewAllIssues={() => setAdminActiveTab('issues')}
+            onViewAllLogs={() => setAdminActiveTab('security')}
+          />
+        );
+      case 'users':
+        return <AdminUsersView />;
+      case 'transactions':
+        return <AdminTransactionsView />;
+      case 'reports':
+        return <AdminReportsView />;
+      case 'issues':
+        return <AdminIssuesView />;
+      case 'security':
+        return <AdminSecurityLogsView />;
+      case 'settings':
+        return <AdminSettingsView />;
+      case 'notifications':
+        return <AdminNotificationsView />;
+      default:
+        return <AdminDashboardView />;
+    }
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      background: '#0B1220',
+      color: '#F8FAFC',
+      position: 'relative',
+      fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif"
+    }}>
+      {/* 3D Atmospheric Background */}
+      <Background3D />
+
+      {/* 1. Left Sidebar Navigation */}
+      <aside style={{
+        width: 250,
+        background: 'rgba(11, 18, 32, 0.85)',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)',
+        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 100,
+        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.4)'
+      }}>
+        {/* Brand Header */}
+        <div style={{
+          padding: '24px 20px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
+        }}>
+          {/* Lynx Glowing Brand Icon */}
+          <div style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.4)',
+            boxShadow: '0 0 20px rgba(56, 189, 248, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#38BDF8'
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+
+          <div>
+            <div style={{
+              fontSize: 18,
+              fontWeight: 800,
+              letterSpacing: 0.5,
+              color: '#F8FAFC',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}>
+              <span>FinSight</span>
+              <span style={{
+                fontSize: 9.5,
+                fontWeight: 800,
+                color: '#38BDF8',
+                background: 'rgba(56, 189, 248, 0.15)',
+                padding: '2px 6px',
+                borderRadius: 4
+              }}>
+                PRO
+              </span>
+            </div>
+            <div style={{ fontSize: 11.5, color: '#94A3B8' }}>
+              Admin Portal
+            </div>
+          </div>
+        </div>
+
+        {/* Nav Items List */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4
+        }}>
+          {/* Section: Main */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('dashboard')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '11px 14px',
+              borderRadius: 10,
+              border: 'none',
+              background: adminActiveTab === 'dashboard'
+                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.22) 100%)'
+                : 'transparent',
+              color: adminActiveTab === 'dashboard' ? '#F8FAFC' : '#94A3B8',
+              boxShadow: adminActiveTab === 'dashboard' ? '0 0 15px rgba(56, 189, 248, 0.15)' : 'none',
+              borderLeft: adminActiveTab === 'dashboard' ? '3px solid #38BDF8' : '3px solid transparent',
+              fontSize: 13.5,
+              fontWeight: 700,
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <LayoutDashboard size={18} color={adminActiveTab === 'dashboard' ? '#38BDF8' : '#94A3B8'} />
+            <span>Dashboard</span>
+          </button>
+
+          {/* Section Label: MANAGEMENT */}
+          <div style={{
+            fontSize: 10,
+            fontWeight: 800,
+            color: '#64748B',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            padding: '18px 12px 6px'
+          }}>
+            Management
+          </div>
+
+          {navItems.filter(i => i.section === 'management').map(item => {
+            const Icon = item.icon;
+            const isActive = adminActiveTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: isActive ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%)' : 'transparent',
+                  color: isActive ? '#F8FAFC' : '#94A3B8',
+                  borderLeft: isActive ? '3px solid #38BDF8' : '3px solid transparent',
+                  boxShadow: isActive ? '0 0 15px rgba(56, 189, 248, 0.15)' : 'none',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Icon size={17} color={isActive ? '#38BDF8' : '#94A3B8'} />
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.badge !== undefined && (
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    padding: '2px 7px',
+                    borderRadius: 99,
+                    background: `${item.badgeColor || '#38BDF8'}22`,
+                    color: item.badgeColor || '#38BDF8',
+                    border: `1px solid ${item.badgeColor || '#38BDF8'}44`
+                  }}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Section Label: SETTINGS */}
+          <div style={{
+            fontSize: 10,
+            fontWeight: 800,
+            color: '#64748B',
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            padding: '18px 12px 6px'
+          }}>
+            Settings
+          </div>
+
+          {navItems.filter(i => i.section === 'settings').map(item => {
+            const Icon = item.icon;
+            const isActive = adminActiveTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: isActive ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%)' : 'transparent',
+                  color: isActive ? '#F8FAFC' : '#94A3B8',
+                  borderLeft: isActive ? '3px solid #38BDF8' : '3px solid transparent',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Icon size={17} color={isActive ? '#38BDF8' : '#94A3B8'} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Promo Glass Card (from screenshot: "Better Financial Future for Everyone") */}
+        <div style={{ padding: '0 14px 14px' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: 14,
+            padding: '16px 14px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              background: 'rgba(56, 189, 248, 0.2)',
+              color: '#38BDF8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 10
+            }}>
+              <Star size={16} fill="#38BDF8" />
+            </div>
+
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC', marginBottom: 4 }}>
+              Better Financial Future for Everyone
+            </div>
+            <div style={{ fontSize: 11, color: '#94A3B8' }}>
+              Manage. Monitor. Secure.
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Actions: Return to client app */}
+        <div style={{
+          padding: '12px 14px 16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <button
+            type="button"
+            onClick={onReturnToClient}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#94A3B8',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: 0
+            }}
+          >
+            <ArrowLeft size={14} />
+            <span>User Portal</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={logoutAdmin}
+            title="Sign out of Admin Session"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#F87171',
+              cursor: 'pointer',
+              padding: 4
+            }}
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      </aside>
+
+      {/* 2. Main Work Area */}
+      <div style={{
+        marginLeft: 250,
+        flex: 1,
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        zIndex: 5
+      }}>
+        {/* Top Header */}
+        <header style={{
+          height: 70,
+          background: 'rgba(11, 18, 32, 0.75)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 28px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 80
+        }}>
+          {/* Global Search Bar (From Screenshot) */}
+          <div style={{ position: 'relative', width: 380, maxWidth: '100%' }}>
+            <Search size={16} color="#64748B" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <input
+              type="text"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder="Search users, transactions, or issues..."
+              style={{
+                width: '100%',
+                padding: '9px 14px 9px 40px',
+                background: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: 10,
+                color: '#F8FAFC',
+                fontSize: 13,
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+
+            {/* Live Search Results Popup */}
+            {searchResults && searchResults.totalCount > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '115%',
+                left: 0,
+                right: 0,
+                background: 'rgba(15, 23, 42, 0.98)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: 12,
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.65)',
+                padding: '12px',
+                zIndex: 200
+              }}>
+                {searchResults.users.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#38BDF8', marginBottom: 6 }}>Users</div>
+                    {searchResults.users.map(u => (
+                      <div
+                        key={u.id}
+                        onClick={() => { setAdminActiveTab('users'); setGlobalSearch(''); }}
+                        style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
+                      >
+                        {u.name} • <span style={{ color: '#94A3B8' }}>{u.email}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchResults.transactions.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#A78BFA', marginBottom: 6 }}>Transactions</div>
+                    {searchResults.transactions.map(t => (
+                      <div
+                        key={t.id}
+                        onClick={() => { setAdminActiveTab('transactions'); setGlobalSearch(''); }}
+                        style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
+                      >
+                        {t.title} • <span style={{ color: '#34D399' }}>₹{t.amount}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchResults.issues.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#F87171', marginBottom: 6 }}>Issues</div>
+                    {searchResults.issues.map(i => (
+                      <div
+                        key={i.id}
+                        onClick={() => { setAdminActiveTab('issues'); setGlobalSearch(''); }}
+                        style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
+                      >
+                        {i.title}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Actions, Notifications Bell & Admin Profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Sync live data button */}
+            <button
+              type="button"
+              onClick={refreshAdminData}
+              title="Refresh metrics from server"
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: 8,
+                padding: '8px 10px',
+                color: '#94A3B8',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <RefreshCw size={15} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+            </button>
+
+            {/* Notification Bell with Badge 3 (From Screenshot) */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 8,
+                  padding: '8px 10px',
+                  color: '#F8FAFC',
+                  cursor: 'pointer',
+                  position: 'relative'
+                }}
+              >
+                <Bell size={18} />
+                <span style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  background: '#EF4444',
+                  color: '#FFFFFF',
+                  fontSize: 10,
+                  fontWeight: 800,
+                  width: 17,
+                  height: 17,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)'
+                }}>
+                  {notificationCount}
+                </span>
+              </button>
+
+              {notificationDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '125%',
+                  right: 0,
+                  width: 300,
+                  background: 'rgba(15, 23, 42, 0.98)',
+                  backdropFilter: 'blur(25px)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: 12,
+                  boxShadow: '0 20px 45px rgba(0,0,0,0.65)',
+                  padding: '12px 0',
+                  zIndex: 200
+                }}>
+                  <div style={{ padding: '4px 16px 8px', fontSize: 13, fontWeight: 700, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    Admin Notifications
+                  </div>
+                  {[
+                    { text: 'Google SSO auth policy synchronized', time: '10m ago' },
+                    { text: 'High severity issue reported by user', time: '12m ago' },
+                    { text: 'Daily database backup verified', time: '1h ago' }
+                  ].map((n, idx) => (
+                    <div key={idx} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.04)', fontSize: 12 }}>
+                      <div style={{ color: '#F8FAFC', fontWeight: 600 }}>{n.text}</div>
+                      <div style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>{n.time}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Admin Profile Dropdown (From Screenshot: "Admin / Super Administrator") */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                {/* Admin Avatar Circle */}
+                <div style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #38BDF8 0%, #818CF8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: 14,
+                  border: '2px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                  {adminUser?.picture ? (
+                    <img
+                      src={adminUser.picture}
+                      alt="Admin"
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    adminUser?.avatarInitials || 'AD'
+                  )}
+                </div>
+
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
+                    {adminUser?.name || 'Admin'}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#38BDF8' }}>
+                    Super Administrator
+                  </div>
+                </div>
+
+                <ChevronDown size={14} color="#94A3B8" />
+              </button>
+
+              {/* Profile Dropdown */}
+              {profileDropdownOpen && (
+                <div
+                  onMouseLeave={() => setProfileDropdownOpen(false)}
+                  style={{
+                    position: 'absolute',
+                    top: '125%',
+                    right: 0,
+                    width: 240,
+                    background: 'rgba(15, 23, 42, 0.98)',
+                    backdropFilter: 'blur(25px)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: 12,
+                    boxShadow: '0 20px 45px rgba(0,0,0,0.65)',
+                    padding: '8px 0',
+                    zIndex: 200
+                  }}
+                >
+                  <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{adminUser?.name || 'Admin'}</div>
+                    <div style={{ fontSize: 11.5, color: '#38BDF8', marginTop: 2 }}>{adminUser?.email || 'admin@finsight.internal'}</div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => { setAdminActiveTab('settings'); setProfileDropdownOpen(false); }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#94A3B8',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <Settings size={15} />
+                    <span>App Settings</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { onReturnToClient(); setProfileDropdownOpen(false); }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#94A3B8',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <ExternalLink size={15} />
+                    <span>Switch to User Portal</span>
+                  </button>
+
+                  <div style={{ height: 1, background: 'rgba(255, 255, 255, 0.08)', margin: '4px 0' }} />
+
+                  <button
+                    type="button"
+                    onClick={() => { logoutAdmin(); setProfileDropdownOpen(false); }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#F87171',
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <LogOut size={15} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Viewport Content */}
+        <main style={{ padding: '28px', flex: 1 }}>
+          {renderActiveView()}
+        </main>
+      </div>
+    </div>
+  );
+}
