@@ -104,7 +104,7 @@ The script will:
 
 ---
 
-## 5. Running the Backend
+## 5. Running the Backend Locally
 
 From project root:
 ```bash
@@ -126,3 +126,38 @@ The server automatically binds to port `3001` and logs:
 [FinSight Auth Server] Google Client ID loaded: YES
 [FinSight Auth Server] Supabase Cloud configured: YES (https://<project-ref>.supabase.co)
 ```
+
+---
+
+## 6. Deploying Backend to Vercel as a Separate Service
+
+The backend is fully configured for Vercel's Serverless Node.js runtime.
+
+### Step 1: Import in Vercel
+1. In your **Vercel Dashboard**, click **Add New...** > **Project**.
+2. Select your repository: `Hitesh2006403/Fin-Tech-`.
+3. In **Project Settings**:
+   - **Root Directory**: Click "Edit" and choose `backend`.
+   - **Framework Preset**: Leave as `Other`.
+   - **Build & Output Settings**: Leave defaults (no custom build command needed; `backend/package.json` and `backend/vercel.json` handle everything automatically).
+
+### Step 2: Configure Environment Variables in Vercel
+In the Vercel project settings (**Settings** > **Environment Variables**), add:
+
+| Variable Name | Required | Purpose / Example |
+| :--- | :---: | :--- |
+| `SUPABASE_URL` | **Yes** | Your Supabase project URL (e.g. `https://<ref>.supabase.co`) |
+| `SUPABASE_PUBLISHABLE_KEY` | **Yes** | Supabase anon or publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | *Optional* | Supabase service-role secret key (bypasses RLS) |
+| `FRONTEND_URL` | **Yes** | URL of your deployed frontend (e.g. `https://finsight-client.vercel.app`) |
+| `APP_ORIGIN` | *Optional* | Additional frontend origin (can be comma-separated) |
+| `ADMIN_EMAILS` | *Optional* | Comma-separated admin whitelist (`hiteshav2006@gmail.com,admin@finsight.internal`) |
+| `GOOGLE_CLIENT_ID` | *Optional* | Custom Google OAuth Client ID |
+| `NODE_ENV` | *Optional* | Set to `production` |
+
+### Step 3: Link Deployed Backend to Frontend
+In your separate frontend Vercel deployment (or `.env.production`):
+```env
+VITE_API_URL=https://<your-backend-project>.vercel.app
+```
+All frontend services (`authService`, `apiService`, `adminService`) will automatically route API requests directly to this URL.

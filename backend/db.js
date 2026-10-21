@@ -6,7 +6,13 @@ import { supabase } from './supabase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, 'data');
+const BUNDLED_DATA_DIR = path.join(__dirname, 'data');
+
+// In serverless environments (Vercel), root filesystem is read-only.
+// Use /tmp/finsight-data as the writable data directory and seed it from bundled data.
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless ? path.join('/tmp', 'finsight-data') : BUNDLED_DATA_DIR;
+
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const FINANCIALS_FILE = path.join(DATA_DIR, 'financials.json');
@@ -14,9 +20,35 @@ const ISSUES_FILE = path.join(DATA_DIR, 'issues.json');
 const SECURITY_LOGS_FILE = path.join(DATA_DIR, 'security_logs.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory exists and seed initial data if running in serverless /tmp
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  if (isServerless && fs.existsSync(BUNDLED_DATA_DIR)) {
+    const filesToSeed = [
+      'users.json',
+      'sessions.json',
+      'financials.json',
+      'issues.json',
+      'security_logs.json',
+      'settings.json'
+    ];
+    for (const fileName of filesToSeed) {
+      const src = path.join(BUNDLED_DATA_DIR, fileName);
+      const dest = path.join(DATA_DIR, fileName);
+      if (!fs.existsSync(dest) && fs.existsSync(src)) {
+        try {
+          fs.copyFileSync(src, dest);
+        } catch (copyErr) {
+          console.warn(`[db] Could not seed ${fileName} to ${dest}:`, copyErr.message);
+        }
+      }
+    }
+  }
+} catch (dirErr) {
+  console.warn('[db] Data directory setup warning:', dirErr.message);
 }
 
 const BENCHMARK_STARTER_INCOMES = [

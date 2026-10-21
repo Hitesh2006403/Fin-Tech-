@@ -5,7 +5,8 @@
 
 import { decodeGoogleJwt } from './authService.js';
 
-const ADMIN_API_BASE = '/api/admin';
+const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
+const ADMIN_API_BASE = `${API_ROOT}/api/admin`;
 
 // Fallback authorized admin emails if server is unreachable
 const DEFAULT_AUTHORIZED_ADMIN_EMAILS = [

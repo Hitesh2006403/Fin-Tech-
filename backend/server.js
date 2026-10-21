@@ -30,22 +30,64 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5173';
 
+const configuredOrigins = [
+  process.env.APP_ORIGIN,
+  process.env.FRONTEND_URL
+].filter(Boolean).flatMap(o => o.split(',').map(s => s.trim()));
+
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+];
+
+const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: [
-    APP_ORIGIN,
-    process.env.FRONTEND_URL,
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5174',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    // Allow non-browser requests (mobile, curl, server-to-server, health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    // Automatically trust preview and production Vercel frontend deployments (*.vercel.app)
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true
 }));
+
+// Root endpoints for Vercel deployment health checking
+app.get('/', (req, res) => {
+  res.json({
+    service: 'FinSight Backend API',
+    status: 'operational',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    serverless: Boolean(process.env.VERCEL),
+    healthEndpoint: '/api/health',
+    databaseEndpoint: '/api/database/status',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.json({
+    service: 'FinSight API Root',
+    status: 'operational',
+    healthEndpoint: '/api/health',
+    databaseEndpoint: '/api/database/status',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Session authentication middleware (supports HttpOnly cookie & Bearer token header)
 function authenticate(req, res, next) {
@@ -233,7 +275,8 @@ app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('session_token', {
     path: '/',
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   });
 
   return res.json({ success: true, message: 'Logged out successfully' });
@@ -539,7 +582,8 @@ app.post('/api/admin/logout', (req, res) => {
   res.clearCookie('session_token', {
     path: '/',
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   });
   return res.json({ success: true, message: 'Admin logged out' });
 });
@@ -743,9 +787,14 @@ app.get('/api/database/status', async (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`[FinSight Auth Server] Running on http://localhost:${PORT}`);
-  console.log(`[FinSight Auth Server] Authorized origin: ${APP_ORIGIN}`);
-  console.log(`[FinSight Auth Server] Google Client ID loaded: ${process.env.GOOGLE_CLIENT_ID ? 'YES' : 'NO'}`);
-  console.log(`[FinSight Auth Server] Supabase Cloud configured: ${isSupabaseConfigured ? 'YES (' + supabaseUrl + ')' : 'NO (Local JSON mode)'}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`[FinSight Auth Server] Running on http://localhost:${PORT}`);
+    console.log(`[FinSight Auth Server] Authorized origin: ${APP_ORIGIN}`);
+    console.log(`[FinSight Auth Server] Google Client ID loaded: ${process.env.GOOGLE_CLIENT_ID ? 'YES' : 'NO'}`);
+    console.log(`[FinSight Auth Server] Supabase Cloud configured: ${isSupabaseConfigured ? 'YES (' + supabaseUrl + ')' : 'NO (Local JSON mode)'}`);
+  });
+}
+
+export default app;
+export { app };

@@ -150,7 +150,7 @@ export function setSessionCookie(res, sessionId) {
   res.cookie('session_token', sessionId, {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'strict' : 'lax',
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     path: '/'
   });

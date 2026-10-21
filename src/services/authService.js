@@ -3,7 +3,8 @@
  * Interfaces with the backend session API and Google Identity Services
  */
 
-const API_BASE = '/api/auth';
+const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = `${API_ROOT}/api/auth`;
 
 /**
  * Safely parses response JSON without throwing "Unexpected end of JSON input"
