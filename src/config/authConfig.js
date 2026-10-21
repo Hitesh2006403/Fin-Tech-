@@ -10,6 +10,7 @@ export const GOOGLE_CLIENT_ID =
 
 // Standard local development origins to register in Google Cloud Console
 export const RECOMMENDED_LOCAL_ORIGINS = [
+  'https://fin-tech-vert-alpha.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5174',

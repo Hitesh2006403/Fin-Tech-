@@ -28,7 +28,11 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5173';
+const APP_ORIGIN =
+  process.env.APP_ORIGIN ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://fin-tech-vert-alpha.vercel.app'
+    : 'http://localhost:5173');
 
 const configuredOrigins = [
   process.env.APP_ORIGIN,
@@ -36,6 +40,7 @@ const configuredOrigins = [
 ].filter(Boolean).flatMap(o => o.split(',').map(s => s.trim()));
 
 const defaultOrigins = [
+  'https://fin-tech-vert-alpha.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5174',
@@ -49,6 +54,17 @@ const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigi
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// Disable caching on all API endpoints (auth, sessions, financial data, admin)
+app.use((req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store'
+  });
+  next();
+});
 app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (mobile, curl, server-to-server, health checks)
