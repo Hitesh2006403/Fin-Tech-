@@ -109,10 +109,16 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
             callback: handleGoogleCredentialResponse,
             auto_select: false,
             cancel_on_tap_outside: true,
-            context: 'signin'
+            context: 'signin',
+            itp_support: true
           });
 
           if (googleBtnRef.current) {
+            googleBtnRef.current.innerHTML = '';
+            // Dynamically calculate appropriate button width for mobile/desktop
+            const containerWidth = googleBtnRef.current.offsetWidth || (typeof window !== 'undefined' && window.innerWidth < 420 ? window.innerWidth - 48 : 380);
+            const btnWidth = Math.min(400, Math.max(220, containerWidth));
+
             // Render genuine GIS button inside the overlay container
             window.google.accounts.id.renderButton(googleBtnRef.current, {
               type: 'standard',
@@ -121,7 +127,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
               text: 'continue_with',
               shape: 'rectangular',
               logo_alignment: 'left',
-              width: 380
+              width: btnWidth
             });
           }
         } catch (e) {
@@ -147,7 +153,15 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     setAuthError(null);
     if (window.google?.accounts?.id) {
       try {
-        window.google.accounts.id.prompt();
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed()) {
+            console.warn('GIS One Tap prompt not displayed:', notification.getNotDisplayedReason());
+          } else if (notification.isSkippedMoment()) {
+            console.warn('GIS One Tap prompt skipped:', notification.getSkippedReason());
+          } else if (notification.isDismissedMoment()) {
+            console.warn('GIS One Tap prompt dismissed:', notification.getDismissedReason());
+          }
+        });
       } catch (err) {
         console.warn('GIS prompt trigger error:', err);
       }
@@ -582,10 +596,13 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 {/* Real Google Identity Services Overlay (Seamlessly renders genuine account chooser iframe over button) */}
                 <div
                   ref={googleBtnRef}
+                  className="gis-button-overlay"
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
+                    right: 0,
+                    bottom: 0,
                     width: '100%',
                     height: '100%',
                     opacity: 0.001,

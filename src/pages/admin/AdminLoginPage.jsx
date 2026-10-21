@@ -94,11 +94,15 @@ export function AdminLoginPage({ onReturnToClient }) {
             callback: handleGoogleCredentialResponse,
             auto_select: false,
             cancel_on_tap_outside: true,
-            context: 'signin'
+            context: 'signin',
+            itp_support: true
           });
 
           if (googleBtnRef.current) {
             googleBtnRef.current.innerHTML = '';
+            const containerWidth = googleBtnRef.current.offsetWidth || (typeof window !== 'undefined' && window.innerWidth < 420 ? window.innerWidth - 64 : 360);
+            const btnWidth = Math.min(400, Math.max(220, containerWidth));
+
             window.google.accounts.id.renderButton(googleBtnRef.current, {
               type: 'standard',
               theme: 'outline',
@@ -106,7 +110,7 @@ export function AdminLoginPage({ onReturnToClient }) {
               text: 'continue_with',
               shape: 'rectangular',
               logo_alignment: 'left',
-              width: 360
+              width: btnWidth
             });
           }
         } catch (e) {
@@ -129,7 +133,15 @@ export function AdminLoginPage({ onReturnToClient }) {
     setErrorMessage(null);
     if (window.google?.accounts?.id) {
       try {
-        window.google.accounts.id.prompt();
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed()) {
+            console.warn('GIS One Tap prompt not displayed on Admin:', notification.getNotDisplayedReason());
+          } else if (notification.isSkippedMoment()) {
+            console.warn('GIS One Tap prompt skipped on Admin:', notification.getSkippedReason());
+          } else if (notification.isDismissedMoment()) {
+            console.warn('GIS One Tap prompt dismissed on Admin:', notification.getDismissedReason());
+          }
+        });
       } catch (err) {
         console.warn('GIS prompt trigger error:', err);
       }
@@ -514,10 +526,13 @@ export function AdminLoginPage({ onReturnToClient }) {
               {/* GIS Overlay (transparently captures clicks and renders Google dialog) */}
               <div
                 ref={googleBtnRef}
+                className="gis-button-overlay"
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
+                  right: 0,
+                  bottom: 0,
                   width: '100%',
                   height: '100%',
                   opacity: 0.001,
