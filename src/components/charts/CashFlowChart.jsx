@@ -97,11 +97,11 @@ export function CashFlowChart({
         )}
       </div>
 
-      {/* SVG Chart Graphic */}
-      <div className="table-responsive" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      {/* SVG Chart Graphic - Fluid Responsive Scaling */}
+      <div style={{ width: '100%', position: 'relative', overflow: 'hidden' }}>
         <svg
           viewBox={`0 0 ${chartWidth} ${height}`}
-          style={{ width: '100%', height: 'auto', display: 'block', minWidth: 500 }}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
           onMouseLeave={() => setHoverIndex(null)}
         >
           <defs>
@@ -138,7 +138,7 @@ export function CashFlowChart({
                 strokeWidth="1.5"
                 strokeDasharray="4 4"
               />
-              <text x={chartWidth - paddingX + 4} y={yZero + 4} fill="#EF4444" fontSize="10" fontWeight="600">
+              <text x={chartWidth - paddingX - 4} y={yZero + 4} fill="#EF4444" fontSize="10" fontWeight="600" textAnchor="end">
                 ₹0
               </text>
             </g>
@@ -155,7 +155,7 @@ export function CashFlowChart({
               strokeWidth="1.5"
               strokeDasharray="4 4"
             />
-            <text x={chartWidth - paddingX + 4} y={yBuffer + 4} fill="#F59E0B" fontSize="10" fontWeight="600">
+            <text x={chartWidth - paddingX - 4} y={yBuffer + 4} fill="#F59E0B" fontSize="10" fontWeight="600" textAnchor="end">
               Buffer
             </text>
           </g>
@@ -275,7 +275,7 @@ export function CashFlowChart({
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             {activePoint.incomes?.length > 0 && (
               <span style={{ color: '#10B981', fontWeight: 600 }}>
                 Inflow: +{formatINR(activePoint.incomes.reduce((s, i) => s + (i.effectiveAmount || i.amount), 0))}

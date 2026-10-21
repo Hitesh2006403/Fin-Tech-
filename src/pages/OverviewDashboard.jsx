@@ -335,7 +335,7 @@ export function OverviewDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           
           {/* Upcoming Bills (Max 5) */}
-          <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="card">
             <div className="card-header-flex" style={{ marginBottom: 14 }}>
               <h3 className="card-title-h3" style={{ fontSize: 15 }}>Upcoming Bills</h3>
               <button
@@ -385,7 +385,7 @@ export function OverviewDashboard() {
           </div>
 
           {/* Financial Alerts (Max 3) */}
-          <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="card">
             <div className="card-header-flex" style={{ marginBottom: 14 }}>
               <h3 className="card-title-h3" style={{ fontSize: 15 }}>Financial Alerts</h3>
               <button
@@ -431,7 +431,7 @@ export function OverviewDashboard() {
                     }}
                     onClick={() => alert.actionPage && setActiveRoute(alert.actionPage)}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flex: 1, minWidth: 0 }}>
                       {alert.severity === 'critical' ? (
                         <AlertTriangle size={15} color="#F87171" style={{ flexShrink: 0, marginTop: 2 }} />
                       ) : alert.severity === 'warning' ? (
@@ -439,9 +439,9 @@ export function OverviewDashboard() {
                       ) : (
                         <CheckCircle2 size={15} color="#10B981" style={{ flexShrink: 0, marginTop: 2 }} />
                       )}
-                      <div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#F8FAFC' }}>{alert.title}</div>
-                        <div style={{ fontSize: 11.5, color: '#94A3B8', lineHeight: 1.4, marginTop: 2 }}>{alert.description}</div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#F8FAFC', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{alert.title}</div>
+                        <div style={{ fontSize: 11.5, color: '#94A3B8', lineHeight: 1.4, marginTop: 2, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{alert.description}</div>
                       </div>
                     </div>
                     <button
@@ -550,29 +550,38 @@ export function OverviewDashboard() {
             <div style={{ width: `${(totalUncertain / grandTotalPipeline) * 100}%`, background: '#F59E0B' }} title="Uncertain" />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }}></span>
-                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Received (In Cash)</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '10px 12px', background: 'rgba(11, 18, 32, 0.55)', borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 160px' }}>
+                <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px #10B981', flexShrink: 0 }}></span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ color: '#F8FAFC', fontWeight: 700, fontSize: 13 }}>Received</div>
+                  <div style={{ color: '#94A3B8', fontSize: 11 }}>In Hand / Cash Balance</div>
+                </div>
               </div>
-              <strong style={{ color: '#10B981', fontFeatureSettings: 'tnum' }}>{formatINR(totalReceived)}</strong>
+              <strong style={{ color: '#10B981', fontFeatureSettings: 'tnum', fontSize: 13.5, flexShrink: 0 }}>{formatINR(totalReceived)}</strong>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 6px #38BDF8' }}></span>
-                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Confirmed (Invoices/Contracts)</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '10px 12px', background: 'rgba(11, 18, 32, 0.55)', borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 160px' }}>
+                <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 8px #38BDF8', flexShrink: 0 }}></span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ color: '#F8FAFC', fontWeight: 700, fontSize: 13 }}>Confirmed</div>
+                  <div style={{ color: '#94A3B8', fontSize: 11 }}>Invoices / Signed Contracts</div>
+                </div>
               </div>
-              <strong style={{ color: '#38BDF8', fontFeatureSettings: 'tnum' }}>{formatINR(totalConfirmed)}</strong>
+              <strong style={{ color: '#38BDF8', fontFeatureSettings: 'tnum', fontSize: 13.5, flexShrink: 0 }}>{formatINR(totalConfirmed)}</strong>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 6px #F59E0B' }}></span>
-                <span style={{ color: '#F8FAFC', fontWeight: 600 }}>Uncertain (Pipeline/Pitches)</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, padding: '10px 12px', background: 'rgba(11, 18, 32, 0.55)', borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: '1 1 160px' }}>
+                <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px #F59E0B', flexShrink: 0 }}></span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ color: '#F8FAFC', fontWeight: 700, fontSize: 13 }}>Uncertain</div>
+                  <div style={{ color: '#94A3B8', fontSize: 11 }}>Pipeline / Verbal Deals</div>
+                </div>
               </div>
-              <strong style={{ color: '#F59E0B', fontFeatureSettings: 'tnum' }}>{formatINR(totalUncertain)}</strong>
+              <strong style={{ color: '#F59E0B', fontFeatureSettings: 'tnum', fontSize: 13.5, flexShrink: 0 }}>{formatINR(totalUncertain)}</strong>
             </div>
           </div>
 
