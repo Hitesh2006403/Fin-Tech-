@@ -144,6 +144,7 @@ export function OverviewDashboard() {
       {/* Prominent Data-Driven Financial Insight Bar */}
       {dashboardInsights.primaryInsight && (
         <div
+          className="dashboard-insight-banner"
           style={{
             background: dashboardInsights.primaryInsight.type === 'danger'
               ? 'rgba(239, 68, 68, 0.14)'
@@ -473,7 +474,7 @@ export function OverviewDashboard() {
       </div>
 
       {/* D. Bottom Row: Recent Activity & Income Reliability Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 22 }}>
+      <div className="dashboard-bottom-grid">
         
         {/* Recent Activity Table (Max 5) */}
         <div className="card">

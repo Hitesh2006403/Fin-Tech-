@@ -130,10 +130,10 @@ export function ProfileSettings() {
       )}
 
       {/* Settings Grid with Tabs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 24 }}>
+      <div className="settings-layout-grid">
         
         {/* Navigation Tabs List */}
-        <div className="card" style={{ padding: '12px', height: 'fit-content', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="card settings-tabs-list">
           {[
             { id: 'personal', label: 'Personal Info', icon: User },
             { id: 'financial', label: 'Financial Rules', icon: Wallet },
@@ -363,7 +363,7 @@ export function ProfileSettings() {
                 Export your structured financial streams and forecast points for external accounting or tax compliance.
               </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="form-grid-2">
                 <div style={{ padding: '20px', border: '1px solid var(--border-glass)', borderRadius: 12, background: 'rgba(15, 23, 42, 0.6)' }}>
                   <h4 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>Transaction Ledger</h4>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 16px 0', lineHeight: 1.45 }}>

@@ -43,32 +43,39 @@ export function Sidebar() {
   };
 
   return (
-    <aside className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
-      {/* Brand Header */}
-      <div className="sidebar-brand-wrapper">
-        <div className="sidebar-logo">
-          <div className="logo-badge">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-              <polyline points="16 7 22 7 22 13" />
-            </svg>
+    <>
+      {mobileMenuOpen && (
+        <div
+          className="sidebar-backdrop active"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+        {/* Brand Header */}
+        <div className="sidebar-brand-wrapper">
+          <div className="sidebar-logo">
+            <div className="logo-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                <polyline points="16 7 22 7 22 13" />
+              </svg>
+            </div>
+            <div>
+              <div className="logo-text-title">FinSight</div>
+              <div className="logo-text-sub">Uncertain Income Planner</div>
+            </div>
           </div>
-          <div>
-            <div className="logo-text-title">FinSight</div>
-            <div className="logo-text-sub">Uncertain Income Planner</div>
-          </div>
-        </div>
 
-        {mobileMenuOpen && (
           <button
             type="button"
-            className="mobile-menu-toggle"
+            className="sidebar-close-btn"
             onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close sidebar menu"
           >
             <X size={20} />
           </button>
-        )}
-      </div>
+        </div>
 
       {/* Nav List */}
       <div className="sidebar-nav-container">
@@ -158,5 +165,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
-  );
+  </>
+);
 }

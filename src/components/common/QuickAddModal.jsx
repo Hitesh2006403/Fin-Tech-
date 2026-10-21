@@ -76,7 +76,7 @@ export function QuickAddModal() {
       <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="modal-header-bar">
-          <div style={{ display: 'flex', gap: 6, background: 'rgba(11, 18, 32, 0.75)', padding: 4, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div className="modal-tab-group" style={{ display: 'flex', gap: 6, background: 'rgba(11, 18, 32, 0.75)', padding: 4, borderRadius: 10, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
             <button
               type="button"
               style={{
@@ -85,7 +85,7 @@ export function QuickAddModal() {
                 color: tab === 'income' ? '#0B1220' : '#94A3B8',
                 fontWeight: tab === 'income' ? 700 : 500,
                 fontSize: 12.5,
-                padding: '6px 14px',
+                padding: '7px 14px',
                 borderRadius: 7,
                 cursor: 'pointer',
                 display: 'flex',
@@ -97,7 +97,7 @@ export function QuickAddModal() {
               onClick={() => setTab('income')}
             >
               <TrendingUp size={14} />
-              <span>Add Income</span>
+              <span>Income</span>
             </button>
 
             <button
@@ -108,7 +108,7 @@ export function QuickAddModal() {
                 color: tab === 'expense' ? '#0B1220' : '#94A3B8',
                 fontWeight: tab === 'expense' ? 700 : 500,
                 fontSize: 12.5,
-                padding: '6px 14px',
+                padding: '7px 14px',
                 borderRadius: 7,
                 cursor: 'pointer',
                 display: 'flex',
@@ -120,14 +120,15 @@ export function QuickAddModal() {
               onClick={() => setTab('expense')}
             >
               <Receipt size={14} />
-              <span>Add Bill / Expense</span>
+              <span>Bill / Expense</span>
             </button>
           </div>
 
           <button
             type="button"
-            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 6, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 8, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => setQuickAddModalOpen(false)}
+            aria-label="Close modal"
           >
             <X size={20} />
           </button>

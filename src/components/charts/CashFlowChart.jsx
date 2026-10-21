@@ -55,7 +55,7 @@ export function CashFlowChart({
       
       {/* Top Chart Header / Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#F8FAFC' }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 8px #38BDF8' }}></span>
             <span>Projected Balance</span>
@@ -98,7 +98,7 @@ export function CashFlowChart({
       </div>
 
       {/* SVG Chart Graphic */}
-      <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div className="table-responsive" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <svg
           viewBox={`0 0 ${chartWidth} ${height}`}
           style={{ width: '100%', height: 'auto', display: 'block', minWidth: 500 }}

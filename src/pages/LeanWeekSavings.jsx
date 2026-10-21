@@ -87,8 +87,8 @@ export function LeanWeekSavings() {
       )}
 
       {/* Top Target & Progress Card */}
-      <div className="card" style={{ marginBottom: 24, padding: '28px 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 24 }}>
+      <div className="card" style={{ marginBottom: 24, padding: '24px' }}>
+        <div className="kpi-strip-grid" style={{ marginBottom: 24 }}>
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
               Target Safety Reserve
@@ -160,7 +160,7 @@ export function LeanWeekSavings() {
       </div>
 
       {/* Two Column Layout: Calculator Inputs vs Deposit Action */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24 }}>
+      <div className="split-2col-grid">
         
         {/* Calculator Assumptions Form */}
         <div className="card">

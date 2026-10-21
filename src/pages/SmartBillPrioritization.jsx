@@ -46,7 +46,7 @@ export function SmartBillPrioritization() {
       </div>
 
       {/* Top 3 Recommended Actions Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="recommendations-3col-grid">
         {topRecommendations.map((rec, idx) => (
           <div
             key={idx}
@@ -77,7 +77,7 @@ export function SmartBillPrioritization() {
 
       {/* Filter Tabs */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
+        <div className="filter-chips-row" style={{ background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
           {[
             { id: 'all', label: 'All Ranked Bills' },
             { id: 'critical', label: 'Critical' },
@@ -122,14 +122,7 @@ export function SmartBillPrioritization() {
           filteredBills.map((bill, index) => (
             <div
               key={bill.id}
-              className="card"
-              style={{
-                padding: '20px 24px',
-                display: 'grid',
-                gridTemplateColumns: 'auto 1.5fr 1.5fr 1fr auto',
-                alignItems: 'center',
-                gap: 20
-              }}
+              className="card bill-priority-card-grid"
             >
               {/* Rank Number & Priority Badge */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>

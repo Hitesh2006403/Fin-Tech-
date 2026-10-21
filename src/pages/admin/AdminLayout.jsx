@@ -112,30 +112,26 @@ export function AdminLayout({ onReturnToClient }) {
       {/* Calm, Simplified 3D Atmospheric Background */}
       <AdminBackground3D />
 
+      {/* Mobile Sidebar Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="sidebar-backdrop active"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* 1. Left Sidebar Navigation */}
-      <aside style={{
-        width: 250,
-        background: 'rgba(10, 15, 25, 0.92)',
-        backdropFilter: 'blur(25px)',
-        WebkitBackdropFilter: 'blur(25px)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.07)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        zIndex: 100,
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.5)'
-      }}>
+      <aside className={`admin-sidebar ${mobileSidebarOpen ? 'open' : ''}`}>
         {/* Brand Header */}
         <div style={{
-          padding: '24px 20px 20px',
+          padding: '20px 20px 18px',
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
+          justifyContent: 'space-between',
           borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
         }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Sovereign Indigo Brand Icon */}
           <div style={{
             width: 42,
@@ -184,6 +180,16 @@ export function AdminLayout({ onReturnToClient }) {
             </div>
           </div>
         </div>
+
+        <button
+          type="button"
+          className="sidebar-close-btn admin-sidebar-close"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close admin menu"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
         {/* Nav Items List */}
         <div style={{
@@ -414,30 +420,19 @@ export function AdminLayout({ onReturnToClient }) {
       </aside>
 
       {/* 2. Main Work Area */}
-      <div style={{
-        marginLeft: 250,
-        flex: 1,
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        zIndex: 5
-      }}>
+      <div className="admin-main-container">
         {/* Top Header */}
-        <header style={{
-          height: 70,
-          background: 'rgba(10, 15, 25, 0.82)',
-          backdropFilter: 'blur(25px)',
-          WebkitBackdropFilter: 'blur(25px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 28px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 80
-        }}>
+        <header className="admin-top-nav">
+          {/* Mobile Menu Toggle */}
+          <button
+            type="button"
+            className="mobile-menu-toggle admin-mobile-toggle"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Open admin menu"
+          >
+            <Menu size={22} />
+          </button>
+
           {/* Global Search Bar */}
           <div style={{ position: 'relative', width: 380, maxWidth: '100%' }}>
             <Search size={16} color="#64748B" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />

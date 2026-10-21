@@ -60,9 +60,9 @@ export function CashFlowForecast() {
       {/* Scenario & Horizon Controls Strip */}
       <div className="card" style={{ padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
         {/* Scenario Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Scenario:</span>
-          <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>Scenario:</span>
+          <div className="filter-chips-row" style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4, maxWidth: '100%' }}>
             {[
               { id: 'conservative', label: 'Conservative', note: 'No future income counted' },
               { id: 'expected', label: 'Expected', note: 'Confirmed contracts only' },
@@ -92,9 +92,9 @@ export function CashFlowForecast() {
         </div>
 
         {/* Time Horizon Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Horizon:</span>
-          <div style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, maxWidth: '100%' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>Horizon:</span>
+          <div className="filter-chips-row" style={{ display: 'flex', background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', gap: 4, maxWidth: '100%' }}>
             {[7, 14, 30, 60, 90].map(d => (
               <button
                 key={d}

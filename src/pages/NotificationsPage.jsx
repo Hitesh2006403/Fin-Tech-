@@ -120,7 +120,7 @@ export function NotificationsPage() {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 20, background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', width: 'fit-content' }}>
+      <div className="filter-chips-row" style={{ display: 'flex', gap: 6, marginBottom: 20, background: 'rgba(11, 18, 32, 0.8)', padding: 4, borderRadius: 10, border: '1px solid var(--border-glass)', maxWidth: '100%' }}>
         {[
           { id: 'all', label: `All Alerts (${notifications.length})` },
           { id: 'unread', label: `Unread (${notifications.filter(n => !n.isRead).length})` },

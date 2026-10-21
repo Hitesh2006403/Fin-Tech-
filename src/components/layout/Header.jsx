@@ -59,9 +59,11 @@ export function Header() {
           type="button"
           className="btn-quick-add"
           onClick={() => setQuickAddModalOpen(true)}
+          title="Add Record"
+          aria-label="Add Record"
         >
           <Plus size={16} />
-          <span>Add Record</span>
+          <span className="btn-quick-add-text">Add Record</span>
         </button>
 
         {/* Notifications Button */}
@@ -84,6 +86,7 @@ export function Header() {
             type="button"
             className="user-profile-btn"
             onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            aria-label="Open user profile menu"
           >
             <div className="user-avatar-circle">
               {user.avatarInitials || 'AV'}
@@ -96,24 +99,30 @@ export function Header() {
 
           {/* Profile Dropdown */}
           {profileDropdownOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '115%',
-                right: 0,
-                width: 230,
-                background: 'rgba(15, 23, 42, 0.95)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
-                borderRadius: 12,
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.22)',
-                boxShadow: '0 20px 45px rgba(0,0,0,0.65), 0 0 25px rgba(56, 189, 248, 0.12)',
-                padding: '8px 0',
-                zIndex: 200
-              }}
-              onMouseLeave={() => setProfileDropdownOpen(false)}
-            >
+            <>
+              <div
+                style={{ position: 'fixed', inset: 0, zIndex: 190 }}
+                onClick={() => setProfileDropdownOpen(false)}
+              />
+              <div
+                className="profile-dropdown-menu"
+                style={{
+                  position: 'absolute',
+                  top: '115%',
+                  right: 0,
+                  width: 230,
+                  maxWidth: 'calc(100vw - 24px)',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  backdropFilter: 'blur(25px)',
+                  WebkitBackdropFilter: 'blur(25px)',
+                  borderRadius: 12,
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.22)',
+                  boxShadow: '0 20px 45px rgba(0,0,0,0.65), 0 0 25px rgba(56, 189, 248, 0.12)',
+                  padding: '8px 0',
+                  zIndex: 200
+                }}
+              >
               <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{user.name}</div>
                 <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 2 }}>{user.email}</div>
@@ -251,7 +260,8 @@ export function Header() {
                 <span>Sign Out</span>
               </button>
             </div>
-          )}
+          </>
+        )}
         </div>
       </div>
     </header>

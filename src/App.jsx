@@ -1,7 +1,8 @@
 import React from 'react';
 import { AppProvider, useApp } from './context/AppContext.jsx';
-import { Sidebar } from './components/layout/Sidebar.jsx';
 import { Header } from './components/layout/Header.jsx';
+import { Sidebar } from './components/layout/Sidebar.jsx';
+import { MobileBottomNav } from './components/layout/MobileBottomNav.jsx';
 import { QuickAddModal } from './components/common/QuickAddModal.jsx';
 
 // 10 Dedicated Pages
@@ -137,6 +138,9 @@ function MainAppShell() {
 
       {/* 3. Global Quick Add Modal */}
       <QuickAddModal />
+
+      {/* 4. Native-Feel Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

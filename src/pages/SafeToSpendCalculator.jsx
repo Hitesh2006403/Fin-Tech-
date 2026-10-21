@@ -87,7 +87,7 @@ export function SafeToSpendCalculator() {
       </div>
 
       {/* Two Column Section: Interactive Controls vs Transparent Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 24 }}>
+      <div className="split-2col-grid">
         
         {/* Controls Column */}
         <div className="card">

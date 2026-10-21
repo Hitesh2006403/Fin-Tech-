@@ -277,27 +277,12 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#0B1220', position: 'relative', overflow: 'hidden' }}>
+    <div className="auth-page-root">
       {/* Background 3D Animated Scene */}
       <Background3D />
       
       {/* Left Showcase Panel */}
-      <div
-        style={{
-          flex: 1.15,
-          background: 'radial-gradient(circle at 15% 15%, rgba(19, 27, 49, 0.75) 0%, rgba(12, 18, 34, 0.85) 50%, rgba(7, 10, 20, 0.95) 100%)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          padding: '60px 64px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          color: '#F8FAFC',
-          position: 'relative',
-          overflow: 'hidden',
-          zIndex: 1
-        }}
-      >
+      <div className="auth-showcase-panel">
         {/* Glow & Curve background */}
         <div style={{ position: 'absolute', top: -100, left: -100, width: 450, height: 450, background: 'radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
@@ -361,23 +346,26 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       </div>
 
       {/* Right Authentication & Onboarding Form Panel */}
-      <div
-        style={{
-          flex: 0.95,
-          background: 'rgba(11, 18, 32, 0.82)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '40px',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
+      <div className="auth-form-panel">
         <div style={{ width: '100%', maxWidth: 440 }}>
+          {/* Mobile-Only Brand Header */}
+          <div className="auth-mobile-brand-header">
+            <div className="auth-mobile-brand-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B1220" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                <polyline points="16 7 22 7 22 13" />
+              </svg>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 21, fontWeight: 800, letterSpacing: -0.4, color: '#F8FAFC' }}>FinSight</span>
+                <span style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38BDF8', fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4 }}>
+                  PLANNER
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Uncertain Income Treasury</div>
+            </div>
+          </div>
 
           {/* Feedback Alerts */}
           {authError && (
