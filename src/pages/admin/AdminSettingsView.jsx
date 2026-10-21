@@ -168,18 +168,10 @@ export function AdminSettingsView() {
           {adminEmails.map((email, idx) => (
             <div
               key={email}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                background: 'rgba(10, 15, 25, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: 10
-              }}
+              className="admin-whitelist-row"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Mail size={16} color="#818CF8" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', minWidth: 0, wordBreak: 'break-all' }}>
+                <Mail size={16} color="#818CF8" style={{ flexShrink: 0 }} />
                 <span style={{ fontSize: 13.5, color: '#F8FAFC', fontWeight: 600 }}>{email}</span>
                 {idx === 0 && (
                   <span style={{
@@ -217,7 +209,7 @@ export function AdminSettingsView() {
         </div>
 
         {/* Add new email input */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="admin-whitelist-add-group">
           <input
             type="email"
             value={newEmail}
@@ -275,15 +267,7 @@ export function AdminSettingsView() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Maintenance Mode Toggle */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '14px 16px',
-            background: 'rgba(11, 18, 32, 0.6)',
-            borderRadius: 12,
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}>
+          <div className="admin-toggle-row">
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#F8FAFC' }}>Maintenance Mode</div>
               <div style={{ fontSize: 12, color: '#94A3B8' }}>Temporarily pause user access while server upgrades run.</div>
@@ -310,15 +294,7 @@ export function AdminSettingsView() {
           </div>
 
           {/* User Registration Toggle */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '14px 16px',
-            background: 'rgba(11, 18, 32, 0.6)',
-            borderRadius: 12,
-            border: '1px solid rgba(255, 255, 255, 0.05)'
-          }}>
+          <div className="admin-toggle-row">
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#F8FAFC' }}>Allow New Registrations</div>
               <div style={{ fontSize: 12, color: '#94A3B8' }}>Allow prospective users to register accounts via Google SSO or email.</div>

@@ -655,7 +655,7 @@ export function AdminLayout({ onReturnToClient }) {
                   )}
                 </div>
 
-                <div style={{ textAlign: 'left' }}>
+                <div className="admin-user-meta-text" style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
                     {adminUser?.name || 'Admin'}
                   </div>

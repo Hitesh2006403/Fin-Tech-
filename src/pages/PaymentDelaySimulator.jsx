@@ -177,8 +177,22 @@ export function PaymentDelaySimulator() {
               <span>30 Days (Critical)</span>
             </div>
 
-            <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(11, 18, 32, 0.7)', borderRadius: 8, border: '1px solid var(--border-glass)', fontSize: 12, color: 'var(--text-secondary)' }}>
-              Original Date: <strong style={{ color: 'var(--text-primary)' }}>{originalDate}</strong> → Simulated Arrival: <strong style={{ color: delayDays > 0 ? '#EF4444' : '#10B981', textShadow: delayDays > 0 ? '0 0 10px rgba(239, 68, 68, 0.3)' : '0 0 10px rgba(16, 185, 129, 0.3)' }}>{simulatedDate}</strong>
+            <div style={{
+              marginTop: 14,
+              padding: '10px 14px',
+              background: 'rgba(11, 18, 32, 0.7)',
+              borderRadius: 8,
+              border: '1px solid var(--border-glass)',
+              fontSize: 12,
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8
+            }}>
+              <div>Original: <strong style={{ color: 'var(--text-primary)' }}>{originalDate}</strong></div>
+              <div>Simulated: <strong style={{ color: delayDays > 0 ? '#EF4444' : '#10B981', textShadow: delayDays > 0 ? '0 0 10px rgba(239, 68, 68, 0.3)' : '0 0 10px rgba(16, 185, 129, 0.3)' }}>{simulatedDate}</strong></div>
             </div>
           </div>
 
@@ -350,14 +364,16 @@ export function PaymentDelaySimulator() {
                         background: 'rgba(15, 23, 42, 0.6)',
                         borderRadius: 8,
                         border: '1px solid var(--border-glass)',
-                        fontSize: 12.5
+                        fontSize: 12.5,
+                        flexWrap: 'wrap',
+                        gap: 8
                       }}
                     >
-                      <div>
-                        <strong style={{ color: 'var(--text-primary)' }}>{bill.title}</strong>
-                        <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>Due {bill.dueDate}</span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{bill.title}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 2 }}>Due {bill.dueDate}</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         <span className={`badge ${bill.isEssential ? 'badge-danger' : 'badge-neutral'}`} style={{ fontSize: 10.5 }}>
                           {bill.isEssential ? 'Essential' : 'Can Defer'}
                         </span>

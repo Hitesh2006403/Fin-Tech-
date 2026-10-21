@@ -129,7 +129,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {/* Date Picker Pill */}
           <div style={{
             display: 'flex',
@@ -174,11 +174,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
       </div>
 
       {/* 2. Four Stat Cards Row */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: 16
-      }}>
+      <div className="admin-stat-cards-grid">
         {/* Card 1: Total Users */}
         <div style={{
           background: 'rgba(14, 21, 34, 0.78)',
@@ -390,14 +386,9 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
       </div>
 
       {/* 3. Middle Grid: User Growth Chart, Expense vs Income Chart, and Recent Activity */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-        gap: 18
-      }}>
+      <div className="admin-dashboard-middle-grid">
         {/* Left Column: User Growth Chart (5 cols) */}
-        <div style={{
-          gridColumn: 'span 5',
+        <div className="admin-col-growth" style={{
           background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.07)',
@@ -533,8 +524,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         </div>
 
         {/* Center Column: Expense vs Income Chart (4 cols) */}
-        <div style={{
-          gridColumn: 'span 4',
+        <div className="admin-col-income-expense" style={{
           background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.07)',
@@ -659,8 +649,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         </div>
 
         {/* Right Column: Recent Activity (3 cols) */}
-        <div style={{
-          gridColumn: 'span 3',
+        <div className="admin-col-activity" style={{
           background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.07)',
@@ -743,7 +732,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         padding: '22px 24px',
         boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h3 style={{ fontSize: 17, fontWeight: 700, color: '#F8FAFC', margin: '0 0 4px 0' }}>
               Recent Platform Users

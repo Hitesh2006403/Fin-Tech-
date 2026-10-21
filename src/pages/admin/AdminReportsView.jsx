@@ -100,11 +100,7 @@ export function AdminReportsView() {
       </div>
 
       {/* KPI Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 16
-      }}>
+      <div className="admin-stat-cards-grid">
         <div style={{
           background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',

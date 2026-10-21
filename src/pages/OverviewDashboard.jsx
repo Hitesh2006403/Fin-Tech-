@@ -88,7 +88,7 @@ export function OverviewDashboard() {
         <p style={{ color: '#94A3B8', maxWidth: 480, marginBottom: 28, fontSize: 15, lineHeight: 1.6 }}>
           Take the stress out of irregular earnings. Record your current cash, upcoming gigs, and essential bills to see your true Safe-to-Spend.
         </p>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           <button
             type="button"
             className="btn-primary"
@@ -366,11 +366,11 @@ export function OverviewDashboard() {
                       transition: 'border-color 0.15s'
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F8FAFC' }}>{bill.title}</div>
+                    <div style={{ minWidth: 0, flex: 1, paddingRight: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bill.title}</div>
                       <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>Due {bill.dueDate} • {bill.category}</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#F8FAFC', fontFeatureSettings: 'tnum' }}>{formatINR(bill.amount)}</div>
                       {bill.isEssential ? (
                         <span style={{ fontSize: 10, color: '#F87171', fontWeight: 600, background: 'rgba(239, 68, 68, 0.15)', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 2 }}>Essential</span>

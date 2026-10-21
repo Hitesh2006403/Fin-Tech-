@@ -617,6 +617,79 @@
 }
 
 /* Responsive Overrides */
+.admin-stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.admin-dashboard-middle-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 18px;
+}
+
+.admin-col-growth {
+  grid-column: span 5;
+}
+
+.admin-col-income-expense {
+  grid-column: span 4;
+}
+
+.admin-col-activity {
+  grid-column: span 3;
+}
+
+.admin-user-meta-text {
+  display: block;
+}
+
+.admin-whitelist-add-group {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-whitelist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(10, 15, 25, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  gap: 10px;
+}
+
+.admin-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(11, 18, 32, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  .admin-stat-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-dashboard-middle-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-col-growth {
+    grid-column: span 1;
+  }
+  .admin-col-income-expense {
+    grid-column: span 1;
+  }
+  .admin-col-activity {
+    grid-column: span 2;
+  }
+}
+
 @media (max-width: 900px) {
   .admin-sidebar {
     width: min(280px, 80vw);
@@ -645,5 +718,43 @@
   }
   .admin-content-area {
     padding: 18px 16px 36px;
+  }
+  .admin-stat-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-dashboard-middle-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .admin-col-growth,
+  .admin-col-income-expense,
+  .admin-col-activity {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-stat-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  .admin-user-meta-text {
+    display: none !important;
+  }
+  .admin-whitelist-add-group {
+    flex-direction: column !important;
+  }
+  .admin-whitelist-add-group button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .admin-whitelist-row {
+    flex-wrap: wrap !important;
+  }
+  .admin-toggle-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .admin-toggle-row button {
+    align-self: flex-start !important;
   }
 }
