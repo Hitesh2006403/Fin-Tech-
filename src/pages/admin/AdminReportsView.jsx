@@ -81,15 +81,18 @@ export function AdminReportsView() {
             alignItems: 'center',
             gap: 8,
             padding: '9px 16px',
-            background: 'linear-gradient(135deg, #38BDF8 0%, #2563EB 100%)',
-            border: 'none',
+            background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+            border: '1px solid rgba(129, 140, 248, 0.3)',
             borderRadius: 10,
             color: '#FFFFFF',
             fontSize: 13,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.25)',
+            transition: 'all 0.15s ease'
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4338CA 0%, #4F46E5 100%)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)'; }}
         >
           <Download size={15} />
           <span>Export Full Audit Report (JSON)</span>
@@ -103,12 +106,12 @@ export function AdminReportsView() {
         gap: 16
       }}>
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '18px 20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>Total Handled Volume</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#F8FAFC', marginTop: 4 }}>
@@ -120,15 +123,15 @@ export function AdminReportsView() {
         </div>
 
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '18px 20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>Average Transaction Size</div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#38BDF8', marginTop: 4 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#818CF8', marginTop: 4 }}>
             {formatINR(avgTx)}
           </div>
           <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 4 }}>
@@ -137,15 +140,15 @@ export function AdminReportsView() {
         </div>
 
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '18px 20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>Active Treasury Accounts</div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#A78BFA', marginTop: 4 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#A5B4FC', marginTop: 4 }}>
             {usersList.length || 28} Live Users
           </div>
           <div style={{ fontSize: 11.5, color: '#34D399', marginTop: 4, fontWeight: 700 }}>
@@ -154,12 +157,12 @@ export function AdminReportsView() {
         </div>
 
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '18px 20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>System Integrity</div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#10B981', marginTop: 4 }}>
@@ -173,12 +176,12 @@ export function AdminReportsView() {
 
       {/* Top Categories Distribution */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 16,
         padding: '22px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', margin: '0 0 16px 0' }}>
           Top Transaction Categories by Volume
@@ -191,15 +194,15 @@ export function AdminReportsView() {
               <div key={category}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
                   <span style={{ color: '#F8FAFC', fontWeight: 600 }}>{category}</span>
-                  <span style={{ color: '#38BDF8', fontWeight: 700 }}>{formatINR(amount)} ({pct}%)</span>
+                  <span style={{ color: '#818CF8', fontWeight: 700 }}>{formatINR(amount)} ({pct}%)</span>
                 </div>
                 <div style={{ width: '100%', height: 8, background: 'rgba(255, 255, 255, 0.06)', borderRadius: 99 }}>
                   <div style={{
                     width: `${pct}%`,
                     height: '100%',
-                    background: 'linear-gradient(90deg, #38BDF8 0%, #818CF8 100%)',
+                    background: 'linear-gradient(90deg, #4F46E5 0%, #818CF8 100%)',
                     borderRadius: 99,
-                    boxShadow: '0 0 10px rgba(56, 189, 248, 0.3)'
+                    boxShadow: '0 0 10px rgba(99, 102, 241, 0.25)'
                   }} />
                 </div>
               </div>

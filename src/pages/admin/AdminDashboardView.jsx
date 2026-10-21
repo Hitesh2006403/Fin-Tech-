@@ -73,8 +73,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
     { id: 'act_1', type: 'user_register', title: 'New user registered', meta: 'rohan@gmail.com', time: '2 mins ago', color: '#10B981' },
     { id: 'act_2', type: 'issue_reported', title: 'Issue reported', meta: 'Login not working', time: '12 mins ago', color: '#EF4444' },
     { id: 'act_3', type: 'user_blocked', title: 'User blocked', meta: 'sneha123@abc.com', time: '25 mins ago', color: '#F59E0B' },
-    { id: 'act_4', type: 'transaction', title: 'Transaction completed', meta: '₹2,450 - Food & Dining', time: '1 hour ago', color: '#38BDF8' },
-    { id: 'act_5', type: 'feedback', title: 'New feedback', meta: 'Great app!', time: '2 hours ago', color: '#A78BFA' }
+    { id: 'act_4', type: 'transaction', title: 'Transaction completed', meta: '₹2,450 - Food & Dining', time: '1 hour ago', color: '#818CF8' },
+    { id: 'act_5', type: 'feedback', title: 'New feedback', meta: 'Great app!', time: '2 hours ago', color: '#A5B4FC' }
   ];
 
   // SVG Coordinates calculation for Spline Line Chart
@@ -136,15 +136,15 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
             alignItems: 'center',
             gap: 8,
             padding: '8px 14px',
-            background: 'rgba(15, 23, 42, 0.7)',
+            background: 'rgba(14, 21, 34, 0.75)',
             backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: 10,
             fontSize: 13,
             color: '#F8FAFC',
             fontWeight: 600
           }}>
-            <Calendar size={15} color="#38BDF8" />
+            <Calendar size={15} color="#818CF8" />
             <span>Oct 18, 2025</span>
           </div>
 
@@ -181,13 +181,13 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
       }}>
         {/* Card 1: Total Users */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderTop: '1px solid rgba(56, 189, 248, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          borderTop: '1px solid rgba(99, 102, 241, 0.4)',
           borderRadius: 16,
           padding: '20px 22px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -196,12 +196,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%)',
-              border: '1px solid rgba(56, 189, 248, 0.35)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(79, 70, 229, 0.12) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.35)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#38BDF8'
+              color: '#818CF8'
             }}>
               <Users size={22} />
             </div>
@@ -220,11 +220,11 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               <span>↑ 12%</span>
             </div>
 
-            {/* Glowing Sparkline SVG */}
+            {/* Indigo Sparkline SVG */}
             <svg width="90" height="26" viewBox="0 0 90 26" fill="none">
               <path
                 d="M2 18 C 18 20, 28 8, 45 14 C 60 18, 72 4, 88 6"
-                stroke="#38BDF8"
+                stroke="#818CF8"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
@@ -234,13 +234,13 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
 
         {/* Card 2: Active Users */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderTop: '1px solid rgba(16, 185, 129, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          borderTop: '1px solid rgba(16, 185, 129, 0.4)',
           borderRadius: 16,
           padding: '20px 22px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -249,7 +249,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%)',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.1) 100%)',
               border: '1px solid rgba(16, 185, 129, 0.35)',
               display: 'flex',
               alignItems: 'center',
@@ -286,13 +286,13 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
 
         {/* Card 3: Reported Issues */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderTop: '1px solid rgba(239, 68, 68, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          borderTop: '1px solid rgba(239, 68, 68, 0.4)',
           borderRadius: 16,
           padding: '20px 22px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -301,7 +301,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%)',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.1) 100%)',
               border: '1px solid rgba(239, 68, 68, 0.35)',
               display: 'flex',
               alignItems: 'center',
@@ -338,13 +338,13 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
 
         {/* Card 4: Total Transactions */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderTop: '1px solid rgba(167, 139, 250, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          borderTop: '1px solid rgba(129, 140, 248, 0.4)',
           borderRadius: 16,
           padding: '20px 22px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36), inset 0 1px 0 0 rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
           position: 'relative',
           overflow: 'hidden'
         }}>
@@ -353,12 +353,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%)',
-              border: '1px solid rgba(167, 139, 250, 0.35)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(67, 56, 202, 0.12) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.35)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#A78BFA'
+              color: '#A5B4FC'
             }}>
               <IndianRupee size={22} />
             </div>
@@ -372,7 +372,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#A78BFA', fontSize: 12, fontWeight: 700 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#A5B4FC', fontSize: 12, fontWeight: 700 }}>
               <ArrowUpRight size={14} />
               <span>↑ 16%</span>
             </div>
@@ -380,7 +380,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
             <svg width="90" height="26" viewBox="0 0 90 26" fill="none">
               <path
                 d="M2 16 C 18 10, 32 20, 50 8 C 65 2, 75 14, 88 7"
-                stroke="#A78BFA"
+                stroke="#A5B4FC"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
@@ -398,12 +398,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         {/* Left Column: User Growth Chart (5 cols) */}
         <div style={{
           gridColumn: 'span 5',
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', margin: 0 }}>
@@ -413,8 +413,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               value={growthTimeframe}
               onChange={(e) => setGrowthTimeframe(e.target.value)}
               style={{
-                background: 'rgba(11, 18, 32, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'rgba(10, 15, 25, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: 8,
                 color: '#F8FAFC',
                 fontSize: 12,
@@ -437,8 +437,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
             >
               <defs>
                 <linearGradient id="growthAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#6366F1" stopOpacity="0.32" />
+                  <stop offset="100%" stopColor="#6366F1" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -475,7 +475,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               <path
                 d={pathD}
                 fill="none"
-                stroke="#38BDF8"
+                stroke="#818CF8"
                 strokeWidth="2.5"
                 strokeLinecap="round"
               />
@@ -487,8 +487,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                     cx={p.x}
                     cy={p.y}
                     r={hoveredPoint?.idx === idx ? 6 : 4}
-                    fill={hoveredPoint?.idx === idx ? '#38BDF8' : '#0B1220'}
-                    stroke="#38BDF8"
+                    fill={hoveredPoint?.idx === idx ? '#818CF8' : '#090D14'}
+                    stroke="#818CF8"
                     strokeWidth="2"
                     style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
                     onMouseEnter={() => setHoveredPoint({ idx, ...p })}
@@ -514,14 +514,14 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                 left: `${(hoveredPoint.x / svgWidth) * 100}%`,
                 top: `${(hoveredPoint.y / svgHeight) * 100 - 32}%`,
                 transform: 'translate(-50%, -100%)',
-                background: 'rgba(15, 23, 42, 0.95)',
-                border: '1px solid #38BDF8',
+                background: 'rgba(14, 21, 34, 0.98)',
+                border: '1px solid #818CF8',
                 borderRadius: 6,
                 padding: '4px 8px',
                 fontSize: 11,
                 fontWeight: 700,
                 color: '#F8FAFC',
-                boxShadow: '0 0 12px rgba(56, 189, 248, 0.4)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.65)',
                 pointerEvents: 'none',
                 whiteSpace: 'nowrap',
                 zIndex: 20
@@ -535,12 +535,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         {/* Center Column: Expense vs Income Chart (4 cols) */}
         <div style={{
           gridColumn: 'span 4',
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', margin: 0 }}>
@@ -550,8 +550,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               value={expenseTimeframe}
               onChange={(e) => setExpenseTimeframe(e.target.value)}
               style={{
-                background: 'rgba(11, 18, 32, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                background: 'rgba(10, 15, 25, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: 8,
                 color: '#F8FAFC',
                 fontSize: 12,
@@ -572,7 +572,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               <span>Income</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: '#94A3B8' }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: '#A78BFA' }} />
+              <span style={{ width: 8, height: 8, borderRadius: 2, background: '#818CF8' }} />
               <span>Expenses</span>
             </div>
           </div>
@@ -600,23 +600,23 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                   onMouseLeave={() => setHoveredBar(null)}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, width: '100%', height: '100%' }}>
-                    {/* Income Bar (Green/Emerald) */}
+                    {/* Income Bar (Emerald) */}
                     <div style={{
                       flex: 1,
                       height: `${incHeight}%`,
                       background: 'linear-gradient(180deg, #34D399 0%, #059669 100%)',
                       borderRadius: '4px 4px 0 0',
-                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.25)',
+                      boxShadow: '0 0 8px rgba(16, 185, 129, 0.2)',
                       transition: 'height 0.3s ease'
                     }} />
 
-                    {/* Expense Bar (Purple/Violet) */}
+                    {/* Expense Bar (Sovereign Indigo) */}
                     <div style={{
                       flex: 1,
                       height: `${expHeight}%`,
-                      background: 'linear-gradient(180deg, #A78BFA 0%, #7C3AED 100%)',
+                      background: 'linear-gradient(180deg, #818CF8 0%, #4F46E5 100%)',
                       borderRadius: '4px 4px 0 0',
-                      boxShadow: '0 0 10px rgba(167, 139, 250, 0.25)',
+                      boxShadow: '0 0 8px rgba(99, 102, 241, 0.2)',
                       transition: 'height 0.3s ease'
                     }} />
                   </div>
@@ -641,18 +641,18 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                 top: 0,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                background: 'rgba(15, 23, 42, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(14, 21, 34, 0.98)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
                 borderRadius: 8,
                 padding: '6px 10px',
                 fontSize: 11,
                 color: '#F8FAFC',
                 zIndex: 25,
-                boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
+                boxShadow: '0 4px 16px rgba(0,0,0,0.6)'
               }}>
                 <div style={{ fontWeight: 700, marginBottom: 2 }}>{hoveredBar.date}</div>
                 <div style={{ color: '#34D399' }}>Income: ₹{hoveredBar.income.toLocaleString()}</div>
-                <div style={{ color: '#A78BFA' }}>Expenses: ₹{hoveredBar.expenses.toLocaleString()}</div>
+                <div style={{ color: '#818CF8' }}>Expenses: ₹{hoveredBar.expenses.toLocaleString()}</div>
               </div>
             )}
           </div>
@@ -661,12 +661,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
         {/* Right Column: Recent Activity (3 cols) */}
         <div style={{
           gridColumn: 'span 3',
-          background: 'rgba(15, 23, 42, 0.68)',
+          background: 'rgba(14, 21, 34, 0.78)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 16,
           padding: '20px',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
           display: 'flex',
           flexDirection: 'column'
         }}>
@@ -680,12 +680,15 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#38BDF8',
+                color: '#818CF8',
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',
-                padding: 0
+                padding: 0,
+                transition: 'color 0.15s ease'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#FFFFFF'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#818CF8'; }}
             >
               View All →
             </button>
@@ -733,12 +736,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
 
       {/* 4. Recent Users Table (Full Width) */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 16,
         padding: '22px 24px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <div>
@@ -753,18 +756,18 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
             type="button"
             onClick={onViewAllUsers}
             style={{
-              background: 'rgba(56, 189, 248, 0.1)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
+              background: 'rgba(99, 102, 241, 0.12)',
+              border: '1px solid rgba(129, 140, 248, 0.3)',
               borderRadius: 8,
-              color: '#38BDF8',
+              color: '#818CF8',
               fontSize: 12.5,
               fontWeight: 700,
               cursor: 'pointer',
               padding: '7px 14px',
               transition: 'all 0.15s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.22)'; e.currentTarget.style.color = '#FFFFFF'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.12)'; e.currentTarget.style.color = '#818CF8'; }}
           >
             View All Users →
           </button>
@@ -792,7 +795,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                       borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                       transition: 'background 0.15s ease'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.04)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     <td style={{ padding: '14px 16px', fontSize: 13, color: '#94A3B8', fontWeight: 600 }}>
@@ -827,13 +830,16 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                           title="View User Details"
                           onClick={() => setSelectedUserModal(u)}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            border: 'none',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             color: '#94A3B8',
                             borderRadius: 6,
                             padding: 6,
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
                           }}
+                          onMouseEnter={(e) => { e.currentTarget.style.color = '#F8FAFC'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'; }}
                         >
                           <Eye size={14} />
                         </button>
@@ -843,13 +849,16 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                           title="Edit User"
                           onClick={() => setSelectedUserModal({ ...u, isEditing: true })}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.06)',
-                            border: 'none',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             color: '#94A3B8',
                             borderRadius: 6,
                             padding: 6,
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
                           }}
+                          onMouseEnter={(e) => { e.currentTarget.style.color = '#F8FAFC'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'; }}
                         >
                           <Edit2 size={14} />
                         </button>
@@ -860,11 +869,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                           onClick={() => toggleUserStatus(u, isBlocked ? 'Unblocked by admin' : 'Suspicious activity')}
                           style={{
                             background: isBlocked ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                            border: 'none',
+                            border: `1px solid ${isBlocked ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
                             color: isBlocked ? '#34D399' : '#F87171',
                             borderRadius: 6,
                             padding: 6,
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
                           }}
                         >
                           <Ban size={14} />
@@ -893,8 +903,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
           padding: 16
         }}>
           <div style={{
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(14, 21, 34, 0.98)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: 18,
             padding: 24,
             maxWidth: 440,
@@ -916,7 +926,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               </div>
               <div>
                 <span style={{ color: '#94A3B8' }}>Email Address:</span>{' '}
-                <strong style={{ color: '#38BDF8' }}>{selectedUserModal.email}</strong>
+                <strong style={{ color: '#818CF8' }}>{selectedUserModal.email}</strong>
               </div>
               <div>
                 <span style={{ color: '#94A3B8' }}>Platform Role:</span>{' '}
@@ -945,8 +955,11 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                   borderRadius: 8,
                   color: '#F8FAFC',
                   fontSize: 13,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease'
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.16)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
               >
                 Close
               </button>

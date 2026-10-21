@@ -85,15 +85,18 @@ export function AdminTransactionsView() {
             alignItems: 'center',
             gap: 8,
             padding: '9px 16px',
-            background: 'rgba(56, 189, 248, 0.15)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
+            background: 'rgba(99, 102, 241, 0.12)',
+            border: '1px solid rgba(129, 140, 248, 0.3)',
             borderRadius: 10,
-            color: '#38BDF8',
+            color: '#818CF8',
             fontSize: 13,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 0 15px rgba(56, 189, 248, 0.15)'
+            boxShadow: '0 2px 12px rgba(99, 102, 241, 0.15)',
+            transition: 'all 0.15s ease'
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.22)'; e.currentTarget.style.color = '#FFFFFF'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.12)'; e.currentTarget.style.color = '#818CF8'; }}
         >
           <Download size={15} />
           <span>Export CSV Report</span>
@@ -107,9 +110,9 @@ export function AdminTransactionsView() {
         justifyContent: 'space-between',
         gap: 14,
         flexWrap: 'wrap',
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 14,
         padding: '14px 18px'
       }}>
@@ -123,8 +126,8 @@ export function AdminTransactionsView() {
             style={{
               width: '100%',
               padding: '9px 14px 9px 40px',
-              background: 'rgba(11, 18, 32, 0.75)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(10, 15, 25, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: 8,
               color: '#F8FAFC',
               fontSize: 13,
@@ -146,8 +149,8 @@ export function AdminTransactionsView() {
                   padding: '6px 12px',
                   borderRadius: 8,
                   border: 'none',
-                  background: typeFilter === tp ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: typeFilter === tp ? '#38BDF8' : '#94A3B8',
+                  background: typeFilter === tp ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                  color: typeFilter === tp ? '#818CF8' : '#94A3B8',
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -172,8 +175,8 @@ export function AdminTransactionsView() {
                   padding: '6px 12px',
                   borderRadius: 8,
                   border: 'none',
-                  background: statusFilter === st ? 'rgba(167, 139, 250, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: statusFilter === st ? '#A78BFA' : '#94A3B8',
+                  background: statusFilter === st ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                  color: statusFilter === st ? '#818CF8' : '#94A3B8',
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer'
@@ -188,12 +191,12 @@ export function AdminTransactionsView() {
 
       {/* Transactions Table */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 16,
         padding: '20px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -226,7 +229,7 @@ export function AdminTransactionsView() {
                         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                         transition: 'background 0.15s ease'
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.04)'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                     >
                       <td style={{ padding: '14px' }}>

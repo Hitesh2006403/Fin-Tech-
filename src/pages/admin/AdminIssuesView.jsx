@@ -74,9 +74,9 @@ export function AdminIssuesView() {
         justifyContent: 'space-between',
         gap: 14,
         flexWrap: 'wrap',
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 14,
         padding: '14px 18px'
       }}>
@@ -90,8 +90,8 @@ export function AdminIssuesView() {
             style={{
               width: '100%',
               padding: '9px 14px 9px 40px',
-              background: 'rgba(11, 18, 32, 0.75)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(10, 15, 25, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: 8,
               color: '#F8FAFC',
               fontSize: 13,
@@ -111,8 +111,8 @@ export function AdminIssuesView() {
                 padding: '7px 12px',
                 borderRadius: 8,
                 border: 'none',
-                background: filterStatus === st ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                color: filterStatus === st ? '#38BDF8' : '#94A3B8',
+                background: filterStatus === st ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                color: filterStatus === st ? '#818CF8' : '#94A3B8',
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -129,7 +129,8 @@ export function AdminIssuesView() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {filteredIssues.length === 0 ? (
           <div style={{
-            background: 'rgba(15, 23, 42, 0.68)',
+            background: 'rgba(14, 21, 34, 0.78)',
+            border: '1px solid rgba(255, 255, 255, 0.07)',
             borderRadius: 16,
             padding: 40,
             textAlign: 'center',
@@ -144,15 +145,15 @@ export function AdminIssuesView() {
 
             const severityColor =
               issue.severity === 'high' ? '#EF4444' :
-              issue.severity === 'medium' ? '#F59E0B' : '#38BDF8';
+              issue.severity === 'medium' ? '#F59E0B' : '#818CF8';
 
             return (
               <div
                 key={issue.id}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.68)',
+                  background: 'rgba(14, 21, 34, 0.78)',
                   backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.07)',
                   borderLeft: `4px solid ${severityColor}`,
                   borderRadius: 14,
                   padding: '18px 20px',
@@ -160,7 +161,7 @@ export function AdminIssuesView() {
                   alignItems: 'flex-start',
                   justifyContent: 'space-between',
                   gap: 16,
-                  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+                  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
                 }}
               >
                 <div style={{ flex: 1 }}>

@@ -7,14 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment Variables & Secrets
+# Environment Variables & Secrets (CRITICAL SECURITY PROTECTION)
 .env
+.env*
 .env.*
 .env.local
 .env.*.local
 *.env
-backend/.env
-!.env.example
+*.env.*
+**/.env
+**/.env*
+**/.env.*
+**/*.env
+**/*.env.*
+*.pem
+*.key
+*.cert
+*.crt
 
 # Local Session & Financial Store
 backend/data/*.json

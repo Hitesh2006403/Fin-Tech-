@@ -1,7 +1,10 @@
 import { OAuth2Client } from 'google-auth-library';
 import { db, verifyPassword } from './db.js';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID =
+  process.env.GOOGLE_CLIENT_ID ||
+  process.env.VITE_GOOGLE_CLIENT_ID ||
+  '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 const oauthClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 /**

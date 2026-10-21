@@ -28,7 +28,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5174';
+const APP_ORIGIN = process.env.APP_ORIGIN || 'http://localhost:5173';
 
 // Middleware
 app.use(express.json());
@@ -36,11 +36,14 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     APP_ORIGIN,
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'http://localhost:5174',
     'http://127.0.0.1:5174',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173'
-  ],
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ].filter(Boolean),
   credentials: true
 }));
 
@@ -254,11 +257,13 @@ app.post('/api/auth/onboarding', (req, res) => {
 
 // 8. Health and Configuration Diagnostic
 app.get('/api/health', (req, res) => {
+  const effectiveClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
   return res.json({
     status: 'healthy',
-    googleClientIdConfigured: Boolean(process.env.GOOGLE_CLIENT_ID),
-    googleClientIdSnippet: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.slice(0, 15) + '...' : 'none',
+    googleClientIdConfigured: Boolean(effectiveClientId),
+    googleClientIdSnippet: effectiveClientId ? effectiveClientId.slice(0, 15) + '...' : 'none',
     appOrigin: APP_ORIGIN,
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
     serverTime: new Date().toISOString()
   });
 });
@@ -431,9 +436,15 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-// 2b. Admin Authorized Email Login (Allows whitelisted Google email to authenticate directly)
+// 2b. Admin Authorized Email Login (Restricted to non-production/test environments; disabled in production)
 app.post('/api/admin/email-auth', async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({
+        error: 'Direct email authentication is disabled in production. Administrators must use Google SSO or password credentials.'
+      });
+    }
+
     const { email } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'Administrator email is required' });

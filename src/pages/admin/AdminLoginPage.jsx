@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../context/AdminContext.jsx';
-import { Background3D } from '../../components/common/Background3D.jsx';
+import { AdminBackground3D } from '../../components/admin/AdminBackground3D.jsx';
+import { GOOGLE_CLIENT_ID, getOAuthOriginDiagnostics } from '../../config/authConfig.js';
 import {
   ShieldAlert,
   ShieldCheck,
@@ -18,26 +19,29 @@ import {
   ExternalLink,
   HelpCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Copy,
+  Check
 } from 'lucide-react';
 
-const GOOGLE_CLIENT_ID = '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 const PRIMARY_AUTHORIZED_ADMIN = 'hiteshav2006@gmail.com';
 
 export function AdminLoginPage({ onReturnToClient }) {
-  const { loginWithGoogle, loginWithCredentials, loginWithAdminEmail } = useAdmin();
+  const { loginWithGoogle, loginWithCredentials } = useAdmin();
 
   const [authMethod, setAuthMethod] = useState('google'); // 'google' | 'credentials'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [directEmailInput, setDirectEmailInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successNotice, setSuccessNotice] = useState(null);
   const [showOriginHelp, setShowOriginHelp] = useState(false);
+  const [copiedOrigin, setCopiedOrigin] = useState(false);
+  const [copiedClientId, setCopiedClientId] = useState(false);
 
   const googleBtnRef = useRef(null);
+  const originDiag = getOAuthOriginDiagnostics();
 
   // Handle Google Credential Response from GIS
   const handleGoogleCredentialResponse = async (response) => {
@@ -60,37 +64,20 @@ export function AdminLoginPage({ onReturnToClient }) {
     }
   };
 
-  // Direct Authorized Email Authentication (Allows admin to login directly using their email)
-  const handleDirectEmailSubmit = async (e) => {
-    e.preventDefault();
-    if (!directEmailInput || !directEmailInput.includes('@')) {
-      setErrorMessage('Please enter a valid administrator email address.');
-      return;
-    }
-    setLoading(true);
-    setErrorMessage(null);
+  const copyToClipboard = async (text, type) => {
     try {
-      const user = await loginWithAdminEmail(directEmailInput);
-      setSuccessNotice(`Authenticated as Administrator ${user.name}`);
-    } catch (err) {
-      setErrorMessage(err.message || 'Access Denied: Email address is not in the authorized administrator whitelist.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Instant Verified Admin Auth (Bypasses Google OAuth origin_mismatch if localhost port differs)
-  const handleDirectAdminGoogleAuth = async () => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      // Authenticates with primary authorized administrator credentials
-      const user = await loginWithCredentials(PRIMARY_AUTHORIZED_ADMIN, 'Admin@FinSight2026!Master');
-      setSuccessNotice('Authenticated successfully as Super Administrator');
-    } catch (err) {
-      setErrorMessage(err.message || 'Authentication error.');
-    } finally {
-      setLoading(false);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      }
+      if (type === 'origin') {
+        setCopiedOrigin(true);
+        setTimeout(() => setCopiedOrigin(false), 2000);
+      } else if (type === 'client') {
+        setCopiedClientId(true);
+        setTimeout(() => setCopiedClientId(false), 2000);
+      }
+    } catch (e) {
+      console.warn('Failed to copy to clipboard', e);
     }
   };
 
@@ -158,28 +145,28 @@ export function AdminLoginPage({ onReturnToClient }) {
   };
 
   return (
-    <div style={{
+    <div className="admin-login-wrapper" style={{
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '32px 16px',
       position: 'relative',
-      background: '#0B1220'
+      background: '#090D14'
     }}>
-      {/* 3D Visual Atmosphere */}
-      <Background3D />
+      {/* 3D Visual Atmosphere (Calm, Executive Obsidian Slate) */}
+      <AdminBackground3D />
 
-      <div style={{
+      <div className="admin-login-card" style={{
         width: '100%',
         maxWidth: 480,
-        background: 'rgba(15, 23, 42, 0.78)',
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderTop: '1px solid rgba(56, 189, 248, 0.45)',
-        borderRadius: 24,
-        boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.18)',
+        background: 'rgba(14, 21, 34, 0.82)',
+        backdropFilter: 'blur(28px)',
+        WebkitBackdropFilter: 'blur(28px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderTop: '1px solid rgba(99, 102, 241, 0.35)',
+        borderRadius: 22,
+        boxShadow: '0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.08)',
         padding: '34px 32px',
         position: 'relative',
         zIndex: 10
@@ -190,11 +177,11 @@ export function AdminLoginPage({ onReturnToClient }) {
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 6,
-          background: 'rgba(11, 18, 32, 0.85)',
+          background: 'rgba(8, 12, 20, 0.85)',
           padding: 5,
-          borderRadius: 14,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          marginBottom: 26,
+          borderRadius: 12,
+          border: '1px solid rgba(255, 255, 255, 0.07)',
+          marginBottom: 24,
           boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)'
         }}>
           <button
@@ -202,12 +189,12 @@ export function AdminLoginPage({ onReturnToClient }) {
             onClick={onReturnToClient}
             style={{
               padding: '10px 14px',
-              borderRadius: 10,
+              borderRadius: 8,
               border: 'none',
               background: 'transparent',
               color: '#94A3B8',
               fontSize: 13,
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -217,7 +204,7 @@ export function AdminLoginPage({ onReturnToClient }) {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = '#F8FAFC';
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.color = '#94A3B8';
@@ -232,21 +219,21 @@ export function AdminLoginPage({ onReturnToClient }) {
             type="button"
             style={{
               padding: '10px 14px',
-              borderRadius: 10,
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.22) 100%)',
+              borderRadius: 8,
+              border: '1px solid rgba(99, 102, 241, 0.38)',
+              background: 'rgba(99, 102, 241, 0.16)',
               color: '#F8FAFC',
               fontSize: 13,
-              fontWeight: 800,
+              fontWeight: 700,
               cursor: 'default',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: '0 0 16px rgba(56, 189, 248, 0.25)'
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)'
             }}
           >
-            <ShieldAlert size={15} color="#38BDF8" />
+            <ShieldAlert size={15} color="#818CF8" />
             <span>Admin Portal</span>
           </button>
         </div>
@@ -257,15 +244,15 @@ export function AdminLoginPage({ onReturnToClient }) {
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: 58,
-            height: 58,
+            width: 56,
+            height: 56,
             borderRadius: 16,
-            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(167, 139, 250, 0.22) 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            boxShadow: '0 0 25px rgba(56, 189, 248, 0.3)',
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(79, 70, 229, 0.18) 100%)',
+            border: '1px solid rgba(99, 102, 241, 0.35)',
+            boxShadow: '0 0 20px rgba(99, 102, 241, 0.22)',
             marginBottom: 12
           }}>
-            <ShieldAlert size={30} color="#38BDF8" />
+            <ShieldAlert size={28} color="#818CF8" />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
@@ -273,10 +260,10 @@ export function AdminLoginPage({ onReturnToClient }) {
               fontSize: 11,
               fontWeight: 800,
               textTransform: 'uppercase',
-              letterSpacing: 1.2,
-              color: '#38BDF8',
-              background: 'rgba(56, 189, 248, 0.12)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
+              letterSpacing: 1.1,
+              color: '#818CF8',
+              background: 'rgba(99, 102, 241, 0.12)',
+              border: '1px solid rgba(99, 102, 241, 0.28)',
               padding: '3px 9px',
               borderRadius: 6
             }}>
@@ -341,10 +328,10 @@ export function AdminLoginPage({ onReturnToClient }) {
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 6,
-          background: 'rgba(11, 18, 32, 0.85)',
-          padding: 5,
-          borderRadius: 14,
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(8, 12, 20, 0.85)',
+          padding: 4,
+          borderRadius: 12,
+          border: '1px solid rgba(255, 255, 255, 0.07)',
           marginBottom: 18,
           boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.35)'
         }}>
@@ -353,10 +340,10 @@ export function AdminLoginPage({ onReturnToClient }) {
             onClick={() => { setAuthMethod('google'); setErrorMessage(null); }}
             style={{
               padding: '10px 14px',
-              borderRadius: 10,
-              border: authMethod === 'google' ? '1px solid rgba(56, 189, 248, 0.45)' : '1px solid transparent',
+              borderRadius: 8,
+              border: authMethod === 'google' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
               background: authMethod === 'google'
-                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.22) 100%)'
+                ? 'rgba(99, 102, 241, 0.16)'
                 : 'transparent',
               color: authMethod === 'google' ? '#F8FAFC' : '#94A3B8',
               fontSize: 13,
@@ -366,7 +353,7 @@ export function AdminLoginPage({ onReturnToClient }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: authMethod === 'google' ? '0 0 16px rgba(56, 189, 248, 0.25)' : 'none',
+              boxShadow: authMethod === 'google' ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
@@ -384,10 +371,10 @@ export function AdminLoginPage({ onReturnToClient }) {
             onClick={() => { setAuthMethod('credentials'); setErrorMessage(null); }}
             style={{
               padding: '10px 14px',
-              borderRadius: 10,
-              border: authMethod === 'credentials' ? '1px solid rgba(167, 139, 250, 0.45)' : '1px solid transparent',
+              borderRadius: 8,
+              border: authMethod === 'credentials' ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid transparent',
               background: authMethod === 'credentials'
-                ? 'linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(139, 92, 246, 0.22) 100%)'
+                ? 'rgba(99, 102, 241, 0.16)'
                 : 'transparent',
               color: authMethod === 'credentials' ? '#F8FAFC' : '#94A3B8',
               fontSize: 13,
@@ -397,11 +384,11 @@ export function AdminLoginPage({ onReturnToClient }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              boxShadow: authMethod === 'credentials' ? '0 0 16px rgba(167, 139, 250, 0.25)' : 'none',
+              boxShadow: authMethod === 'credentials' ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
-            <KeyRound size={15} color={authMethod === 'credentials' ? '#A78BFA' : '#94A3B8'} />
+            <KeyRound size={15} color={authMethod === 'credentials' ? '#818CF8' : '#94A3B8'} />
             <span>Master Key</span>
           </button>
         </div>
@@ -411,9 +398,9 @@ export function AdminLoginPage({ onReturnToClient }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {/* Contextual Google SSO Banner */}
             <div style={{
-              background: 'rgba(56, 189, 248, 0.08)',
-              border: '1px solid rgba(56, 189, 248, 0.22)',
-              borderRadius: 14,
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.22)',
+              borderRadius: 12,
               padding: '12px 14px',
               display: 'flex',
               alignItems: 'center',
@@ -421,7 +408,7 @@ export function AdminLoginPage({ onReturnToClient }) {
               gap: 10
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <ShieldCheck size={18} color="#38BDF8" style={{ flexShrink: 0 }} />
+                <ShieldCheck size={18} color="#818CF8" style={{ flexShrink: 0 }} />
                 <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.4 }}>
                   <span style={{ color: '#F8FAFC', fontWeight: 700, display: 'block' }}>
                     Authorized Google SSO
@@ -432,9 +419,9 @@ export function AdminLoginPage({ onReturnToClient }) {
               <span style={{
                 fontSize: 10,
                 fontWeight: 800,
-                color: '#34D399',
-                background: 'rgba(16, 185, 129, 0.15)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
+                color: '#10B981',
+                background: 'rgba(16, 185, 129, 0.12)',
+                border: '1px solid rgba(16, 185, 129, 0.28)',
                 padding: '3px 7px',
                 borderRadius: 5,
                 letterSpacing: 0.5,
@@ -455,97 +442,8 @@ export function AdminLoginPage({ onReturnToClient }) {
               }}
             />
 
-            {/* Seamless Direct Admin Email Login */}
-            <div style={{ position: 'relative', margin: '4px 0', textAlign: 'center' }}>
-              <div style={{ position: 'absolute', inset: '0 0', display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: '100%', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }} />
-              </div>
-              <span style={{ position: 'relative', background: '#0F172A', padding: '0 10px', fontSize: 11, color: '#64748B', fontWeight: 600 }}>
-                OR SIGN IN WITH ADMIN GOOGLE EMAIL
-              </span>
-            </div>
-
-            <form onSubmit={handleDirectEmailSubmit} style={{ display: 'flex', gap: 8 }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <Mail size={16} color="#64748B" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="email"
-                  value={directEmailInput}
-                  onChange={(e) => setDirectEmailInput(e.target.value)}
-                  placeholder="Enter your authorized admin email"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '11px 12px 11px 36px',
-                    background: 'rgba(11, 18, 32, 0.85)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: 10,
-                    color: '#F8FAFC',
-                    fontSize: 13,
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  padding: '11px 16px',
-                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.25) 100%)',
-                  border: '1px solid rgba(56, 189, 248, 0.45)',
-                  borderRadius: 10,
-                  color: '#F8FAFC',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
-                }}
-              >
-                <span>Sign In</span>
-                <ArrowRight size={14} color="#38BDF8" />
-              </button>
-            </form>
-
-            <button
-              type="button"
-              disabled={loading}
-              onClick={handleDirectAdminGoogleAuth}
-              style={{
-                width: '100%',
-                padding: '11px 16px',
-                background: 'rgba(56, 189, 248, 0.08)',
-                border: '1px solid rgba(56, 189, 248, 0.25)',
-                borderRadius: 10,
-                color: '#38BDF8',
-                fontSize: 12.5,
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(56, 189, 248, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-              }}
-            >
-              <ShieldCheck size={16} />
-              <span>1-Click Primary Admin Authorization</span>
-            </button>
-
-            {/* Expandable Google Origin Error Troubleshooting helper */}
-            <div style={{ marginTop: 4 }}>
+            {/* Expandable Google Origin Error Troubleshooting & Live Diagnostics helper */}
+            <div style={{ marginTop: 6 }}>
               <button
                 type="button"
                 onClick={() => setShowOriginHelp(!showOriginHelp)}
@@ -562,36 +460,90 @@ export function AdminLoginPage({ onReturnToClient }) {
                   padding: 4
                 }}
               >
-                <HelpCircle size={13} />
-                <span>Seeing Google "Error 400: origin_mismatch"?</span>
+                <HelpCircle size={13} color="#818CF8" />
+                <span>Google "Error 400: origin_mismatch" troubleshooting</span>
                 {showOriginHelp ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
               </button>
 
               {showOriginHelp && (
                 <div style={{
-                  marginTop: 8,
-                  padding: '12px 14px',
-                  background: 'rgba(11, 18, 32, 0.85)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: 10,
-                  fontSize: 11.5,
+                  marginTop: 10,
+                  padding: '14px 16px',
+                  background: 'rgba(10, 15, 25, 0.95)',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  borderRadius: 12,
+                  fontSize: 12,
                   color: '#94A3B8',
-                  lineHeight: 1.5
+                  lineHeight: 1.55
                 }}>
-                  <strong style={{ color: '#F8FAFC' }}>Why this happens:</strong> Google OAuth requires your exact browser URL to be registered in Google Cloud Console.
-                  <div style={{ marginTop: 6 }}>
-                    1. Go to <strong style={{ color: '#38BDF8' }}>Google Cloud Console → Credentials</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <strong style={{ color: '#F8FAFC', fontSize: 12.5 }}>Active Browser Origin:</strong>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(originDiag.currentOrigin, 'origin')}
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.12)',
+                        border: '1px solid rgba(129, 140, 248, 0.35)',
+                        borderRadius: 6,
+                        color: '#818CF8',
+                        padding: '3px 8px',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}
+                    >
+                      {copiedOrigin ? <Check size={12} color="#34D399" /> : <Copy size={12} />}
+                      <span>{copiedOrigin ? 'Copied!' : 'Copy Origin'}</span>
+                    </button>
                   </div>
-                  <div>
-                    2. Under your Web Client ID, add both:
-                    <div style={{ fontFamily: 'monospace', color: '#F8FAFC', margin: '4px 0', padding: '4px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: 6 }}>
-                      http://localhost:5174<br />
-                      http://localhost:5173
-                    </div>
-                    to <strong>Authorized JavaScript Origins</strong>.
+
+                  <div style={{
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    color: '#818CF8',
+                    padding: '6px 10px',
+                    background: 'rgba(0, 0, 0, 0.45)',
+                    borderRadius: 6,
+                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                    marginBottom: 10,
+                    wordBreak: 'break-all'
+                  }}>
+                    {originDiag.currentOrigin || 'http://localhost:5173'}
                   </div>
-                  <div style={{ marginTop: 6, color: '#34D399' }}>
-                    💡 In the meantime, the <strong>"Continue as Authorized Admin"</strong> button above authenticates you directly without delay!
+
+                  <div style={{ color: '#CBD5E1', marginBottom: 8, fontSize: 11.5 }}>
+                    <strong>How to permanently resolve in Google Cloud Console:</strong>
+                  </div>
+                  <ol style={{ margin: '0 0 10px 0', paddingLeft: 18, fontSize: 11.5, color: '#94A3B8' }}>
+                    <li style={{ marginBottom: 4 }}>
+                      Open <strong style={{ color: '#F8FAFC' }}>Google Cloud Console</strong> &gt; <strong style={{ color: '#F8FAFC' }}>APIs & Services</strong> &gt; <strong style={{ color: '#F8FAFC' }}>Credentials</strong>.
+                    </li>
+                    <li style={{ marginBottom: 4 }}>
+                      Click your Web Client ID: <code style={{ color: '#F8FAFC', background: 'rgba(255,255,255,0.08)', padding: '1px 4px', borderRadius: 4 }}>{GOOGLE_CLIENT_ID.slice(0, 20)}...</code>
+                    </li>
+                    <li style={{ marginBottom: 4 }}>
+                      Under <strong style={{ color: '#F8FAFC' }}>Authorized JavaScript origins</strong>, click <strong style={{ color: '#818CF8' }}>+ ADD URI</strong> and paste:
+                      <div style={{ fontFamily: 'monospace', color: '#F8FAFC', margin: '4px 0', padding: '4px 8px', background: 'rgba(0,0,0,0.4)', borderRadius: 6 }}>
+                        http://localhost:5173<br />
+                        http://127.0.0.1:5173
+                      </div>
+                      <em>(No trailing slash, no paths)</em>
+                    </li>
+                    <li>Click <strong style={{ color: '#34D399' }}>Save</strong>. Changes propagate in 1-5 minutes.</li>
+                  </ol>
+
+                  <div style={{
+                    background: 'rgba(167, 139, 250, 0.1)',
+                    border: '1px solid rgba(167, 139, 250, 0.25)',
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    fontSize: 11.5,
+                    color: '#C4B5FD'
+                  }}>
+                    🔑 <strong>Alternative:</strong> Need to sign in immediately? Switch to the <strong>Master Key</strong> tab above to log in with your administrator password.
                   </div>
                 </div>
               )}
@@ -604,9 +556,9 @@ export function AdminLoginPage({ onReturnToClient }) {
           <form onSubmit={handleCredentialsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {/* Contextual Master Key Banner */}
             <div style={{
-              background: 'rgba(167, 139, 250, 0.08)',
-              border: '1px solid rgba(167, 139, 250, 0.22)',
-              borderRadius: 14,
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.22)',
+              borderRadius: 12,
               padding: '12px 14px',
               display: 'flex',
               alignItems: 'center',
@@ -614,7 +566,7 @@ export function AdminLoginPage({ onReturnToClient }) {
               gap: 10
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <KeyRound size={18} color="#A78BFA" style={{ flexShrink: 0 }} />
+                <KeyRound size={18} color="#818CF8" style={{ flexShrink: 0 }} />
                 <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.4 }}>
                   <span style={{ color: '#F8FAFC', fontWeight: 700, display: 'block' }}>
                     Master Passkey Access
@@ -625,9 +577,9 @@ export function AdminLoginPage({ onReturnToClient }) {
               <span style={{
                 fontSize: 10,
                 fontWeight: 800,
-                color: '#A78BFA',
-                background: 'rgba(167, 139, 250, 0.15)',
-                border: '1px solid rgba(167, 139, 250, 0.3)',
+                color: '#818CF8',
+                background: 'rgba(99, 102, 241, 0.14)',
+                border: '1px solid rgba(99, 102, 241, 0.28)',
                 padding: '3px 7px',
                 borderRadius: 5,
                 letterSpacing: 0.5,
@@ -652,8 +604,8 @@ export function AdminLoginPage({ onReturnToClient }) {
                   style={{
                     width: '100%',
                     padding: '11px 14px 11px 40px',
-                    background: 'rgba(11, 18, 32, 0.85)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: 'rgba(8, 12, 20, 0.85)',
+                    border: '1px solid rgba(255, 255, 255, 0.09)',
                     borderRadius: 10,
                     color: '#F8FAFC',
                     fontSize: 13.5,
@@ -679,8 +631,8 @@ export function AdminLoginPage({ onReturnToClient }) {
                   style={{
                     width: '100%',
                     padding: '11px 40px 11px 40px',
-                    background: 'rgba(11, 18, 32, 0.85)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: 'rgba(8, 12, 20, 0.85)',
+                    border: '1px solid rgba(255, 255, 255, 0.09)',
                     borderRadius: 10,
                     color: '#F8FAFC',
                     fontSize: 13.5,
@@ -715,8 +667,8 @@ export function AdminLoginPage({ onReturnToClient }) {
                 width: '100%',
                 padding: '12px 18px',
                 marginTop: 6,
-                background: 'linear-gradient(135deg, #38BDF8 0%, #2563EB 100%)',
-                border: 'none',
+                background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
                 borderRadius: 10,
                 color: '#FFFFFF',
                 fontSize: 13.5,
@@ -726,7 +678,7 @@ export function AdminLoginPage({ onReturnToClient }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: '0 4px 18px rgba(56, 189, 248, 0.3)',
+                boxShadow: '0 4px 16px rgba(79, 70, 229, 0.35)',
                 transition: 'all 0.15s ease'
               }}
             >

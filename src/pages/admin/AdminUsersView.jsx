@@ -59,11 +59,11 @@ export function AdminUsersView() {
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          background: 'rgba(56, 189, 248, 0.1)',
-          border: '1px solid rgba(56, 189, 248, 0.25)',
+          background: 'rgba(99, 102, 241, 0.12)',
+          border: '1px solid rgba(129, 140, 248, 0.3)',
           padding: '6px 14px',
           borderRadius: 10,
-          color: '#38BDF8',
+          color: '#818CF8',
           fontSize: 12.5,
           fontWeight: 700
         }}>
@@ -79,9 +79,9 @@ export function AdminUsersView() {
         justifyContent: 'space-between',
         gap: 14,
         flexWrap: 'wrap',
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 14,
         padding: '14px 18px'
       }}>
@@ -95,8 +95,8 @@ export function AdminUsersView() {
             style={{
               width: '100%',
               padding: '9px 14px 9px 40px',
-              background: 'rgba(11, 18, 32, 0.75)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(10, 15, 25, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.09)',
               borderRadius: 8,
               color: '#F8FAFC',
               fontSize: 13,
@@ -116,8 +116,8 @@ export function AdminUsersView() {
                 padding: '7px 14px',
                 borderRadius: 8,
                 border: 'none',
-                background: statusFilter === st ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                color: statusFilter === st ? '#38BDF8' : '#94A3B8',
+                background: statusFilter === st ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                color: statusFilter === st ? '#818CF8' : '#94A3B8',
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -132,12 +132,12 @@ export function AdminUsersView() {
 
       {/* Users Table */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 16,
         padding: '20px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -168,7 +168,7 @@ export function AdminUsersView() {
                         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                         transition: 'background 0.15s ease'
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.04)'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                     >
                       <td style={{ padding: '14px' }}>
@@ -177,8 +177,8 @@ export function AdminUsersView() {
                             width: 36,
                             height: 36,
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(167, 139, 250, 0.25) 100%)',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(129, 140, 248, 0.15) 100%)',
+                            border: '1px solid rgba(129, 140, 248, 0.25)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -228,13 +228,16 @@ export function AdminUsersView() {
                             title="View Profile"
                             onClick={() => setSelectedUser(u)}
                             style={{
-                              background: 'rgba(255, 255, 255, 0.06)',
-                              border: 'none',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
                               color: '#94A3B8',
                               borderRadius: 6,
                               padding: 6,
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
                             }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = '#F8FAFC'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
                           >
                             <Eye size={14} />
                           </button>
@@ -245,11 +248,12 @@ export function AdminUsersView() {
                             onClick={() => toggleUserStatus(u, isBlocked ? 'Unblocked by admin' : 'Administrative block')}
                             style={{
                               background: isBlocked ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                              border: 'none',
+                              border: `1px solid ${isBlocked ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
                               color: isBlocked ? '#34D399' : '#F87171',
                               borderRadius: 6,
                               padding: 6,
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
                             }}
                           >
                             <Ban size={14} />
@@ -261,11 +265,12 @@ export function AdminUsersView() {
                             onClick={() => setConfirmDelete(u)}
                             style={{
                               background: 'rgba(239, 68, 68, 0.08)',
-                              border: 'none',
+                              border: '1px solid rgba(239, 68, 68, 0.2)',
                               color: '#F87171',
                               borderRadius: 6,
                               padding: 6,
-                              cursor: 'pointer'
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease'
                             }}
                           >
                             <Trash2 size={14} />
@@ -295,8 +300,8 @@ export function AdminUsersView() {
           padding: 16
         }}>
           <div style={{
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(14, 21, 34, 0.98)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: 18,
             padding: 24,
             maxWidth: 440,
@@ -310,9 +315,9 @@ export function AdminUsersView() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
               <div><span style={{ color: '#94A3B8' }}>Identifier:</span> <strong style={{ color: '#F8FAFC' }}>{selectedUser.id}</strong></div>
               <div><span style={{ color: '#94A3B8' }}>Full Name:</span> <strong style={{ color: '#F8FAFC' }}>{selectedUser.name}</strong></div>
-              <div><span style={{ color: '#94A3B8' }}>Email:</span> <strong style={{ color: '#38BDF8' }}>{selectedUser.email}</strong></div>
+              <div><span style={{ color: '#94A3B8' }}>Email:</span> <strong style={{ color: '#818CF8' }}>{selectedUser.email}</strong></div>
               <div><span style={{ color: '#94A3B8' }}>Role:</span> <strong style={{ color: '#F8FAFC' }}>{selectedUser.role}</strong></div>
-              <div><span style={{ color: '#94A3B8' }}>Auth Provider:</span> <strong style={{ color: '#A78BFA' }}>{selectedUser.authProvider || 'google'}</strong></div>
+              <div><span style={{ color: '#94A3B8' }}>Auth Provider:</span> <strong style={{ color: '#A5B4FC' }}>{selectedUser.authProvider || 'google'}</strong></div>
               <div><span style={{ color: '#94A3B8' }}>Status:</span> <strong style={{ color: selectedUser.status === 'Blocked' ? '#F87171' : '#34D399' }}>{selectedUser.status}</strong></div>
               <div><span style={{ color: '#94A3B8' }}>Joined:</span> <strong style={{ color: '#F8FAFC' }}>{selectedUser.joinedOn}</strong></div>
             </div>
@@ -352,7 +357,7 @@ export function AdminUsersView() {
           padding: 16
         }}>
           <div style={{
-            background: 'rgba(15, 23, 42, 0.95)',
+            background: 'rgba(14, 21, 34, 0.98)',
             border: '1px solid rgba(239, 68, 68, 0.35)',
             borderRadius: 18,
             padding: 24,

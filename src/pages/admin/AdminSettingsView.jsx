@@ -91,15 +91,18 @@ export function AdminSettingsView() {
             alignItems: 'center',
             gap: 8,
             padding: '9px 18px',
-            background: 'linear-gradient(135deg, #38BDF8 0%, #2563EB 100%)',
-            border: 'none',
+            background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
+            border: '1px solid rgba(129, 140, 248, 0.3)',
             borderRadius: 10,
             color: '#FFFFFF',
             fontSize: 13,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.25)',
+            transition: 'all 0.15s ease'
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4338CA 0%, #4F46E5 100%)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)'; }}
         >
           <Save size={15} />
           <span>Save Changes</span>
@@ -142,16 +145,16 @@ export function AdminSettingsView() {
 
       {/* 1. Authorized Admin Google Whitelist Section */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderTop: '1px solid rgba(56, 189, 248, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
+        borderTop: '1px solid rgba(99, 102, 241, 0.35)',
         borderRadius: 16,
         padding: '24px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <KeyRound size={20} color="#38BDF8" />
+          <KeyRound size={20} color="#818CF8" />
           <h3 style={{ fontSize: 17, fontWeight: 700, color: '#F8FAFC', margin: 0 }}>
             Authorized Administrator Google Whitelist
           </h3>
@@ -170,20 +173,21 @@ export function AdminSettingsView() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '10px 14px',
-                background: 'rgba(11, 18, 32, 0.75)',
+                background: 'rgba(10, 15, 25, 0.85)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: 10
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Mail size={16} color="#38BDF8" />
+                <Mail size={16} color="#818CF8" />
                 <span style={{ fontSize: 13.5, color: '#F8FAFC', fontWeight: 600 }}>{email}</span>
                 {idx === 0 && (
                   <span style={{
                     fontSize: 10.5,
                     fontWeight: 700,
-                    background: 'rgba(56, 189, 248, 0.15)',
-                    color: '#38BDF8',
+                    background: 'rgba(99, 102, 241, 0.15)',
+                    color: '#818CF8',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
                     padding: '2px 7px',
                     borderRadius: 4
                   }}>
@@ -222,7 +226,7 @@ export function AdminSettingsView() {
             style={{
               flex: 1,
               padding: '10px 14px',
-              background: 'rgba(11, 18, 32, 0.85)',
+              background: 'rgba(10, 15, 25, 0.85)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: 8,
               color: '#F8FAFC',
@@ -235,17 +239,20 @@ export function AdminSettingsView() {
             onClick={handleAddEmail}
             style={{
               padding: '10px 18px',
-              background: 'rgba(56, 189, 248, 0.2)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(129, 140, 248, 0.35)',
               borderRadius: 8,
-              color: '#38BDF8',
+              color: '#818CF8',
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 6
+              gap: 6,
+              transition: 'all 0.15s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.25)'; e.currentTarget.style.color = '#FFFFFF'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'; e.currentTarget.style.color = '#818CF8'; }}
           >
             <Plus size={15} />
             <span>Add to Whitelist</span>
@@ -255,12 +262,12 @@ export function AdminSettingsView() {
 
       {/* 2. Platform Toggles */}
       <div style={{
-        background: 'rgba(15, 23, 42, 0.68)',
+        background: 'rgba(14, 21, 34, 0.78)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
         borderRadius: 16,
         padding: '24px',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.36)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
       }}>
         <h3 style={{ fontSize: 17, fontWeight: 700, color: '#F8FAFC', margin: '0 0 16px 0' }}>
           Platform Availability & Controls
