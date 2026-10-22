@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ShieldAlert
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
   const {
@@ -24,6 +25,7 @@ export function Header() {
     logout
   } = useApp();
 
+  const navigate = useNavigate();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const todayStr = new Intl.DateTimeFormat('en-IN', {
@@ -70,7 +72,7 @@ export function Header() {
         <button
           type="button"
           className="btn-header-action"
-          onClick={() => setActiveRoute('notifications')}
+          onClick={() => navigate('/notifications')}
           title="Notifications"
           aria-label="Notifications"
         >
@@ -153,7 +155,7 @@ export function Header() {
                   e.currentTarget.style.background = 'transparent';
                 }}
                 onClick={() => {
-                  setActiveRoute('settings');
+                  navigate('/settings');
                   setProfileDropdownOpen(false);
                 }}
               >
@@ -161,37 +163,39 @@ export function Header() {
                 <span>Settings & Preferences</span>
               </button>
 
-              <button
-                type="button"
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  border: 'none',
-                  background: 'transparent',
-                  color: '#38BDF8',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(56, 189, 248, 0.14)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-                onClick={() => {
-                  setActiveRoute('admin');
-                  setProfileDropdownOpen(false);
-                }}
-              >
-                <ShieldAlert size={15} color="#38BDF8" />
-                <span>Admin Portal</span>
-              </button>
+              {user?.isAdmin && (
+                <button
+                  type="button"
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#38BDF8',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(56, 189, 248, 0.14)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                  onClick={() => {
+                    navigate('/admin');
+                    setProfileDropdownOpen(false);
+                  }}
+                >
+                  <ShieldAlert size={15} color="#38BDF8" />
+                  <span>Admin Console</span>
+                </button>
+              )}
 
               <button
                 type="button"

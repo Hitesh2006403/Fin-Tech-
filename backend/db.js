@@ -852,18 +852,22 @@ export const db = {
 
   isAuthorizedAdminEmail(email) {
     if (!email) return false;
-    const settings = readJSON(SETTINGS_FILE, {
-      authorizedAdminEmails: ['hiteshav2006@gmail.com', 'admin@finsight.internal']
-    });
     const normalized = email.toLowerCase().trim();
-    const envEmails = (process.env.ADMIN_EMAILS || 'hiteshav2006@gmail.com,admin@finsight.internal')
-      .split(',')
-      .map(e => e.trim().toLowerCase());
-    const whitelist = Array.from(new Set([
-      ...envEmails,
-      ...(settings.authorizedAdminEmails || []).map(e => e.trim().toLowerCase())
-    ]));
-    return whitelist.includes(normalized);
+    const primaryAdmin = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : null;
+    if (!primaryAdmin && !process.env.ADMIN_EMAILS) {
+      console.error('[CONFIG ERROR] ADMIN_EMAIL environment variable is missing or empty in backend environment.');
+      return false;
+    }
+    if (primaryAdmin && normalized === primaryAdmin) {
+      return true;
+    }
+    if (process.env.ADMIN_EMAILS) {
+      const list = process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+      if (list.includes(normalized)) {
+        return true;
+      }
+    }
+    return false;
   },
 
   getAdminStats() {
@@ -1197,15 +1201,24 @@ export const db = {
   },
 
   getSettings() {
-    return readJSON(SETTINGS_FILE, {
+    const defaultEmails = [
+      process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : null,
+      ...(process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [])
+    ].filter(Boolean);
+
+    const settings = readJSON(SETTINGS_FILE, {
       platformName: 'FinSight Treasury Platform',
       maintenanceMode: false,
       allowRegistrations: true,
-      authorizedAdminEmails: ['hiteshav2006@gmail.com', 'admin@finsight.internal'],
+      authorizedAdminEmails: defaultEmails,
       defaultCurrency: 'INR (₹)',
       sessionTimeoutHours: 72,
       systemAlert: 'All backend clusters and authentication services operating nominally.'
     });
+    if (!settings.authorizedAdminEmails || settings.authorizedAdminEmails.length === 0) {
+      settings.authorizedAdminEmails = defaultEmails;
+    }
+    return settings;
   },
 
   updateSettings(updates) {

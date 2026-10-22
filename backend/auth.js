@@ -68,10 +68,20 @@ export async function verifyGoogleIdToken(token) {
 export async function processGoogleAuth({ token }) {
   const googleData = await verifyGoogleIdToken(token);
 
+  // Check if verified email matches administrator configuration
+  const isAdmin = db.isAuthorizedAdminEmail(googleData.email);
+
   // 1. Check if user already exists by verified Google Sub
   let user = db.getUserByGoogleSub(googleData.googleSub);
   if (user) {
-    return { status: 'authenticated', user };
+    if (isAdmin && user.role !== 'Super Administrator') {
+      user = db.updateUser(user.id, {
+        role: 'Super Administrator',
+        onboardingCompleted: true,
+        picture: googleData.picture || user.picture
+      });
+    }
+    return { status: 'authenticated', user, isAdmin };
   }
 
   // 2. Check if user exists by email
@@ -87,6 +97,15 @@ export async function processGoogleAuth({ token }) {
         message: 'An account with this email already exists using password. Please enter your account password to securely link your Google account.'
       };
     }
+    if (isAdmin && existingByEmail.role !== 'Super Administrator') {
+      user = db.updateUser(existingByEmail.id, {
+        role: 'Super Administrator',
+        onboardingCompleted: true,
+        picture: googleData.picture || existingByEmail.picture
+      });
+      return { status: 'authenticated', user, isAdmin };
+    }
+    return { status: 'authenticated', user: existingByEmail, isAdmin };
   }
 
   // 3. New user registration via Google
@@ -96,10 +115,11 @@ export async function processGoogleAuth({ token }) {
     picture: googleData.picture,
     authProvider: 'google',
     googleSub: googleData.googleSub,
-    onboardingCompleted: false
+    role: isAdmin ? 'Super Administrator' : 'Freelance Planner',
+    onboardingCompleted: Boolean(isAdmin)
   });
 
-  return { status: 'authenticated', user, isNewUser: true };
+  return { status: 'authenticated', user, isNewUser: true, isAdmin };
 }
 
 /**

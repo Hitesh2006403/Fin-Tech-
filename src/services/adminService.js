@@ -8,16 +8,10 @@ import { decodeGoogleJwt } from './authService.js';
 const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
 const ADMIN_API_BASE = `${API_ROOT}/api/admin`;
 
-// Fallback authorized admin emails if server is unreachable
-const DEFAULT_AUTHORIZED_ADMIN_EMAILS = [
-  'hiteshav2006@gmail.com',
-  'admin@finsight.internal'
-];
-
 function getAdminAuthHeaders() {
   const headers = { 'Content-Type': 'application/json' };
   try {
-    const token = localStorage.getItem('finsight_admin_token');
+    const token = localStorage.getItem('uip_auth_token') || localStorage.getItem('finsight_admin_token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -95,36 +89,6 @@ export const adminService = {
 
       return data;
     } catch (err) {
-      // Offline fallback resilience
-      if (err.isServerDown || err.status === 502 || err.message?.includes('Failed to fetch') || err.message?.includes('502')) {
-        console.warn('Backend unavailable, running client-side admin verification fallback');
-        const payload = decodeGoogleJwt(credential);
-        if (payload && payload.email) {
-          const email = payload.email.toLowerCase();
-          const isAllowed = DEFAULT_AUTHORIZED_ADMIN_EMAILS.includes(email);
-          if (!isAllowed) {
-            throw new Error(`Access Denied: The Google account (${payload.email}) is not authorized for Super Administrator access. Only authorized administrator emails (such as ${DEFAULT_AUTHORIZED_ADMIN_EMAILS[0]}) are permitted.`);
-          }
-
-          const fallbackAdminUser = {
-            id: 'usr_admin_google',
-            name: payload.name || 'Super Administrator',
-            email: payload.email,
-            role: 'Super Administrator',
-            picture: payload.picture || null,
-            avatarInitials: payload.name ? payload.name.slice(0, 2).toUpperCase() : 'AD',
-            isAdmin: true,
-            authProvider: 'google'
-          };
-          const offlineToken = `admin_offline_${Date.now()}`;
-          try {
-            localStorage.setItem('finsight_admin_token', offlineToken);
-            localStorage.setItem('finsight_admin_user', JSON.stringify(fallbackAdminUser));
-          } catch {}
-
-          return { success: true, token: offlineToken, user: fallbackAdminUser };
-        }
-      }
       throw err;
     }
   },
@@ -157,29 +121,6 @@ export const adminService = {
 
       return data;
     } catch (err) {
-      if (err.isServerDown || err.status === 502 || err.message?.includes('Failed to fetch') || err.message?.includes('502')) {
-        const normEmail = email.toLowerCase().trim();
-        const isMaster = password === 'Admin@FinSight2026!Master' || password === 'FinSight2026!Secured';
-        const isWhitelisted = DEFAULT_AUTHORIZED_ADMIN_EMAILS.includes(normEmail);
-
-        if (isWhitelisted && isMaster) {
-          const fallbackAdminUser = {
-            id: 'usr_admin_cred',
-            name: 'Super Administrator',
-            email: normEmail,
-            role: 'Super Administrator',
-            avatarInitials: 'AD',
-            isAdmin: true,
-            authProvider: 'local'
-          };
-          const offlineToken = `admin_offline_${Date.now()}`;
-          try {
-            localStorage.setItem('finsight_admin_token', offlineToken);
-            localStorage.setItem('finsight_admin_user', JSON.stringify(fallbackAdminUser));
-          } catch {}
-          return { success: true, token: offlineToken, user: fallbackAdminUser };
-        }
-      }
       throw err;
     }
   },
@@ -212,27 +153,6 @@ export const adminService = {
 
       return data;
     } catch (err) {
-      if (err.isServerDown || err.status === 502 || err.message?.includes('Failed to fetch')) {
-        const normEmail = email.toLowerCase().trim();
-        const isWhitelisted = DEFAULT_AUTHORIZED_ADMIN_EMAILS.includes(normEmail);
-        if (isWhitelisted) {
-          const fallbackAdminUser = {
-            id: 'usr_admin_email',
-            name: 'Super Administrator',
-            email: normEmail,
-            role: 'Super Administrator',
-            avatarInitials: 'SA',
-            isAdmin: true,
-            authProvider: 'google'
-          };
-          const offlineToken = `offline_admin_${Date.now()}`;
-          try {
-            localStorage.setItem('finsight_admin_token', offlineToken);
-            localStorage.setItem('finsight_admin_user', JSON.stringify(fallbackAdminUser));
-          } catch {}
-          return { success: true, token: offlineToken, user: fallbackAdminUser };
-        }
-      }
       throw err;
     }
   },
@@ -249,21 +169,12 @@ export const adminService = {
       });
 
       if (!res.ok) {
-        const token = localStorage.getItem('finsight_admin_token');
-        if (token && token.startsWith('admin_offline_')) {
-          const stored = localStorage.getItem('finsight_admin_user');
-          if (stored) return JSON.parse(stored);
-        }
         return null;
       }
 
       const data = await safeJsonParse(res);
       return data.authenticated ? data.user : null;
     } catch {
-      const stored = localStorage.getItem('finsight_admin_user');
-      if (stored) {
-        try { return JSON.parse(stored); } catch {}
-      }
       return null;
     }
   },
@@ -480,7 +391,7 @@ export const adminService = {
         platformName: 'FinSight Treasury Platform',
         maintenanceMode: false,
         allowRegistrations: true,
-        authorizedAdminEmails: DEFAULT_AUTHORIZED_ADMIN_EMAILS,
+        authorizedAdminEmails: [],
         defaultCurrency: 'INR (₹)',
         sessionTimeoutHours: 72,
         systemAlert: 'All backend clusters operating nominally.'

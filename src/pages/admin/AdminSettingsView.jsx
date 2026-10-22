@@ -20,7 +20,7 @@ export function AdminSettingsView() {
   const [platformName, setPlatformName] = useState(settings?.platformName || 'FinSight Treasury Platform');
   const [maintenanceMode, setMaintenanceMode] = useState(Boolean(settings?.maintenanceMode));
   const [allowRegistrations, setAllowRegistrations] = useState(settings?.allowRegistrations ?? true);
-  const [adminEmails, setAdminEmails] = useState(settings?.authorizedAdminEmails || ['hiteshav2006@gmail.com', 'admin@finsight.internal']);
+  const [adminEmails, setAdminEmails] = useState(settings?.authorizedAdminEmails || []);
   const [newEmail, setNewEmail] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);

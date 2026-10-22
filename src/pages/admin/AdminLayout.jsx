@@ -29,6 +29,7 @@ import {
   Menu,
   ShieldCheck
 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function AdminLayout({ onReturnToClient }) {
   const {
@@ -45,6 +46,17 @@ export function AdminLayout({ onReturnToClient }) {
     isRefreshing,
     notificationCount
   } = useAdmin();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentTab = React.useMemo(() => {
+    const parts = location.pathname.split('/').filter(Boolean);
+    if (parts.length >= 2 && parts[0] === 'admin') {
+      return parts[1];
+    }
+    return 'dashboard';
+  }, [location.pathname]);
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -64,18 +76,23 @@ export function AdminLayout({ onReturnToClient }) {
   ];
 
   const handleNavClick = (tabId) => {
+    if (tabId === 'dashboard') {
+      navigate('/admin');
+    } else {
+      navigate(`/admin/${tabId}`);
+    }
     setAdminActiveTab(tabId);
     setMobileSidebarOpen(false);
   };
 
   const renderActiveView = () => {
-    switch (adminActiveTab) {
+    switch (currentTab) {
       case 'dashboard':
         return (
           <AdminDashboardView
-            onViewAllUsers={() => setAdminActiveTab('users')}
-            onViewAllIssues={() => setAdminActiveTab('issues')}
-            onViewAllLogs={() => setAdminActiveTab('security')}
+            onViewAllUsers={() => { navigate('/admin/users'); setAdminActiveTab('users'); }}
+            onViewAllIssues={() => { navigate('/admin/issues'); setAdminActiveTab('issues'); }}
+            onViewAllLogs={() => { navigate('/admin/security'); setAdminActiveTab('security'); }}
           />
         );
       case 'users':
@@ -211,12 +228,12 @@ export function AdminLayout({ onReturnToClient }) {
               padding: '11px 14px',
               borderRadius: 10,
               border: 'none',
-              background: adminActiveTab === 'dashboard'
+              background: currentTab === 'dashboard'
                 ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(79, 70, 229, 0.1) 100%)'
                 : 'transparent',
-              color: adminActiveTab === 'dashboard' ? '#FFFFFF' : '#94A3B8',
-              boxShadow: adminActiveTab === 'dashboard' ? '0 2px 10px rgba(99, 102, 241, 0.15)' : 'none',
-              borderLeft: adminActiveTab === 'dashboard' ? '3px solid #6366F1' : '3px solid transparent',
+              color: currentTab === 'dashboard' ? '#FFFFFF' : '#94A3B8',
+              boxShadow: currentTab === 'dashboard' ? '0 2px 10px rgba(99, 102, 241, 0.15)' : 'none',
+              borderLeft: currentTab === 'dashboard' ? '3px solid #6366F1' : '3px solid transparent',
               fontSize: 13.5,
               fontWeight: 700,
               cursor: 'pointer',
@@ -224,7 +241,7 @@ export function AdminLayout({ onReturnToClient }) {
               transition: 'all 0.15s ease'
             }}
           >
-            <LayoutDashboard size={18} color={adminActiveTab === 'dashboard' ? '#818CF8' : '#94A3B8'} />
+            <LayoutDashboard size={18} color={currentTab === 'dashboard' ? '#818CF8' : '#94A3B8'} />
             <span>Dashboard</span>
           </button>
 
@@ -242,7 +259,7 @@ export function AdminLayout({ onReturnToClient }) {
 
           {navItems.filter(i => i.section === 'management').map(item => {
             const Icon = item.icon;
-            const isActive = adminActiveTab === item.id;
+            const isActive = currentTab === item.id;
             return (
               <button
                 key={item.id}
@@ -301,7 +318,7 @@ export function AdminLayout({ onReturnToClient }) {
 
           {navItems.filter(i => i.section === 'settings').map(item => {
             const Icon = item.icon;
-            const isActive = adminActiveTab === item.id;
+            const isActive = currentTab === item.id;
             return (
               <button
                 key={item.id}
@@ -378,7 +395,10 @@ export function AdminLayout({ onReturnToClient }) {
         }}>
           <button
             type="button"
-            onClick={onReturnToClient}
+            onClick={() => {
+              if (onReturnToClient) onReturnToClient();
+              else navigate('/dashboard');
+            }}
             style={{
               background: 'none',
               border: 'none',
@@ -478,7 +498,7 @@ export function AdminLayout({ onReturnToClient }) {
                     {searchResults.users.map(u => (
                       <div
                         key={u.id}
-                        onClick={() => { setAdminActiveTab('users'); setGlobalSearch(''); }}
+                        onClick={() => { navigate('/admin/users'); setAdminActiveTab('users'); setGlobalSearch(''); }}
                         style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
                       >
                         {u.name} • <span style={{ color: '#94A3B8' }}>{u.email}</span>
@@ -493,7 +513,7 @@ export function AdminLayout({ onReturnToClient }) {
                     {searchResults.transactions.map(t => (
                       <div
                         key={t.id}
-                        onClick={() => { setAdminActiveTab('transactions'); setGlobalSearch(''); }}
+                        onClick={() => { navigate('/admin/transactions'); setAdminActiveTab('transactions'); setGlobalSearch(''); }}
                         style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
                       >
                         {t.title} • <span style={{ color: '#34D399' }}>₹{t.amount}</span>
@@ -508,7 +528,7 @@ export function AdminLayout({ onReturnToClient }) {
                     {searchResults.issues.map(i => (
                       <div
                         key={i.id}
-                        onClick={() => { setAdminActiveTab('issues'); setGlobalSearch(''); }}
+                        onClick={() => { navigate('/admin/issues'); setAdminActiveTab('issues'); setGlobalSearch(''); }}
                         style={{ padding: '6px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 12.5, color: '#F8FAFC' }}
                       >
                         {i.title}
@@ -692,7 +712,7 @@ export function AdminLayout({ onReturnToClient }) {
 
                   <button
                     type="button"
-                    onClick={() => { setAdminActiveTab('settings'); setProfileDropdownOpen(false); }}
+                    onClick={() => { navigate('/admin/settings'); setProfileDropdownOpen(false); }}
                     style={{
                       width: '100%',
                       padding: '10px 16px',
@@ -716,7 +736,11 @@ export function AdminLayout({ onReturnToClient }) {
 
                   <button
                     type="button"
-                    onClick={() => { onReturnToClient(); setProfileDropdownOpen(false); }}
+                    onClick={() => {
+                      if (onReturnToClient) onReturnToClient();
+                      else navigate('/dashboard');
+                      setProfileDropdownOpen(false);
+                    }}
                     style={{
                       width: '100%',
                       padding: '10px 16px',
@@ -742,7 +766,11 @@ export function AdminLayout({ onReturnToClient }) {
 
                   <button
                     type="button"
-                    onClick={() => { logoutAdmin(); setProfileDropdownOpen(false); }}
+                    onClick={async () => {
+                      await logoutAdmin();
+                      setProfileDropdownOpen(false);
+                      navigate('/login');
+                    }}
                     style={{
                       width: '100%',
                       padding: '10px 16px',

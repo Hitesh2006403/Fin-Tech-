@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext.jsx';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -11,20 +12,27 @@ import {
 
 export function MobileBottomNav() {
   const {
-    activeRoute,
     setActiveRoute,
     setMobileMenuOpen,
     setQuickAddModalOpen,
     unreadNotificationCount
   } = useApp();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNav = (path, id) => {
+    navigate(path);
+    if (setActiveRoute) setActiveRoute(id);
+  };
+
   return (
     <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
       {/* 1. Dashboard / Overview */}
       <button
         type="button"
-        className={`mobile-nav-item ${activeRoute === 'dashboard' ? 'active' : ''}`}
-        onClick={() => setActiveRoute('dashboard')}
+        className={`mobile-nav-item ${location.pathname === '/dashboard' || location.pathname === '/' ? 'active' : ''}`}
+        onClick={() => handleNav('/dashboard', 'dashboard')}
       >
         <div className="mobile-nav-icon-wrap">
           <LayoutDashboard size={20} />
@@ -35,8 +43,8 @@ export function MobileBottomNav() {
       {/* 2. Income Management */}
       <button
         type="button"
-        className={`mobile-nav-item ${activeRoute === 'income' ? 'active' : ''}`}
-        onClick={() => setActiveRoute('income')}
+        className={`mobile-nav-item ${location.pathname === '/income' ? 'active' : ''}`}
+        onClick={() => handleNav('/income', 'income')}
       >
         <div className="mobile-nav-icon-wrap">
           <TrendingUp size={20} />
@@ -59,8 +67,8 @@ export function MobileBottomNav() {
       {/* 4. Bills / Expenses */}
       <button
         type="button"
-        className={`mobile-nav-item ${activeRoute === 'expenses' ? 'active' : ''}`}
-        onClick={() => setActiveRoute('expenses')}
+        className={`mobile-nav-item ${location.pathname === '/expenses' || location.pathname === '/transactions' ? 'active' : ''}`}
+        onClick={() => handleNav('/expenses', 'expenses')}
       >
         <div className="mobile-nav-icon-wrap">
           <Receipt size={20} />
@@ -71,8 +79,8 @@ export function MobileBottomNav() {
       {/* 5. Safe-to-Spend */}
       <button
         type="button"
-        className={`mobile-nav-item ${activeRoute === 'safe-to-spend' ? 'active' : ''}`}
-        onClick={() => setActiveRoute('safe-to-spend')}
+        className={`mobile-nav-item ${location.pathname === '/safe-to-spend' ? 'active' : ''}`}
+        onClick={() => handleNav('/safe-to-spend', 'safe-to-spend')}
       >
         <div className="mobile-nav-icon-wrap">
           <ShieldCheck size={20} />

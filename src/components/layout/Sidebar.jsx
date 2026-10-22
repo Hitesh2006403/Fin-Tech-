@@ -15,30 +15,37 @@ import {
   ShieldAlert
 } from 'lucide-react';
 
+import { useNavigate, useLocation } from 'react-router-dom';
+
 export function Sidebar() {
   const {
     activeRoute,
     setActiveRoute,
     mobileMenuOpen,
     setMobileMenuOpen,
-    unreadNotificationCount
+    unreadNotificationCount,
+    user
   } = useApp();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-    { id: 'income', label: 'Income', icon: TrendingUp },
-    { id: 'expenses', label: 'Expenses & Bills', icon: Receipt },
-    { id: 'safe-to-spend', label: 'Safe-to-Spend', icon: ShieldCheck },
-    { id: 'forecast', label: 'Cash-Flow Forecast', icon: LineChart },
-    { id: 'simulator', label: 'Delay Simulator', icon: Sliders, badge: 'Key Feature' },
-    { id: 'prioritization', label: 'Bill Prioritization', icon: ArrowDownUp },
-    { id: 'savings', label: 'Lean-Week Savings', icon: PiggyBank },
-    { id: 'notifications', label: 'Notifications', icon: Bell, count: unreadNotificationCount },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { id: 'income', path: '/income', label: 'Income', icon: TrendingUp },
+    { id: 'expenses', path: '/expenses', label: 'Expenses & Bills', icon: Receipt },
+    { id: 'safe-to-spend', path: '/safe-to-spend', label: 'Safe-to-Spend', icon: ShieldCheck },
+    { id: 'forecast', path: '/forecast', label: 'Cash-Flow Forecast', icon: LineChart },
+    { id: 'simulator', path: '/simulator', label: 'Delay Simulator', icon: Sliders, badge: 'Key Feature' },
+    { id: 'prioritization', path: '/prioritization', label: 'Bill Prioritization', icon: ArrowDownUp },
+    { id: 'savings', path: '/savings', label: 'Lean-Week Savings', icon: PiggyBank },
+    { id: 'notifications', path: '/notifications', label: 'Notifications', icon: Bell, count: unreadNotificationCount },
+    { id: 'settings', path: '/settings', label: 'Settings', icon: Settings },
   ];
 
-  const handleNavClick = (id) => {
-    setActiveRoute(id);
+  const handleNavClick = (item) => {
+    navigate(item.path);
+    if (setActiveRoute) setActiveRoute(item.id);
     setMobileMenuOpen(false);
   };
 
@@ -83,14 +90,16 @@ export function Sidebar() {
 
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeRoute === item.id;
+          const isActive = location.pathname === item.path ||
+            (item.id === 'dashboard' && location.pathname === '/') ||
+            (item.id === 'expenses' && location.pathname === '/transactions');
 
           return (
             <button
               key={item.id}
               type="button"
               className={`nav-link-btn ${isActive ? 'active' : ''}`}
-              onClick={() => handleNavClick(item.id)}
+              onClick={() => handleNavClick(item)}
             >
               <Icon size={18} />
               <span>{item.label}</span>
@@ -127,42 +136,33 @@ export function Sidebar() {
           <span className="env-label">Mode: Live Treasury</span>
           <span className="env-status-dot"></span>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setActiveRoute('admin')}
-          style={{
-            marginTop: 10,
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            padding: '11px 14px',
-            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.16) 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.35)',
-            borderRadius: 10,
-            color: '#F8FAFC',
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(37, 99, 235, 0.25) 100%)';
-            e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.6)';
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.16) 100%)';
-            e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
-            e.currentTarget.style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.35)';
-          }}
-        >
-          <ShieldAlert size={16} color="#38BDF8" />
-          <span>Admin Portal</span>
-        </button>
+        {user?.isAdmin && (
+          <button
+            type="button"
+            onClick={() => {
+              navigate('/admin');
+              setMobileMenuOpen(false);
+            }}
+            style={{
+              marginTop: 10,
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: 8,
+              color: '#A5B4FC',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            <span>Admin Console</span>
+          </button>
+        )}
       </div>
     </aside>
   </>

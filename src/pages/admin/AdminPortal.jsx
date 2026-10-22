@@ -1,12 +1,13 @@
 import React from 'react';
 import { AdminProvider, useAdmin } from '../../context/AdminContext.jsx';
-import { AdminLoginPage } from './AdminLoginPage.jsx';
 import { AdminLayout } from './AdminLayout.jsx';
 import { AdminBackground3D } from '../../components/admin/AdminBackground3D.jsx';
+import { Navigate, useNavigate } from 'react-router-dom';
 import '../../styles/adminTheme.css';
 
 function AdminPortalInner({ onReturnToClient }) {
   const { isAdminAuthenticated, adminLoading } = useAdmin();
+  const navigate = useNavigate();
 
   if (adminLoading) {
     return (
@@ -45,10 +46,17 @@ function AdminPortalInner({ onReturnToClient }) {
   }
 
   if (!isAdminAuthenticated) {
-    return <AdminLoginPage onReturnToClient={onReturnToClient} />;
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return <AdminLayout onReturnToClient={onReturnToClient} />;
+  return (
+    <AdminLayout
+      onReturnToClient={() => {
+        if (onReturnToClient) onReturnToClient();
+        else navigate('/dashboard');
+      }}
+    />
+  );
 }
 
 export function AdminPortal({ onReturnToClient }) {

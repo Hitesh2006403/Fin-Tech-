@@ -34,6 +34,7 @@ describe('Google OAuth & Role-Based Authorization Integration Suite', () => {
       env: {
         ...process.env,
         PORT: '3001',
+        ADMIN_EMAIL: 'hiteshav2006@gmail.com',
         ADMIN_EMAILS: 'hiteshav2006@gmail.com,admin@finsight.internal',
         APP_ORIGIN: 'http://localhost:5173'
       },

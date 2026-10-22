@@ -26,6 +26,14 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+// Validate backend ADMIN_EMAIL environment variable
+if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_EMAIL.trim()) {
+  console.error('\n⚠️ [FinSight Configuration Warning/Error]: process.env.ADMIN_EMAIL is missing in backend environment!');
+  console.error('   Please define ADMIN_EMAIL=<authorized-admin-email> in backend/.env or your Vercel deployment variables.\n');
+} else {
+  console.log(`[FinSight] Admin email configured: ${process.env.ADMIN_EMAIL.trim().toLowerCase()}`);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const APP_ORIGIN =
@@ -156,14 +164,33 @@ app.post('/api/auth/google', async (req, res) => {
       });
     }
 
+    const isAdmin = db.isAuthorizedAdminEmail(result.user.email);
+
     // Success: create session & set HttpOnly cookie (Requirement 9)
     const { sessionId } = db.createSession(result.user.id);
     setSessionCookie(res, sessionId);
 
+    if (isAdmin) {
+      db.addSecurityLog({
+        event: 'Admin Google Authentication',
+        details: `Super Admin ${result.user.name} (${result.user.email}) authenticated successfully via common Google SSO.`,
+        actor: result.user.email,
+        ip: req.ip || '127.0.0.1',
+        status: 'success',
+        severity: 'info'
+      });
+    }
+
     return res.json({
       success: true,
       token: sessionId,
-      user: sanitizeUser(result.user),
+      user: {
+        ...sanitizeUser(result.user),
+        role: isAdmin ? 'Super Administrator' : (result.user.role || 'Freelance Planner'),
+        isAdmin: Boolean(isAdmin)
+      },
+      role: isAdmin ? 'admin' : 'user',
+      redirectTo: isAdmin ? '/admin' : '/dashboard',
       isNewUser: Boolean(result.isNewUser)
     });
   } catch (err) {
@@ -220,13 +247,24 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    const isAdmin = db.isAuthorizedAdminEmail(user.email);
     const { sessionId } = db.createSession(user.id);
     setSessionCookie(res, sessionId);
+
+    const safeUser = sanitizeUser(user);
+    if (isAdmin) {
+      safeUser.role = 'Super Administrator';
+      safeUser.isAdmin = true;
+    } else {
+      safeUser.isAdmin = false;
+    }
 
     return res.json({
       success: true,
       token: sessionId,
-      user: sanitizeUser(user)
+      user: safeUser,
+      role: isAdmin ? 'admin' : 'user',
+      redirectTo: isAdmin ? '/admin' : '/dashboard'
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -255,13 +293,22 @@ app.post('/api/auth/register', async (req, res) => {
       onboardingCompleted: false
     });
 
+    const isAdmin = db.isAuthorizedAdminEmail(newUser.email);
     const { sessionId } = db.createSession(newUser.id);
     setSessionCookie(res, sessionId);
+
+    const safeUser = sanitizeUser(newUser);
+    safeUser.isAdmin = Boolean(isAdmin);
+    if (isAdmin) {
+      safeUser.role = 'Super Administrator';
+    }
 
     return res.json({
       success: true,
       token: sessionId,
-      user: sanitizeUser(newUser),
+      user: safeUser,
+      role: isAdmin ? 'admin' : 'user',
+      redirectTo: isAdmin ? '/admin' : '/dashboard',
       isNewUser: true
     });
   } catch (err) {
@@ -276,9 +323,20 @@ app.get('/api/auth/me', (req, res) => {
     return res.status(401).json({ authenticated: false, user: null });
   }
 
+  const isAdmin = db.isAuthorizedAdminEmail(req.user.email);
+  const safeUser = sanitizeUser(req.user);
+  if (isAdmin) {
+    safeUser.role = 'Super Administrator';
+    safeUser.isAdmin = true;
+  } else {
+    safeUser.isAdmin = false;
+  }
+
   return res.json({
     authenticated: true,
-    user: sanitizeUser(req.user)
+    user: safeUser,
+    role: isAdmin ? 'admin' : 'user',
+    redirectTo: isAdmin ? '/admin' : '/dashboard'
   });
 });
 
@@ -318,10 +376,12 @@ app.post('/api/auth/onboarding', (req, res) => {
 // 8. Health and Configuration Diagnostic
 app.get('/api/health', (req, res) => {
   const effectiveClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
+  const adminEmailConfigured = Boolean(process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL.trim());
   return res.json({
     status: 'healthy',
     googleClientIdConfigured: Boolean(effectiveClientId),
     googleClientIdSnippet: effectiveClientId ? effectiveClientId.slice(0, 15) + '...' : 'none',
+    adminEmailConfigured,
     appOrigin: APP_ORIGIN,
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
     serverTime: new Date().toISOString()
@@ -336,9 +396,8 @@ function requireAdmin(req, res, next) {
   if (!req.user) {
     return res.status(401).json({ error: 'Admin authentication required' });
   }
-  const isSuperAdmin = req.user.role === 'Super Administrator' || req.user.role === 'super_admin';
   const isWhitelisted = db.isAuthorizedAdminEmail(req.user.email);
-  if (!isSuperAdmin && !isWhitelisted) {
+  if (!isWhitelisted) {
     return res.status(403).json({ error: 'Access forbidden: Administrator privileges required' });
   }
   next();

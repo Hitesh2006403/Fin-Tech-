@@ -34,6 +34,7 @@ describe('FinSight Admin Portal Backend Test Suite', () => {
       env: {
         ...process.env,
         PORT: '3001',
+        ADMIN_EMAIL: 'hiteshav2006@gmail.com',
         ADMIN_EMAILS: 'hiteshav2006@gmail.com,admin@finsight.internal'
       },
       stdio: 'inherit'

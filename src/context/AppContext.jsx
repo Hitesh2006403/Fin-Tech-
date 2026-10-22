@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   storageService,
   INITIAL_USER,
@@ -60,7 +61,22 @@ export function AppProvider({ children }) {
     }
   });
 
-  const [activeRoute, setActiveRoute] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Dynamically derive activeRoute from browser pathname
+  const activeRoute = useMemo(() => {
+    const raw = location.pathname.replace(/^\//, '');
+    if (!raw || raw === '/') return 'dashboard';
+    return raw;
+  }, [location.pathname]);
+
+  const setActiveRoute = useCallback((route) => {
+    if (!route) return;
+    const dest = route.startsWith('/') ? route : `/${route}`;
+    navigate(dest);
+  }, [navigate]);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickAddModalOpen, setQuickAddModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -447,7 +463,7 @@ export function AppProvider({ children }) {
     setLeanSavings(INITIAL_LEAN_SAVINGS);
     setNotifications(INITIAL_NOTIFICATIONS);
     setDismissedAlertIds([]);
-    setActiveRoute('dashboard');
+    navigate('/login');
   };
 
   const completeOnboarding = async () => {
