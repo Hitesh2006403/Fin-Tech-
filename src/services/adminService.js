@@ -7,6 +7,7 @@ import { decodeGoogleJwt } from './authService.js';
 
 function resolveAdminApiBase() {
   let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  root = root.replace(/\/:path\*?/g, '').replace(/:path\*?/g, '').replace(/\/\*+$/, '').trim().replace(/\/+$/, '');
   if (root.endsWith('/api/admin')) {
     root = root.slice(0, -('/api/admin'.length));
   } else if (root.endsWith('/api')) {

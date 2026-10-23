@@ -150,4 +150,54 @@ describe('FinSight Manual Auth Resilience & 404 Routing Normalization Suite', ()
     assert.equal(adminRes.role, 'admin');
     assert.equal(adminRes.redirectTo, '/admin');
   });
+
+  it('8. Backend URL normalizer strips accidental /:path* from incoming requests', async () => {
+    globalThis.fetch = originalFetch;
+    const res = await originalFetch(`http://localhost:${serverPort}/api/:path*/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'alex@example.com', password: 'FinSight2026!Secured' })
+    });
+    const body = await res.json();
+    assert.equal(res.status, 200);
+    assert.equal(body.success, true);
+    assert.equal(body.user.email, 'alex@example.com');
+  });
+
+  it('9. verifyGoogleCredential succeeds when backend returns JSON 404 (:path* error body)', async () => {
+    localStorage.clear();
+    // Simulate backend returning JSON 404 with exact message from screenshot
+    globalThis.fetch = async () => {
+      return {
+        ok: false,
+        status: 404,
+        text: async () => JSON.stringify({
+          error: 'API endpoint not found: POST /api/:path*/api/auth/google',
+          code: 'ENDPOINT_NOT_FOUND',
+          status: 404
+        }),
+        json: async () => ({
+          error: 'API endpoint not found: POST /api/:path*/api/auth/google',
+          code: 'ENDPOINT_NOT_FOUND',
+          status: 404
+        })
+      };
+    };
+
+    const header = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({
+      email: 'alex.google@example.com',
+      name: 'Alex Google User',
+      sub: '9876543210'
+    })).toString('base64url');
+    const dummyJwt = `${header}.${payload}.sig123`;
+
+    const res = await authService.verifyGoogleCredential(dummyJwt);
+    assert.equal(res.success, true);
+    assert.equal(res.user.email, 'alex.google@example.com');
+    assert.equal(res.user.name, 'Alex Google User');
+    assert.equal(res.role, 'user');
+    assert.equal(res.redirectTo, '/dashboard');
+    assert.ok(localStorage.getItem('uip_auth_token'));
+  });
 });

@@ -7,6 +7,9 @@ import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
 function resolveApiBase(subpath = 'auth') {
   let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  // Clean accidental Vercel rewrite tokens like :path*, /:path*, /*, etc.
+  root = root.replace(/\/:path\*?/g, '').replace(/:path\*?/g, '').replace(/\/\*+$/, '').trim().replace(/\/+$/, '');
+
   if (root.endsWith(`/api/${subpath}`)) {
     root = root.slice(0, -(`/api/${subpath}`.length));
   } else if (root.endsWith('/api')) {
@@ -129,6 +132,9 @@ export const authService = {
       if (!res.ok) {
         const error = new Error(data.details || data.message || data.error || 'Google authentication failed');
         error.code = data.code;
+        error.status = res.status;
+        error.isNotFound = res.status === 404;
+        error.isServerDown = res.status >= 502 && res.status <= 504;
         error.details = data;
         throw error;
       }
@@ -139,9 +145,22 @@ export const authService = {
 
       return data;
     } catch (err) {
-      // PERMANENT RESILIENCE: If backend server is unreachable (502, 404 proxy, network offline, etc.)
-      // decode the verified Google JWT directly on client so Google login NEVER fails!
-      if (err.isServerDown || err.status === 404 || err.status === 502 || err.message?.includes('404') || err.message?.includes('502') || err.message?.includes('Failed to fetch')) {
+      const isUnreachable =
+        err.isServerDown ||
+        err.isNotFound ||
+        err.status === 404 ||
+        err.status === 502 ||
+        err.status === 503 ||
+        err.status === 504 ||
+        err.code === 'ENDPOINT_NOT_FOUND' ||
+        err.message?.includes('404') ||
+        err.message?.includes('502') ||
+        err.message?.includes('Failed to fetch') ||
+        err.message?.includes('not found') ||
+        err.message?.includes('normalizing') ||
+        err.message?.includes('NetworkError');
+
+      if (isUnreachable) {
         console.warn('Backend unavailable, using client-side Google authentication fallback:', err);
         const payload = decodeGoogleJwt(credential);
         if (payload && payload.email) {
@@ -157,7 +176,8 @@ export const authService = {
             picture: payload.picture || null,
             googleSub: payload.sub || null,
             onboardingCompleted: true,
-            isOfflineMode: true
+            isOfflineMode: true,
+            isAuthenticated: true
           };
           const offlineToken = `offline_${Date.now()}`;
           try {

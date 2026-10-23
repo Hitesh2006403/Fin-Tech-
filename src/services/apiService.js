@@ -15,6 +15,7 @@ import {
 
 function resolveApiBase() {
   let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  root = root.replace(/\/:path\*?/g, '').replace(/:path\*?/g, '').replace(/\/\*+$/, '').trim().replace(/\/+$/, '');
   if (root.endsWith('/api')) {
     root = root.slice(0, -4);
   }

@@ -62,8 +62,11 @@ const defaultOrigins = [
 
 const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
 
-// URL path normalizer: collapse duplicate /api/api/* prefixes or missing /api/
+// URL path normalizer: collapse duplicate /api/api/* prefixes, strip accidental /:path*, or normalize missing /api/
 app.use((req, res, next) => {
+  if (req.url.includes(':path*') || req.url.includes('/:path')) {
+    req.url = req.url.replace(/\/:path\*?/g, '').replace(/:path\*?/g, '');
+  }
   if (req.url.startsWith('/api/api/')) {
     req.url = req.url.replace('/api/api/', '/api/');
   } else if (!req.url.startsWith('/api/') && !req.url.startsWith('/api?')) {
