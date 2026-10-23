@@ -119,11 +119,14 @@ export const authService = {
         console.warn('Backend unavailable, using client-side Google authentication fallback:', err);
         const payload = decodeGoogleJwt(credential);
         if (payload && payload.email) {
+          const emailLower = payload.email.toLowerCase().trim();
+          const isAdmin = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes(emailLower);
           const offlineUser = {
             id: `usr_${payload.sub ? payload.sub.slice(0, 8) : Date.now().toString().slice(-6)}`,
             email: payload.email,
             name: payload.name || payload.email.split('@')[0],
-            role: 'Freelance Product Architect',
+            role: isAdmin ? 'Super Administrator' : 'Freelance Product Architect',
+            isAdmin: Boolean(isAdmin),
             authProvider: 'google',
             picture: payload.picture || null,
             googleSub: payload.sub || null,
@@ -139,6 +142,8 @@ export const authService = {
             success: true,
             token: offlineToken,
             user: offlineUser,
+            role: isAdmin ? 'admin' : 'user',
+            redirectTo: isAdmin ? '/admin' : '/dashboard',
             isNewUser: false
           };
         }
@@ -194,8 +199,26 @@ export const authService = {
       return data;
     } catch (err) {
       if (err.isServerDown || err.status === 502 || err.message?.includes('502') || err.message?.includes('Failed to fetch')) {
-        // Fallback demo user if backend is offline
-        if (email.toLowerCase() === 'alex@example.com') {
+        const cleanEmail = email.toLowerCase().trim();
+        if (['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes(cleanEmail)) {
+          const adminUser = {
+            id: `usr_${cleanEmail.split('@')[0]}`,
+            email: cleanEmail,
+            name: cleanEmail.startsWith('dishank') ? 'Dishank BS' : 'Hitesh Av',
+            role: 'Super Administrator',
+            isAdmin: true,
+            authProvider: 'local',
+            onboardingCompleted: true,
+            isOfflineMode: true
+          };
+          const demoToken = `admin_${Date.now()}`;
+          try {
+            localStorage.setItem('uip_auth_token', demoToken);
+            localStorage.setItem('uip_fallback_user', JSON.stringify(adminUser));
+          } catch {}
+          return { success: true, token: demoToken, user: adminUser, role: 'admin', redirectTo: '/admin' };
+        }
+        if (cleanEmail === 'alex@example.com') {
           const demoUser = {
             id: 'usr_demo_alex',
             email: 'alex@example.com',

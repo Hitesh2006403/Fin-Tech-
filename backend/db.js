@@ -853,11 +853,14 @@ export const db = {
   isAuthorizedAdminEmail(email) {
     if (!email) return false;
     const normalized = email.toLowerCase().trim();
-    const primaryAdmin = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : null;
-    if (!primaryAdmin && !process.env.ADMIN_EMAILS) {
-      console.error('[CONFIG ERROR] ADMIN_EMAIL environment variable is missing or empty in backend environment.');
-      return false;
+
+    // Built-in authorized administrators (always permitted)
+    const builtInAdmins = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
+    if (builtInAdmins.includes(normalized)) {
+      return true;
     }
+
+    const primaryAdmin = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : null;
     if (primaryAdmin && normalized === primaryAdmin) {
       return true;
     }
@@ -867,6 +870,20 @@ export const db = {
         return true;
       }
     }
+
+    // Check stored settings whitelist
+    try {
+      const settings = readJSON(SETTINGS_FILE, null);
+      if (settings?.authorizedAdminEmails && Array.isArray(settings.authorizedAdminEmails)) {
+        const settingsList = settings.authorizedAdminEmails.map(e => e.trim().toLowerCase()).filter(Boolean);
+        if (settingsList.includes(normalized)) {
+          return true;
+        }
+      }
+    } catch (e) {
+      // Fallback
+    }
+
     return false;
   },
 
@@ -1202,21 +1219,30 @@ export const db = {
 
   getSettings() {
     const defaultEmails = [
+      'hiteshav2006@gmail.com',
+      'dishankbs04@gmail.com',
       process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : null,
       ...(process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [])
     ].filter(Boolean);
+    const uniqueDefaultEmails = [...new Set(defaultEmails)];
 
     const settings = readJSON(SETTINGS_FILE, {
       platformName: 'FinSight Treasury Platform',
       maintenanceMode: false,
       allowRegistrations: true,
-      authorizedAdminEmails: defaultEmails,
+      authorizedAdminEmails: uniqueDefaultEmails,
       defaultCurrency: 'INR (₹)',
       sessionTimeoutHours: 72,
       systemAlert: 'All backend clusters and authentication services operating nominally.'
     });
     if (!settings.authorizedAdminEmails || settings.authorizedAdminEmails.length === 0) {
-      settings.authorizedAdminEmails = defaultEmails;
+      settings.authorizedAdminEmails = uniqueDefaultEmails;
+    } else {
+      for (const admin of ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com']) {
+        if (!settings.authorizedAdminEmails.map(e => e.toLowerCase()).includes(admin)) {
+          settings.authorizedAdminEmails.push(admin);
+        }
+      }
     }
     return settings;
   },

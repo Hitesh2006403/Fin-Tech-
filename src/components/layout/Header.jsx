@@ -28,6 +28,12 @@ export function Header() {
   const navigate = useNavigate();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
+  const isAdminUser = Boolean(
+    user?.isAdmin ||
+    user?.role === 'Super Administrator' ||
+    ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((user?.email || '').toLowerCase().trim())
+  );
+
   const todayStr = new Intl.DateTimeFormat('en-IN', {
     weekday: 'short',
     day: 'numeric',
@@ -163,7 +169,7 @@ export function Header() {
                 <span>Settings & Preferences</span>
               </button>
 
-              {user?.isAdmin && (
+              {isAdminUser && (
                 <button
                   type="button"
                   style={{

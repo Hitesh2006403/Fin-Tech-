@@ -30,6 +30,12 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isAdminUser = Boolean(
+    user?.isAdmin ||
+    user?.role === 'Super Administrator' ||
+    ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((user?.email || '').toLowerCase().trim())
+  );
+
   const navItems = [
     { id: 'dashboard', path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'income', path: '/income', label: 'Income', icon: TrendingUp },
@@ -136,7 +142,7 @@ export function Sidebar() {
           <span className="env-label">Mode: Live Treasury</span>
           <span className="env-status-dot"></span>
         </div>
-        {user?.isAdmin && (
+        {isAdminUser && (
           <button
             type="button"
             onClick={() => {

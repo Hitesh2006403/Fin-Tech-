@@ -25,6 +25,7 @@ import {
   Loader2
 } from 'lucide-react';
 
+const AUTHORIZED_ADMIN_EMAILS = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
 const PRIMARY_AUTHORIZED_ADMIN = 'hiteshav2006@gmail.com';
 
 export function AdminLoginPage({ onReturnToClient }) {

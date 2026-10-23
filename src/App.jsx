@@ -37,6 +37,15 @@ function LoadingScreen({ message = 'Verifying secure session...' }) {
   );
 }
 
+const AUTHORIZED_ADMIN_EMAILS = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
+
+function checkIsAdmin(user) {
+  if (!user) return false;
+  if (user.isAdmin || user.role === 'Super Administrator') return true;
+  if (user.email && AUTHORIZED_ADMIN_EMAILS.includes(user.email.toLowerCase().trim())) return true;
+  return false;
+}
+
 // Route Guard for Landing / Home
 function HomeRoute() {
   const { user, authLoading } = useApp();
@@ -49,7 +58,7 @@ function HomeRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.isAdmin || user.role === 'Super Administrator') {
+  if (checkIsAdmin(user)) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -65,7 +74,7 @@ function LoginRoute() {
   }
 
   if (user && user.isAuthenticated) {
-    if (user.isAdmin || user.role === 'Super Administrator') {
+    if (checkIsAdmin(user)) {
       return <Navigate to="/admin" replace />;
     }
     return <Navigate to="/dashboard" replace />;
@@ -120,7 +129,7 @@ function AdminRouteGuard() {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  const isAdmin = user.isAdmin || user.role === 'Super Administrator';
+  const isAdmin = checkIsAdmin(user);
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }

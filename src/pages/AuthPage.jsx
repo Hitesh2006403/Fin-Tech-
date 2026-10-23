@@ -77,11 +77,17 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
 
     try {
       const data = await loginWithGoogle(response.credential);
-      // If new user with incomplete onboarding, switch to onboarding
-      if (data.user && !data.user.onboardingCompleted) {
+      const isAdminUser = Boolean(
+        data?.user?.isAdmin ||
+        data?.role === 'admin' ||
+        data?.user?.role === 'Super Administrator' ||
+        ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || '').toLowerCase().trim())
+      );
+      // If new regular user with incomplete onboarding, switch to onboarding
+      if (data.user && !data.user.onboardingCompleted && !isAdminUser) {
         setMode('onboarding');
       } else {
-        const dest = data?.redirectTo || (data?.user?.isAdmin ? '/admin' : '/dashboard');
+        const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
         navigate(dest);
       }
     } catch (err) {
@@ -183,10 +189,16 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
 
     try {
       const data = await loginWithEmail(email, password);
-      if (data?.user && !data.user.onboardingCompleted) {
+      const isAdminUser = Boolean(
+        data?.user?.isAdmin ||
+        data?.role === 'admin' ||
+        data?.user?.role === 'Super Administrator' ||
+        ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || email || '').toLowerCase().trim())
+      );
+      if (data?.user && !data.user.onboardingCompleted && !isAdminUser) {
         setMode('onboarding');
       } else {
-        const dest = data?.redirectTo || (data?.user?.isAdmin ? '/admin' : '/dashboard');
+        const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
         navigate(dest);
       }
     } catch (err) {
@@ -248,8 +260,18 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     setLoading(true);
 
     try {
-      await registerWithEmail(email, fullName, password);
-      setMode('onboarding');
+      const data = await registerWithEmail(email, fullName, password);
+      const isAdminUser = Boolean(
+        data?.user?.isAdmin ||
+        data?.role === 'admin' ||
+        data?.user?.role === 'Super Administrator' ||
+        ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || email || '').toLowerCase().trim())
+      );
+      if (isAdminUser || data?.redirectTo === '/admin') {
+        navigate(data?.redirectTo || '/admin');
+      } else {
+        setMode('onboarding');
+      }
     } catch (err) {
       setAuthError(err.message || 'Registration failed');
     } finally {
@@ -266,12 +288,20 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     setLinkLoading(true);
 
     try {
-      await linkGoogleAccount({
+      const data = await linkGoogleAccount({
         email: conflictData.email,
         password: linkPassword,
         credential: conflictData.credential
       });
       setAuthNotice('Google account successfully linked!');
+      const isAdminUser = Boolean(
+        data?.user?.isAdmin ||
+        data?.role === 'admin' ||
+        data?.user?.role === 'Super Administrator' ||
+        ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || conflictData?.email || '').toLowerCase().trim())
+      );
+      const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
+      navigate(dest);
     } catch (err) {
       setAuthError(err.message || 'Failed to link account. Please verify password.');
     } finally {
@@ -292,7 +322,12 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       }));
 
       await completeOnboarding();
-      navigate('/dashboard');
+      const isAdminUser = Boolean(
+        user?.isAdmin ||
+        user?.role === 'Super Administrator' ||
+        ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((user?.email || '').toLowerCase().trim())
+      );
+      navigate(isAdminUser ? '/admin' : '/dashboard');
     } catch (err) {
       console.error('Error completing onboarding:', err);
       navigate('/dashboard');

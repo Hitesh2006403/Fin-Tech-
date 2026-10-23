@@ -87,8 +87,8 @@ export async function processGoogleAuth({ token }) {
   // 2. Check if user exists by email
   const existingByEmail = db.getUserByEmail(googleData.email);
   if (existingByEmail) {
-    // If user has local password account without Google sub linked
-    if (!existingByEmail.googleSub) {
+    // If user has local password account with a password set and without Google sub linked
+    if (!existingByEmail.googleSub && existingByEmail.passwordHash && existingByEmail.authProvider === 'local') {
       return {
         status: 'account_conflict',
         conflictType: 'EXISTING_LOCAL_ACCOUNT',
@@ -97,15 +97,14 @@ export async function processGoogleAuth({ token }) {
         message: 'An account with this email already exists using password. Please enter your account password to securely link your Google account.'
       };
     }
-    if (isAdmin && existingByEmail.role !== 'Super Administrator') {
-      user = db.updateUser(existingByEmail.id, {
-        role: 'Super Administrator',
-        onboardingCompleted: true,
-        picture: googleData.picture || existingByEmail.picture
-      });
-      return { status: 'authenticated', user, isAdmin };
-    }
-    return { status: 'authenticated', user: existingByEmail, isAdmin };
+    // Link Google credentials and ensure role elevation if admin
+    user = db.updateUser(existingByEmail.id, {
+      googleSub: googleData.googleSub,
+      picture: googleData.picture || existingByEmail.picture,
+      name: existingByEmail.name || googleData.name,
+      ...(isAdmin ? { role: 'Super Administrator', onboardingCompleted: true } : {})
+    });
+    return { status: 'authenticated', user, isAdmin };
   }
 
   // 3. New user registration via Google

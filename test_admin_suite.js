@@ -171,6 +171,7 @@ describe('FinSight Admin Portal Backend Test Suite', () => {
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.ok(data.settings.authorizedAdminEmails.includes('hiteshav2006@gmail.com'));
+    assert.ok(data.settings.authorizedAdminEmails.includes('dishankbs04@gmail.com'));
   });
 
   it('7. /api/admin/broadcast dispatches notification to users', async () => {
@@ -191,5 +192,56 @@ describe('FinSight Admin Portal Backend Test Suite', () => {
     const data = await res.json();
     assert.strictEqual(data.success, true);
     assert.ok(data.deliveredCount >= 0);
+  });
+
+  it('8. dishankbs04@gmail.com authenticates as secondary admin via admin login', async () => {
+    const res = await fetch(`${BASE_URL}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'dishankbs04@gmail.com',
+        password: 'Admin@FinSight2026!Master'
+      })
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.user.email, 'dishankbs04@gmail.com');
+    assert.strictEqual(data.user.role, 'Super Administrator');
+    assert.strictEqual(data.user.isAdmin, true);
+  });
+
+  it('9. Both admin email IDs navigate to /admin when logging in through user login page (/api/auth/login)', async () => {
+    const admins = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
+    for (const email of admins) {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password: 'Admin@FinSight2026!Master'
+        })
+      });
+
+      assert.strictEqual(res.status, 200, `User login should succeed for ${email}`);
+      const data = await res.json();
+      assert.strictEqual(data.success, true);
+      assert.strictEqual(data.role, 'admin', `Role should be "admin" for ${email}`);
+      assert.strictEqual(data.redirectTo, '/admin', `redirectTo should be "/admin" for ${email}`);
+      assert.strictEqual(data.user.isAdmin, true);
+      assert.strictEqual(data.user.role, 'Super Administrator');
+
+      // Verify session via /api/auth/me
+      const meRes = await fetch(`${BASE_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${data.token}` }
+      });
+      assert.strictEqual(meRes.status, 200);
+      const meData = await meRes.json();
+      assert.strictEqual(meData.authenticated, true);
+      assert.strictEqual(meData.role, 'admin');
+      assert.strictEqual(meData.redirectTo, '/admin');
+      assert.strictEqual(meData.user.isAdmin, true);
+    }
   });
 });
