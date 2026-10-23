@@ -237,9 +237,9 @@ export function UpdatePasswordPage() {
       <div style={{
         width: '100%',
         maxWidth: 460,
-        background: 'rgba(14, 21, 34, 0.85)',
-        backdropFilter: 'blur(28px)',
-        WebkitBackdropFilter: 'blur(28px)',
+        background: 'rgba(14, 21, 34, 0.92)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderTop: '1px solid rgba(56, 189, 248, 0.4)',
         borderRadius: 22,

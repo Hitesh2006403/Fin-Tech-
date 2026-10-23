@@ -9,7 +9,7 @@
   /* Admin Scoped Palette */
   --adm-bg-base: #090D14;
   --adm-bg-surface: #0E1522;
-  --adm-bg-card: rgba(14, 21, 34, 0.78);
+  --adm-bg-card: rgba(14, 21, 34, 0.88);
   --adm-bg-card-hover: rgba(20, 30, 48, 0.85);
   --adm-bg-card-solid: #111A29;
   --adm-bg-sidebar: rgba(10, 15, 25, 0.94);
@@ -205,8 +205,8 @@
   width: 100%;
   max-width: 480px;
   background: var(--adm-bg-card);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--adm-border-card);
   border-top: 1px solid var(--adm-border-accent);
   border-radius: 22px;
@@ -379,8 +379,8 @@
 .admin-sidebar {
   width: 250px;
   background: var(--adm-bg-sidebar);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-right: 1px solid var(--adm-border-subtle);
   display: flex;
   flex-direction: column;
@@ -446,8 +446,8 @@
 .admin-top-nav {
   height: 68px;
   background: var(--adm-bg-header);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--adm-border-subtle);
   display: flex;
   align-items: center;
@@ -476,8 +476,8 @@
 /* Stat Metric Cards */
 .admin-metric-card {
   background: var(--adm-bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--adm-border-card);
   border-top: 1px solid var(--adm-border-highlight);
   border-radius: 16px;
@@ -486,6 +486,7 @@
   position: relative;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  contain: content;
 }
 
 .admin-metric-card:hover {
@@ -497,23 +498,25 @@
 /* Charts Containers */
 .admin-chart-card {
   background: var(--adm-bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--adm-border-card);
   border-radius: 16px;
   padding: 20px 22px;
   box-shadow: var(--adm-shadow-card);
+  contain: content;
 }
 
 /* Management Tables */
 .admin-table-container {
   background: var(--adm-bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--adm-border-card);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--adm-shadow-card);
+  contain: content;
 }
 
 .admin-table {
@@ -691,6 +694,22 @@
 }
 
 @media (max-width: 900px) {
+  .admin-3d-bg .admin-geometry-layer,
+  .admin-3d-bg .admin-particles-canvas {
+    display: none !important;
+  }
+  .admin-metric-card,
+  .admin-chart-card,
+  .admin-table-container {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(14, 21, 34, 0.95) !important;
+  }
+  .admin-table-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+
   .admin-sidebar {
     width: min(280px, 80vw);
     transform: translateX(-100%);

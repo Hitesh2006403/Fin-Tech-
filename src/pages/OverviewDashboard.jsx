@@ -172,8 +172,8 @@ export function OverviewDashboard() {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 12,
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
           }}
         >

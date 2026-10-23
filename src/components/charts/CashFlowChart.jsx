@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { formatINR } from '../../services/financialEngine.js';
 
 export function CashFlowChart({
@@ -12,7 +12,49 @@ export function CashFlowChart({
 }) {
   const [hoverIndex, setHoverIndex] = useState(null);
 
-  if (!forecastData || forecastData.length === 0) {
+  // Memoize scales, coordinates and SVG paths to avoid recalculating on every hover tick
+  const metrics = useMemo(() => {
+    if (!forecastData || forecastData.length === 0) return null;
+
+    const balances = forecastData.map(d => d.closingBalance);
+    const minBal = Math.min(0, Math.min(...balances), safetyBuffer);
+    const maxBal = Math.max(startingBalance * 1.25, Math.max(...balances), safetyBuffer * 1.5, 50000);
+
+    const range = maxBal - minBal || 1;
+    const paddingY = 30;
+    const chartHeight = height - paddingY * 2;
+    const chartWidth = 720;
+    const paddingX = 40;
+    const usableWidth = chartWidth - paddingX * 2;
+
+    const getX = (index) => paddingX + (index / (forecastData.length - 1 || 1)) * usableWidth;
+    const getY = (val) => paddingY + chartHeight - ((val - minBal) / range) * chartHeight;
+
+    const yZero = getY(0);
+    const yBuffer = getY(safetyBuffer);
+
+    const points = forecastData.map((d, i) => `${getX(i)},${getY(d.closingBalance)}`);
+    const linePath = points.join(' L ');
+    const areaPath = `${linePath} L ${getX(forecastData.length - 1)},${getY(minBal)} L ${getX(0)},${getY(minBal)} Z`;
+
+    return {
+      minBal,
+      maxBal,
+      paddingY,
+      chartHeight,
+      chartWidth,
+      paddingX,
+      usableWidth,
+      getX,
+      getY,
+      yZero,
+      yBuffer,
+      linePath,
+      areaPath
+    };
+  }, [forecastData, safetyBuffer, startingBalance, height]);
+
+  if (!forecastData || forecastData.length === 0 || !metrics) {
     return (
       <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', background: 'rgba(15, 23, 42, 0.5)', borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
         No forecast points available
@@ -20,30 +62,19 @@ export function CashFlowChart({
     );
   }
 
-  // Calculate scales
-  const balances = forecastData.map(d => d.closingBalance);
-  const minBal = Math.min(0, Math.min(...balances), safetyBuffer);
-  const maxBal = Math.max(startingBalance * 1.25, Math.max(...balances), safetyBuffer * 1.5, 50000);
-
-  const range = maxBal - minBal || 1;
-  const paddingY = 30;
-  const chartHeight = height - paddingY * 2;
-  const chartWidth = 720;
-  const paddingX = 40;
-  const usableWidth = chartWidth - paddingX * 2;
-
-  // Coordinate helper functions
-  const getX = (index) => paddingX + (index / (forecastData.length - 1 || 1)) * usableWidth;
-  const getY = (val) => paddingY + chartHeight - ((val - minBal) / range) * chartHeight;
-
-  // Zero and Safety Buffer Lines
-  const yZero = getY(0);
-  const yBuffer = getY(safetyBuffer);
-
-  // Build SVG Path for Projected Balance
-  const points = forecastData.map((d, i) => `${getX(i)},${getY(d.closingBalance)}`);
-  const linePath = points.join(' L ');
-  const areaPath = `${linePath} L ${getX(forecastData.length - 1)},${getY(minBal)} L ${getX(0)},${getY(minBal)} Z`;
+  const {
+    minBal,
+    paddingY,
+    chartHeight,
+    chartWidth,
+    paddingX,
+    getX,
+    getY,
+    yZero,
+    yBuffer,
+    linePath,
+    areaPath
+  } = metrics;
 
   // Hover point details
   const activePoint = hoverIndex !== null && forecastData[hoverIndex] ? forecastData[hoverIndex] : forecastData[Math.floor(forecastData.length / 2)];

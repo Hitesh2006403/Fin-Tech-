@@ -9,9 +9,11 @@ import {
   LogOut,
   Settings,
   RefreshCw,
-  ShieldAlert
+  ShieldAlert,
+  ArrowLeft
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { navigationTracker } from '../../services/navigationTracker.js';
 
 export function Header() {
   const {
@@ -26,7 +28,14 @@ export function Header() {
   } = useApp();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  const isSubpage = location.pathname !== '/dashboard' && location.pathname !== '/';
+
+  const handleHeaderBack = () => {
+    navigationTracker.goBack(navigate, '/dashboard');
+  };
 
   const isAdminUser = Boolean(
     user?.isAdmin ||
@@ -43,8 +52,22 @@ export function Header() {
 
   return (
     <header className="app-header">
-      {/* Left: Mobile Toggle & Date Indicator */}
+      {/* Left: Responsive Back Button (on subpages), Mobile Toggle & Date Indicator */}
       <div className="header-left-col">
+        {isSubpage && (
+          <button
+            type="button"
+            className="header-back-btn"
+            onClick={handleHeaderBack}
+            aria-label="Back to previous page"
+            title="Back to previous page"
+            id="header-back-button"
+          >
+            <ArrowLeft size={16} />
+            <span className="header-back-btn-text">Back</span>
+          </button>
+        )}
+
         <button
           type="button"
           className="mobile-menu-toggle"

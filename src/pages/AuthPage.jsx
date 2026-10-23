@@ -20,24 +20,55 @@ import {
   Mail
 } from 'lucide-react';
 import { Background3D } from '../components/common/Background3D.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/authService.js';
+import { navigationTracker } from '../services/navigationTracker.js';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 
 export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const {
+    user,
+    preferences,
     loginWithGoogle,
     linkGoogleAccount,
     loginWithEmail,
     registerWithEmail,
     completeOnboarding,
-    setPreferences,
-    setActiveRoute
+    setPreferences
   } = useApp();
 
-  const [mode, setMode] = useState(initialMode); // 'login' | 'register' | 'forgot' | 'onboarding' | 'link_account'
+  // Local fallback for non-routed modal states like link_account
+  const [internalMode, setInternalMode] = useState(initialMode);
+
+  // Synchronize mode reactively based on route or initialMode
+  const mode = React.useMemo(() => {
+    if (location.pathname === '/register') return 'register';
+    if (location.pathname === '/reset-password') return 'forgot';
+    if (location.pathname === '/setup' || location.pathname === '/onboarding') return 'onboarding';
+    if (location.pathname === '/login') return 'login';
+    return internalMode || initialMode || 'login';
+  }, [location.pathname, internalMode, initialMode]);
+
+  const navigateToMode = (targetMode) => {
+    setAuthError(null);
+    if (targetMode === 'register') {
+      navigate('/register');
+    } else if (targetMode === 'login') {
+      navigate('/login');
+    } else if (targetMode === 'forgot') {
+      navigate('/reset-password');
+    } else if (targetMode === 'onboarding') {
+      navigate('/setup?step=1');
+    } else {
+      setInternalMode(targetMode);
+    }
+  };
+
   const [email, setEmail] = useState('alex@example.com');
   const [password, setPassword] = useState('FinSight2026!Secured');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,12 +95,26 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   const [showLinkPassword, setShowLinkPassword] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
 
-  // Onboarding Wizard state (3 short steps)
-  const [onboardingStep, setOnboardingStep] = useState(1);
-  const [obBalance, setObBalance] = useState('45000');
-  const [obBuffer, setObBuffer] = useState('25000');
-  const [obFrequency, setObFrequency] = useState('Irregular / Milestone-based');
-  const [obThreshold, setObThreshold] = useState('20000');
+  // Setup Wizard Step: Synchronized with URL search params (?step=1 | ?step=2)
+  const stepQuery = searchParams.get('step');
+  const onboardingStep = stepQuery === '2' ? 2 : 1;
+
+  // Setup Wizard field state with persistent draft restoration
+  const initialDraft = navigationTracker.loadSetupDraft(preferences);
+  const [obBalance, setObBalance] = useState(initialDraft.balance);
+  const [obBuffer, setObBuffer] = useState(initialDraft.buffer);
+  const [obFrequency, setObFrequency] = useState(initialDraft.frequency);
+  const [obThreshold, setObThreshold] = useState(initialDraft.threshold);
+
+  // Persist wizard draft on field changes
+  useEffect(() => {
+    navigationTracker.saveSetupDraft({
+      balance: obBalance,
+      buffer: obBuffer,
+      frequency: obFrequency,
+      threshold: obThreshold
+    });
+  }, [obBalance, obBuffer, obFrequency, obThreshold]);
 
   // Google Identity Services (GIS) button ref
   const googleBtnRef = useRef(null);
@@ -94,7 +139,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       );
       // If new regular user with incomplete onboarding, switch to onboarding
       if (data.user && !data.user.onboardingCompleted && !isAdminUser) {
-        setMode('onboarding');
+        navigate('/setup?step=1');
       } else {
         const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
         navigate(dest);
@@ -108,7 +153,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
           credential: response.credential,
           message: err.message
         });
-        setMode('link_account');
+        setInternalMode('link_account');
       } else {
         setAuthError(err.message || 'Google authentication failed. Please retry.');
       }
@@ -116,13 +161,6 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       setLoading(false);
     }
   };
-
-  // Synchronize mode when initialMode prop changes (e.g., navigating to /reset-password)
-  useEffect(() => {
-    if (initialMode) {
-      setMode(initialMode);
-    }
-  }, [initialMode]);
 
   // Initialize Google Identity Services (Requirements 1, 3, 4)
   useEffect(() => {
@@ -212,7 +250,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
         ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || email || '').toLowerCase().trim())
       );
       if (data?.user && !data.user.onboardingCompleted && !isAdminUser) {
-        setMode('onboarding');
+        navigate('/setup?step=1');
       } else {
         const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
         navigate(dest);
@@ -286,7 +324,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       if (isAdminUser || data?.redirectTo === '/admin') {
         navigate(data?.redirectTo || '/admin');
       } else {
-        setMode('onboarding');
+        navigate('/setup?step=1');
       }
     } catch (err) {
       setAuthError(err.message || 'Registration failed');
@@ -359,9 +397,61 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     }
   };
 
-  // Handle Onboarding Completion (Requirement 10)
+  // Wizard Step Navigation Handlers
+  const handleStep1Next = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!obBalance || isNaN(Number(obBalance))) {
+      setAuthError('Please enter a valid Current Recorded Bank Balance.');
+      return;
+    }
+    if (!obBuffer || isNaN(Number(obBuffer))) {
+      setAuthError('Please enter a valid Minimum Safety Buffer Target.');
+      return;
+    }
+    setAuthError(null);
+    navigationTracker.saveSetupDraft({
+      balance: obBalance,
+      buffer: obBuffer,
+      frequency: obFrequency,
+      threshold: obThreshold
+    });
+    setSearchParams({ step: '2' });
+  };
+
+  const handleStep2Back = () => {
+    setAuthError(null);
+    navigationTracker.saveSetupDraft({
+      balance: obBalance,
+      buffer: obBuffer,
+      frequency: obFrequency,
+      threshold: obThreshold
+    });
+    if (navigationTracker.canGoBack()) {
+      navigate(-1);
+    } else {
+      setSearchParams({ step: '1' });
+    }
+  };
+
+  const handleStep1Back = () => {
+    setAuthError(null);
+    // Requirement 4.5: Navigate to genuine previous in-app page when one exists.
+    // Otherwise provide appropriate in-app navigation option without forcing user out of website.
+    if (navigationTracker.canGoBack()) {
+      navigate(-1);
+    } else {
+      if (user && user.isAuthenticated) {
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
+    }
+  };
+
+  // Handle Onboarding Completion (Requirement 10 & Flow 4.6)
   const handleOnboardingFinish = async () => {
     setLoading(true);
+    setAuthError(null);
     try {
       setPreferences(prev => ({
         ...prev,
@@ -372,15 +462,18 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       }));
 
       await completeOnboarding();
+      navigationTracker.clearSetupDraft();
+
       const isAdminUser = Boolean(
         user?.isAdmin ||
         user?.role === 'Super Administrator' ||
         ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((user?.email || '').toLowerCase().trim())
       );
-      navigate(isAdminUser ? '/admin' : '/dashboard');
+      // Requirement 4.6: Predictable navigation without trapping user in duplicate wizard history entries
+      navigate(isAdminUser ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       console.error('Error completing onboarding:', err);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } finally {
       setLoading(false);
     }
@@ -426,7 +519,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
 
           {/* Feature Highlights */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 480 }}>
-            <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(16px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.82)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(8px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(56, 189, 248, 0.14)', color: '#38BDF8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(56, 189, 248, 0.25)', boxShadow: '0 0 12px rgba(56, 189, 248, 0.15)' }}>
                 <ShieldCheck size={18} />
               </div>
@@ -436,7 +529,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
               </div>
             </div>
 
-            <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(16px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.82)', border: '1px solid rgba(255, 255, 255, 0.08)', borderTop: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, backdropFilter: 'blur(8px)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)' }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(245, 158, 11, 0.14)', color: '#FBBF24', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(245, 158, 11, 0.25)', boxShadow: '0 0 12px rgba(245, 158, 11, 0.15)' }}>
                 <Sliders size={18} />
               </div>
@@ -679,7 +772,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                     <a
                       href="#forgot"
                       style={{ fontSize: 12, color: '#38BDF8', textDecoration: 'none', fontWeight: 600 }}
-                      onClick={(e) => { e.preventDefault(); setMode('forgot'); }}
+                      onClick={(e) => { e.preventDefault(); navigateToMode('forgot'); }}
                     >
                       Forgot password?
                     </a>
@@ -734,7 +827,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 <a
                   href="#register"
                   style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
-                  onClick={(e) => { e.preventDefault(); setMode('register'); }}
+                  onClick={(e) => { e.preventDefault(); navigateToMode('register'); }}
                 >
                   Create account
                 </a>
@@ -747,6 +840,19 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
           {/* Mode 2: Register */}
           {mode === 'register' && (
             <div>
+              <div style={{ marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="auth-back-btn"
+                  onClick={() => navigateToMode('login')}
+                  aria-label="Back to Sign In"
+                  id="register-back-button"
+                >
+                  <ArrowLeft size={15} />
+                  <span>Back to Sign In</span>
+                </button>
+              </div>
+
               <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Create Your Account
               </h2>
@@ -950,7 +1056,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   <a
                     href="#login"
                     style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
-                    onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('login'); }}
+                    onClick={(e) => { e.preventDefault(); setAuthError(null); navigateToMode('login'); }}
                   >
                     Sign in
                   </a>
@@ -960,7 +1066,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   <a
                     href="#forgot"
                     style={{ color: '#38BDF8', fontWeight: 500, textDecoration: 'none' }}
-                    onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('forgot'); }}
+                    onClick={(e) => { e.preventDefault(); setAuthError(null); navigateToMode('forgot'); }}
                   >
                     Forgot password
                   </a>
@@ -972,6 +1078,19 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
           {/* Mode: Account Linking Modal (Requirement 8) */}
           {mode === 'link_account' && (
             <div>
+              <div style={{ marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="auth-back-btn"
+                  onClick={() => navigateToMode('login')}
+                  aria-label="Return to Sign In"
+                  id="link-account-back-button"
+                >
+                  <ArrowLeft size={15} />
+                  <span>Return to Sign In</span>
+                </button>
+              </div>
+
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38BDF8', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
                 <Link2 size={14} />
                 <span>Account Linking Required</span>
@@ -1039,7 +1158,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   type="button"
                   style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', color: '#94A3B8', fontSize: 12.5, marginTop: 14, cursor: 'pointer' }}
                   onClick={() => {
-                    setMode('login');
+                    navigateToMode('login');
                     setConflictData(null);
                     setLinkPassword('');
                   }}
@@ -1053,6 +1172,19 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
           {/* Mode 3: Forgot Password */}
           {mode === 'forgot' && (
             <div>
+              <div style={{ marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="auth-back-btn"
+                  onClick={() => navigateToMode('login')}
+                  aria-label="Back to Sign In"
+                  id="forgot-back-button"
+                >
+                  <ArrowLeft size={15} />
+                  <span>Back to Sign In</span>
+                </button>
+              </div>
+
               <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Reset Password
               </h2>
@@ -1099,7 +1231,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       type="button"
                       className="btn-primary"
                       style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 13.5 }}
-                      onClick={() => { setMode('login'); setForgotSubmitted(false); setForgotError(null); }}
+                      onClick={() => { setForgotSubmitted(false); setForgotError(null); navigateToMode('login'); }}
                     >
                       <span>Return to Sign In</span>
                     </button>
@@ -1180,7 +1312,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                           borderRadius: 6,
                           transition: 'all 0.15s ease'
                         }}
-                        onClick={() => { setForgotError(null); setMode('login'); }}
+                        onClick={() => { setForgotError(null); navigateToMode('login'); }}
                       >
                         <ArrowLeft size={14} />
                         <span>Return to Sign In</span>
@@ -1192,7 +1324,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       <a
                         href="#register"
                         style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
-                        onClick={(e) => { e.preventDefault(); setForgotError(null); setMode('register'); }}
+                        onClick={(e) => { e.preventDefault(); setForgotError(null); navigateToMode('register'); }}
                       >
                         Create an account
                       </a>
@@ -1203,14 +1335,30 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
             </div>
           )}
 
-          {/* Mode 4: 3-Step Onboarding Wizard (Requirement 10) */}
+          {/* Mode 4: 2-Step Onboarding Wizard */}
           {mode === 'onboarding' && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', textTransform: 'uppercase', background: 'rgba(56, 189, 248, 0.12)', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(56, 189, 248, 0.25)' }}>
-                  Setup Wizard • Step {onboardingStep} of 2
-                </span>
-                <span style={{ fontSize: 12, color: '#94A3B8' }}>Currency: INR (₹)</span>
+            <div className="wizard-step-container">
+              {/* Responsive Wizard Header Navigation with Visible Back Button */}
+              <div className="wizard-header-nav">
+                <button
+                  type="button"
+                  className="wizard-back-btn"
+                  onClick={onboardingStep === 2 ? handleStep2Back : handleStep1Back}
+                  aria-label={onboardingStep === 2 ? 'Return to Step 1: Baseline Cash & Safety Buffer' : 'Back to previous screen'}
+                  id="wizard-back-button"
+                >
+                  <ArrowLeft size={16} />
+                  <span className="wizard-back-btn-text">
+                    {onboardingStep === 2 ? 'Back to Step 1' : 'Back'}
+                  </span>
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span className="wizard-step-badge" style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', textTransform: 'uppercase', background: 'rgba(56, 189, 248, 0.12)', padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+                    Setup Wizard • Step {onboardingStep} of 2
+                  </span>
+                  <span style={{ fontSize: 12, color: '#94A3B8' }}>Currency: INR (₹)</span>
+                </div>
               </div>
 
               {onboardingStep === 1 ? (
@@ -1230,6 +1378,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       value={obBalance}
                       onChange={(e) => setObBalance(e.target.value)}
                       required
+                      id="wizard-balance-input"
                     />
                   </div>
 
@@ -1241,6 +1390,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       value={obBuffer}
                       onChange={(e) => setObBuffer(e.target.value)}
                       required
+                      id="wizard-buffer-input"
                     />
                   </div>
 
@@ -1250,6 +1400,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       className="form-input-control"
                       value={obFrequency}
                       onChange={(e) => setObFrequency(e.target.value)}
+                      id="wizard-frequency-select"
                     >
                       <option value="Irregular / Milestone-based">Irregular / Milestone-based</option>
                       <option value="Gig / Weekly Variable">Gig / Weekly Variable</option>
@@ -1261,12 +1412,44 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   <button
                     type="button"
                     className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 10 }}
-                    onClick={() => setOnboardingStep(2)}
+                    style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 14 }}
+                    onClick={handleStep1Next}
+                    id="wizard-next-btn"
                   >
                     <span>Next: Set Alerts & Finish</span>
                     <ArrowRight size={15} />
                   </button>
+
+                  {/* Secondary return option on Step 1 */}
+                  <div style={{ marginTop: 14, textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#94A3B8',
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '6px 12px',
+                        borderRadius: 6,
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#38BDF8'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
+                      onClick={handleStep1Back}
+                      aria-label="Return to previous screen"
+                      id="wizard-step1-return-btn"
+                    >
+                      <ArrowLeft size={13} />
+                      <span>
+                        {navigationTracker.canGoBack() ? 'Return to Previous Screen' : (user?.isAuthenticated ? 'Return to Dashboard' : 'Return to Sign In')}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div>
@@ -1284,6 +1467,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       className="form-input-control"
                       value={obThreshold}
                       onChange={(e) => setObThreshold(e.target.value)}
+                      id="wizard-threshold-input"
                     />
                   </div>
 
@@ -1298,9 +1482,12 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       type="button"
                       className="btn-secondary"
                       style={{ flex: 1, justifyContent: 'center' }}
-                      onClick={() => setOnboardingStep(1)}
+                      onClick={handleStep2Back}
+                      aria-label="Back to Step 1"
+                      id="wizard-step2-back-btn"
                     >
-                      Back
+                      <ArrowLeft size={15} />
+                      <span>Back</span>
                     </button>
                     <button
                       type="button"
@@ -1308,6 +1495,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       disabled={loading}
                       style={{ flex: 2, justifyContent: 'center', padding: '12px' }}
                       onClick={handleOnboardingFinish}
+                      id="wizard-finish-btn"
                     >
                       <CheckCircle2 size={16} />
                       <span>{loading ? 'Launching...' : 'Launch Planner Workspace'}</span>

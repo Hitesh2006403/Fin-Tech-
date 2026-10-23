@@ -1,38 +1,50 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * Background3D
+ * Background3D (High-Performance Optimized)
  * Premium 3D-inspired animated background for Fintech Treasury:
- * - Layered midnight navy & deep blue atmosphere
- * - Slowly floating translucent glass spheres with specular highlights
- * - 3D glass geometric rings with smooth continuous rotation
- * - Ambient cyan & violet ambient light orbs
- * - Lightweight canvas for subtle floating micro-particles
- * - Responsive mouse parallax with smooth lerp
+ * - Fluid hardware-accelerated parallax (updates layer transform directly, not container CSS variables)
+ * - Automatic idle settle detection (zero DOM updates when mouse is stationary)
+ * - Auto-pauses canvas animation during document hidden state or active window scrolling
+ * - Lightweight particle pool (restrained count, disabled on mobile/touch screens for 60fps smoothness)
+ * - Zero pointer-events interference
  * - Fully accessible (respects prefers-reduced-motion)
- * - Zero pointer-event interference (pointer-events: none)
  */
 export function Background3D() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const layerRef = useRef(null);
+  const mousePos = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, settled: true });
+  const isScrollingRef = useRef(false);
 
   useEffect(() => {
-    // Check reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
 
-    // Mouse movement listener for smooth parallax on desktop
+    // Mouse movement listener (desktop only)
     const handleMouseMove = (e) => {
-      if (prefersReducedMotion) return;
+      if (prefersReducedMotion || isMobile) return;
       const { innerWidth, innerHeight } = window;
-      // Normalized between -1 and 1
       mousePos.current.targetX = (e.clientX / innerWidth - 0.5) * 2;
       mousePos.current.targetY = (e.clientY / innerHeight - 0.5) * 2;
+      mousePos.current.settled = false;
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    if (!isMobile) {
+      window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    }
 
-    // Canvas particle constellation setup
+    // Scroll throttle to pause canvas during heavy mobile/desktop scrolling
+    let scrollTimeout;
+    const handleScroll = () => {
+      isScrollingRef.current = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 150);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -41,48 +53,79 @@ export function Background3D() {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
+    let resizeTimeout;
     const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (!canvas) return;
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }, 200);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
-    // Particle pool - restrained count for maximum performance
-    const particleCount = Math.min(45, Math.floor((width * height) / 32000));
+    // On mobile devices, skip particles entirely to maximize scrolling FPS and battery life
+    const particleCount = (isMobile || prefersReducedMotion) 
+      ? 0 
+      : Math.min(22, Math.floor((width * height) / 45000));
+
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      radius: Math.random() * 1.6 + 0.6,
-      speedX: (Math.random() - 0.5) * 0.25,
-      speedY: -Math.random() * 0.35 - 0.1,
-      alpha: Math.random() * 0.45 + 0.15,
+      radius: Math.random() * 1.5 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.2,
+      speedY: -Math.random() * 0.3 - 0.08,
+      alpha: Math.random() * 0.4 + 0.15,
       color: Math.random() > 0.4 ? 'rgba(56, 189, 248, ' : 'rgba(167, 139, 250, '
     }));
 
+    let isRunning = true;
+
+    // Pause rendering when tab is hidden
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isRunning = false;
+      } else {
+        isRunning = true;
+        if (!prefersReducedMotion && (particleCount > 0 || !mousePos.current.settled)) {
+          animationFrameId = requestAnimationFrame(render);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     const render = () => {
+      if (!isRunning) return;
+
       // Smooth lerp for mouse parallax
-      mousePos.current.x += (mousePos.current.targetX - mousePos.current.x) * 0.04;
-      mousePos.current.y += (mousePos.current.targetY - mousePos.current.y) * 0.04;
+      const dx = mousePos.current.targetX - mousePos.current.x;
+      const dy = mousePos.current.targetY - mousePos.current.y;
 
-      const px = mousePos.current.x;
-      const py = mousePos.current.y;
+      if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+        mousePos.current.x += dx * 0.05;
+        mousePos.current.y += dy * 0.05;
+        mousePos.current.settled = false;
 
-      // Update CSS parallax variables on container
-      if (containerRef.current && !prefersReducedMotion) {
-        containerRef.current.style.setProperty('--mouse-px', `${px * 16}px`);
-        containerRef.current.style.setProperty('--mouse-py', `${py * 16}px`);
-        containerRef.current.style.setProperty('--mouse-rot-y', `${px * 8}deg`);
-        containerRef.current.style.setProperty('--mouse-rot-x', `${-py * 8}deg`);
+        // Apply transform directly to layerRef rather than setting 4 CSS variables on containerRef
+        if (layerRef.current && !prefersReducedMotion) {
+          const px = mousePos.current.x;
+          const py = mousePos.current.y;
+          layerRef.current.style.transform = `translate3d(${px * 14}px, ${py * 14}px, 0) rotateY(${px * 5}deg) rotateX(${-py * 5}deg)`;
+        }
+      } else {
+        mousePos.current.settled = true;
       }
 
-      ctx.clearRect(0, 0, width, height);
+      // Draw subtle particles if enabled and not scrolling fast
+      if (particleCount > 0 && !isScrollingRef.current) {
+        ctx.clearRect(0, 0, width, height);
 
-      // Draw subtle particles
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        if (!prefersReducedMotion) {
+        const px = mousePos.current.x;
+        const py = mousePos.current.y;
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
           p.x += p.speedX;
           p.y += p.speedY;
 
@@ -92,27 +135,36 @@ export function Background3D() {
           }
           if (p.x < -10) p.x = width + 10;
           if (p.x > width + 10) p.x = -10;
+
+          const renderX = p.x + px * 8;
+          const renderY = p.y + py * 8;
+
+          ctx.beginPath();
+          ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `${p.color}${p.alpha})`;
+          ctx.fill();
         }
-
-        const renderX = p.x + px * 12;
-        const renderY = p.y + py * 12;
-
-        ctx.beginPath();
-        ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${p.alpha})`;
-        ctx.fill();
       }
 
-      if (!prefersReducedMotion) {
+      if (!prefersReducedMotion && (particleCount > 0 || !mousePos.current.settled)) {
         animationFrameId = requestAnimationFrame(render);
       }
     };
 
-    render();
+    if (!prefersReducedMotion && (particleCount > 0 || !isMobile)) {
+      animationFrameId = requestAnimationFrame(render);
+    }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      isRunning = false;
+      if (!isMobile) {
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
+      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(scrollTimeout);
+      clearTimeout(resizeTimeout);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -133,7 +185,7 @@ export function Background3D() {
       <div className="ambient-light-orb orb-cyan-center" />
 
       {/* 3. Floating 3D Glass Objects Layer */}
-      <div className="floating-3d-layer">
+      <div ref={layerRef} className="floating-3d-layer">
         {/* Sphere 1: Large translucent glass sphere top right */}
         <div className="glass-sphere sphere-lg sphere-pos-1">
           <div className="sphere-specular" />

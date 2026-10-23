@@ -21,8 +21,9 @@ import { AuthPage } from './pages/AuthPage.jsx';
 import { UpdatePasswordPage } from './pages/UpdatePasswordPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
-import { AdminPortal } from './pages/admin/AdminPortal.jsx';
+const AdminPortal = React.lazy(() => import('./pages/admin/AdminPortal.jsx').then(m => ({ default: m.AdminPortal })));
 import { Background3D } from './components/common/Background3D.jsx';
+import { navigationTracker } from './services/navigationTracker.js';
 
 import './App.css';
 
@@ -66,6 +67,16 @@ function HomeRoute() {
   return <Navigate to="/dashboard" replace />;
 }
 
+function NavigationWatcher() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    navigationTracker.record(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 // Route Guard for Login Page
 function LoginRoute() {
   const { user, authLoading } = useApp();
@@ -78,10 +89,45 @@ function LoginRoute() {
     if (checkIsAdmin(user)) {
       return <Navigate to="/admin" replace />;
     }
+    if (!user.onboardingCompleted) {
+      return <Navigate to="/setup" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <AuthPage />;
+  return <AuthPage initialMode="login" />;
+}
+
+// Route Guard for Register Page
+function RegisterRoute() {
+  const { user, authLoading } = useApp();
+
+  if (authLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (user && user.isAuthenticated) {
+    if (checkIsAdmin(user)) {
+      return <Navigate to="/admin" replace />;
+    }
+    if (!user.onboardingCompleted) {
+      return <Navigate to="/setup" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <AuthPage initialMode="register" />;
+}
+
+// Route Guard for Setup Wizard Page
+function SetupWizardRoute() {
+  const { authLoading } = useApp();
+
+  if (authLoading) {
+    return <LoadingScreen message="Loading setup wizard..." />;
+  }
+
+  return <AuthPage initialMode="onboarding" />;
 }
 
 // User App Shell Layout
@@ -98,7 +144,7 @@ function MainAppShellLayout() {
   }
 
   if (!user.onboardingCompleted) {
-    return <AuthPage initialMode="onboarding" />;
+    return <Navigate to="/setup" replace state={{ from: location }} />;
   }
 
   return (
@@ -135,42 +181,52 @@ function AdminRouteGuard() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <AdminPortal />;
+  return (
+    <React.Suspense fallback={<LoadingScreen message="Loading Administrator Portal..." />}>
+      <AdminPortal />
+    </React.Suspense>
+  );
 }
 
 function AppRoutes() {
   return (
-    <Routes>
-      {/* Root Route */}
-      <Route path="/" element={<HomeRoute />} />
+    <>
+      <NavigationWatcher />
+      <Routes>
+        {/* Root Route */}
+        <Route path="/" element={<HomeRoute />} />
 
-      {/* Common Login & Password Recovery Routes */}
-      <Route path="/login" element={<LoginRoute />} />
-      <Route path="/reset-password" element={<AuthPage initialMode="forgot" />} />
-      <Route path="/update-password" element={<UpdatePasswordPage />} />
+        {/* Common Login, Register, Setup & Password Recovery Routes */}
+        <Route path="/login" element={<LoginRoute />} />
+        <Route path="/register" element={<RegisterRoute />} />
+        <Route path="/setup" element={<SetupWizardRoute />} />
+        <Route path="/onboarding" element={<Navigate to="/setup" replace />} />
+        <Route path="/reset-password" element={<AuthPage initialMode="forgot" />} />
+        <Route path="/update-password" element={<UpdatePasswordPage />} />
 
-      {/* Protected User Dashboard Routes */}
-      <Route element={<MainAppShellLayout />}>
-        <Route path="/dashboard" element={<OverviewDashboard />} />
-        <Route path="/income" element={<IncomeManagement />} />
-        <Route path="/expenses" element={<ExpensesBills />} />
-        <Route path="/transactions" element={<ExpensesBills />} />
-        <Route path="/safe-to-spend" element={<SafeToSpendCalculator />} />
-        <Route path="/forecast" element={<CashFlowForecast />} />
-        <Route path="/simulator" element={<PaymentDelaySimulator />} />
-        <Route path="/prioritization" element={<SmartBillPrioritization />} />
-        <Route path="/savings" element={<LeanWeekSavings />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/settings" element={<ProfileSettings />} />
-      </Route>
+        {/* Protected User Dashboard Routes */}
+        <Route element={<MainAppShellLayout />}>
+          <Route path="/dashboard" element={<OverviewDashboard />} />
+          <Route path="/income" element={<IncomeManagement />} />
+          <Route path="/expenses" element={<ExpensesBills />} />
+          <Route path="/transactions" element={<ExpensesBills />} />
+          <Route path="/safe-to-spend" element={<SafeToSpendCalculator />} />
+          <Route path="/forecast" element={<CashFlowForecast />} />
+          <Route path="/simulator" element={<PaymentDelaySimulator />} />
+          <Route path="/prioritization" element={<SmartBillPrioritization />} />
+          <Route path="/savings" element={<LeanWeekSavings />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/settings" element={<ProfileSettings />} />
+        </Route>
 
-      {/* Protected Admin Routes */}
-      <Route path="/admin" element={<AdminRouteGuard />} />
-      <Route path="/admin/*" element={<AdminRouteGuard />} />
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<AdminRouteGuard />} />
+        <Route path="/admin/*" element={<AdminRouteGuard />} />
 
-      {/* 404 Route */}
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        {/* 404 Route */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   );
 }
 

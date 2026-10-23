@@ -227,30 +227,31 @@ export function AppProvider({ children }) {
     return notifications.filter(n => !n.isRead).length;
   }, [notifications]);
 
-  // 3. Mutating Actions
+  // 3. Mutating Actions (Wrapped in useCallback to maintain reference equality)
+  const userId = user?.id;
 
   // Income Actions
-  const addIncome = (incomeData) => {
+  const addIncome = useCallback((incomeData) => {
     const newIncome = {
       ...incomeData,
       id: `inc_${Date.now()}`,
       amount: Number(incomeData.amount || 0)
     };
     setIncomes(prev => [newIncome, ...prev]);
-    apiService.addIncome(user?.id, newIncome).catch(e => console.warn('Sync addIncome error:', e));
-  };
+    apiService.addIncome(userId, newIncome).catch(e => console.warn('Sync addIncome error:', e));
+  }, [userId]);
 
-  const editIncome = (id, updatedData) => {
+  const editIncome = useCallback((id, updatedData) => {
     setIncomes(prev => prev.map(inc => inc.id === id ? { ...inc, ...updatedData, amount: Number(updatedData.amount || 0) } : inc));
-    apiService.updateIncome(user?.id, id, updatedData).catch(e => console.warn('Sync editIncome error:', e));
-  };
+    apiService.updateIncome(userId, id, updatedData).catch(e => console.warn('Sync editIncome error:', e));
+  }, [userId]);
 
-  const deleteIncome = (id) => {
+  const deleteIncome = useCallback((id) => {
     setIncomes(prev => prev.filter(inc => inc.id !== id));
-    apiService.deleteIncome(user?.id, id).catch(e => console.warn('Sync deleteIncome error:', e));
-  };
+    apiService.deleteIncome(userId, id).catch(e => console.warn('Sync deleteIncome error:', e));
+  }, [userId]);
 
-  const markIncomeReceived = (id, actualDate = toISODate(new Date())) => {
+  const markIncomeReceived = useCallback((id, actualDate = toISODate(new Date())) => {
     setIncomes(prev => prev.map(inc => {
       if (inc.id === id && inc.status !== 'received') {
         return {
@@ -261,11 +262,11 @@ export function AppProvider({ children }) {
       }
       return inc;
     }));
-    apiService.updateIncome(user?.id, id, { status: 'received', actualDate }).catch(e => console.warn('Sync markIncomeReceived error:', e));
-  };
+    apiService.updateIncome(userId, id, { status: 'received', actualDate }).catch(e => console.warn('Sync markIncomeReceived error:', e));
+  }, [userId]);
 
   // Expense Actions
-  const addExpense = (expenseData) => {
+  const addExpense = useCallback((expenseData) => {
     const newExpense = {
       ...expenseData,
       id: `exp_${Date.now()}`,
@@ -273,20 +274,20 @@ export function AppProvider({ children }) {
       status: expenseData.status || 'unpaid'
     };
     setExpenses(prev => [newExpense, ...prev]);
-    apiService.addExpense(user?.id, newExpense).catch(e => console.warn('Sync addExpense error:', e));
-  };
+    apiService.addExpense(userId, newExpense).catch(e => console.warn('Sync addExpense error:', e));
+  }, [userId]);
 
-  const editExpense = (id, updatedData) => {
+  const editExpense = useCallback((id, updatedData) => {
     setExpenses(prev => prev.map(exp => exp.id === id ? { ...exp, ...updatedData, amount: Number(updatedData.amount || 0) } : exp));
-    apiService.updateExpense(user?.id, id, updatedData).catch(e => console.warn('Sync editExpense error:', e));
-  };
+    apiService.updateExpense(userId, id, updatedData).catch(e => console.warn('Sync editExpense error:', e));
+  }, [userId]);
 
-  const deleteExpense = (id) => {
+  const deleteExpense = useCallback((id) => {
     setExpenses(prev => prev.filter(exp => exp.id !== id));
-    apiService.deleteExpense(user?.id, id).catch(e => console.warn('Sync deleteExpense error:', e));
-  };
+    apiService.deleteExpense(userId, id).catch(e => console.warn('Sync deleteExpense error:', e));
+  }, [userId]);
 
-  const markExpensePaid = (id, paidDate = toISODate(new Date())) => {
+  const markExpensePaid = useCallback((id, paidDate = toISODate(new Date())) => {
     setExpenses(prev => prev.map(exp => {
       if (exp.id === id && exp.status !== 'paid') {
         return {
@@ -297,28 +298,28 @@ export function AppProvider({ children }) {
       }
       return exp;
     }));
-    apiService.updateExpense(user?.id, id, { status: 'paid', paidDate }).catch(e => console.warn('Sync markExpensePaid error:', e));
-  };
+    apiService.updateExpense(userId, id, { status: 'paid', paidDate }).catch(e => console.warn('Sync markExpensePaid error:', e));
+  }, [userId]);
 
   // Preferences Actions
-  const setPreferences = (updater) => {
+  const setPreferences = useCallback((updater) => {
     setPreferencesState(prev => {
       const nextVal = typeof updater === 'function' ? updater(prev) : updater;
-      apiService.updatePreferences(user?.id, nextVal).catch(e => console.warn('Sync updatePreferences error:', e));
+      apiService.updatePreferences(userId, nextVal).catch(e => console.warn('Sync updatePreferences error:', e));
       return nextVal;
     });
-  };
+  }, [userId]);
 
   // Lean-Week Savings Actions
-  const updateLeanSavings = (newData) => {
+  const updateLeanSavings = useCallback((newData) => {
     setLeanSavings(prev => {
       const updated = { ...prev, ...newData };
-      apiService.updateSavings(user?.id, updated).catch(e => console.warn('Sync updateSavings error:', e));
+      apiService.updateSavings(userId, updated).catch(e => console.warn('Sync updateSavings error:', e));
       return updated;
     });
-  };
+  }, [userId]);
 
-  const contributeToSavings = (amount) => {
+  const contributeToSavings = useCallback((amount) => {
     const addAmt = Number(amount || 0);
     if (addAmt <= 0) return;
     setLeanSavings(prev => {
@@ -326,44 +327,44 @@ export function AppProvider({ children }) {
         ...prev,
         currentDesignatedReserve: prev.currentDesignatedReserve + addAmt
       };
-      apiService.contributeSavings(user?.id, addAmt).catch(e => console.warn('Sync contributeSavings error:', e));
+      apiService.contributeSavings(userId, addAmt).catch(e => console.warn('Sync contributeSavings error:', e));
       return updated;
     });
-  };
+  }, [userId]);
 
   // Notification Actions
-  const markNotificationRead = (id) => {
+  const markNotificationRead = useCallback((id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    apiService.markNotificationRead(user?.id, id).catch(e => console.warn('Sync markNotificationRead error:', e));
-  };
+    apiService.markNotificationRead(userId, id).catch(e => console.warn('Sync markNotificationRead error:', e));
+  }, [userId]);
 
-  const markAllNotificationsRead = () => {
+  const markAllNotificationsRead = useCallback(() => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    apiService.markAllNotificationsRead(user?.id).catch(e => console.warn('Sync markAllNotificationsRead error:', e));
-  };
+    apiService.markAllNotificationsRead(userId).catch(e => console.warn('Sync markAllNotificationsRead error:', e));
+  }, [userId]);
 
-  const clearNotifications = () => {
+  const clearNotifications = useCallback(() => {
     setNotifications([]);
-    apiService.clearNotifications(user?.id).catch(e => console.warn('Sync clearNotifications error:', e));
-  };
+    apiService.clearNotifications(userId).catch(e => console.warn('Sync clearNotifications error:', e));
+  }, [userId]);
 
   // Dismiss alert helper
-  const dismissAlert = (alertId) => {
+  const dismissAlert = useCallback((alertId) => {
     setDismissedAlertIds(prev => {
       const next = [...new Set([...prev, alertId])];
       try {
-        localStorage.setItem(`uip_dismissed_alerts_${user?.id || 'default'}`, JSON.stringify(next));
+        localStorage.setItem(`uip_dismissed_alerts_${userId || 'default'}`, JSON.stringify(next));
       } catch {}
       return next;
     });
-  };
+  }, [userId]);
 
   // Live Cloud Synchronization: Directly pulls user financial dataset from backend REST API
-  const refreshData = async () => {
-    if (!user?.id) return;
+  const refreshData = useCallback(async () => {
+    if (!userId) return;
     setIsSyncing(true);
     try {
-      const data = await apiService.getFinancials(user.id);
+      const data = await apiService.getFinancials(userId);
       if (data) {
         if (data.preferences) setPreferencesState(data.preferences);
         if (data.incomes) setIncomes(data.incomes);
@@ -377,21 +378,21 @@ export function AppProvider({ children }) {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [userId]);
 
   // Backwards compatibility alias for reset/sync
-  const resetToDemoData = async () => {
+  const resetToDemoData = useCallback(async () => {
     await refreshData();
     setDismissedAlertIds([]);
     try {
-      localStorage.removeItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
+      localStorage.removeItem(`uip_dismissed_alerts_${userId || 'default'}`);
     } catch {}
     setActiveRoute('dashboard');
-  };
+  }, [refreshData, setActiveRoute, userId]);
 
-  const clearUserData = async () => {
+  const clearUserData = useCallback(async () => {
     try {
-      const cleared = await apiService.clearUserData(user?.id);
+      const cleared = await apiService.clearUserData(userId);
       if (cleared) {
         if (cleared.preferences) setPreferencesState(cleared.preferences);
         setIncomes(cleared.incomes || []);
@@ -408,13 +409,13 @@ export function AppProvider({ children }) {
     }
     setDismissedAlertIds([]);
     try {
-      localStorage.removeItem(`uip_dismissed_alerts_${user?.id || 'default'}`);
+      localStorage.removeItem(`uip_dismissed_alerts_${userId || 'default'}`);
     } catch {}
     setActiveRoute('dashboard');
-  };
+  }, [setActiveRoute, userId]);
 
   // Real backend authentication methods
-  const loginWithGoogle = async (credential) => {
+  const loginWithGoogle = useCallback(async (credential) => {
     const data = await authService.verifyGoogleCredential(credential);
     setUser(prev => ({
       ...prev,
@@ -422,9 +423,9 @@ export function AppProvider({ children }) {
       isAuthenticated: true
     }));
     return data;
-  };
+  }, []);
 
-  const linkGoogleAccount = async ({ email, password, credential }) => {
+  const linkGoogleAccount = useCallback(async ({ email, password, credential }) => {
     const data = await authService.linkGoogleAccount({ email, password, credential });
     setUser(prev => ({
       ...prev,
@@ -432,9 +433,9 @@ export function AppProvider({ children }) {
       isAuthenticated: true
     }));
     return data;
-  };
+  }, []);
 
-  const loginWithEmail = async (email, password) => {
+  const loginWithEmail = useCallback(async (email, password) => {
     const data = await authService.loginWithEmail(email, password);
     setUser(prev => ({
       ...prev,
@@ -442,9 +443,9 @@ export function AppProvider({ children }) {
       isAuthenticated: true
     }));
     return data;
-  };
+  }, []);
 
-  const registerWithEmail = async (email, name, password) => {
+  const registerWithEmail = useCallback(async (email, name, password) => {
     const data = await authService.registerWithEmail(email, name, password);
     setUser(prev => ({
       ...prev,
@@ -452,9 +453,9 @@ export function AppProvider({ children }) {
       isAuthenticated: true
     }));
     return data;
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authService.logout();
     setUser(INITIAL_USER);
     setPreferencesState(INITIAL_PREFERENCES);
@@ -464,9 +465,9 @@ export function AppProvider({ children }) {
     setNotifications(INITIAL_NOTIFICATIONS);
     setDismissedAlertIds([]);
     navigate('/login');
-  };
+  }, [navigate]);
 
-  const completeOnboarding = async () => {
+  const completeOnboarding = useCallback(async () => {
     try {
       await authService.completeOnboarding();
     } catch (e) {
@@ -476,71 +477,119 @@ export function AppProvider({ children }) {
       ...prev,
       onboardingCompleted: true
     }));
-  };
+  }, []);
+
+  // Memoize the context value to eliminate cascading child component re-renders
+  const contextValue = useMemo(() => ({
+    // State
+    user,
+    setUser,
+    authLoading,
+    preferences,
+    setPreferences,
+    incomes,
+    expenses,
+    leanSavings,
+    notifications,
+    dismissedAlertIds,
+    activeRoute,
+    setActiveRoute,
+    mobileMenuOpen,
+    setMobileMenuOpen,
+    quickAddModalOpen,
+    setQuickAddModalOpen,
+
+    // Calculated values
+    balanceDetails,
+    safeToSpend,
+    standardForecast,
+    dashboardInsights,
+    billRanking,
+    leanWeekCalculations,
+    confirmedUpcomingIncome,
+    upcomingBillsNext7Days,
+    unreadNotificationCount,
+
+    // Action methods
+    addIncome,
+    editIncome,
+    deleteIncome,
+    markIncomeReceived,
+
+    addExpense,
+    editExpense,
+    deleteExpense,
+    markExpensePaid,
+
+    updateLeanSavings,
+    contributeToSavings,
+
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+    dismissAlert,
+
+    resetToDemoData,
+    refreshData,
+    isSyncing,
+    clearUserData,
+    loginWithGoogle,
+    linkGoogleAccount,
+    loginWithEmail,
+    registerWithEmail,
+    completeOnboarding,
+    logout
+  }), [
+    user,
+    authLoading,
+    preferences,
+    setPreferences,
+    incomes,
+    expenses,
+    leanSavings,
+    notifications,
+    dismissedAlertIds,
+    activeRoute,
+    setActiveRoute,
+    mobileMenuOpen,
+    quickAddModalOpen,
+    balanceDetails,
+    safeToSpend,
+    standardForecast,
+    dashboardInsights,
+    billRanking,
+    leanWeekCalculations,
+    confirmedUpcomingIncome,
+    upcomingBillsNext7Days,
+    unreadNotificationCount,
+    addIncome,
+    editIncome,
+    deleteIncome,
+    markIncomeReceived,
+    addExpense,
+    editExpense,
+    deleteExpense,
+    markExpensePaid,
+    updateLeanSavings,
+    contributeToSavings,
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+    dismissAlert,
+    resetToDemoData,
+    refreshData,
+    isSyncing,
+    clearUserData,
+    loginWithGoogle,
+    linkGoogleAccount,
+    loginWithEmail,
+    registerWithEmail,
+    completeOnboarding,
+    logout
+  ]);
 
   return (
-    <AppContext.Provider
-      value={{
-        // State
-        user,
-        setUser,
-        authLoading,
-        preferences,
-        setPreferences,
-        incomes,
-        expenses,
-        leanSavings,
-        notifications,
-        dismissedAlertIds,
-        activeRoute,
-        setActiveRoute,
-        mobileMenuOpen,
-        setMobileMenuOpen,
-        quickAddModalOpen,
-        setQuickAddModalOpen,
-
-        // Calculated values
-        balanceDetails,
-        safeToSpend,
-        standardForecast,
-        dashboardInsights,
-        billRanking,
-        leanWeekCalculations,
-        confirmedUpcomingIncome,
-        upcomingBillsNext7Days,
-        unreadNotificationCount,
-
-        // Action methods
-        addIncome,
-        editIncome,
-        deleteIncome,
-        markIncomeReceived,
-
-        addExpense,
-        editExpense,
-        deleteExpense,
-        markExpensePaid,
-
-        updateLeanSavings,
-        contributeToSavings,
-
-        markNotificationRead,
-        markAllNotificationsRead,
-        clearNotifications,
-        dismissAlert,
-
-        resetToDemoData,
-        refreshData,
-        isSyncing,
-        clearUserData,
-        loginWithGoogle,
-        linkGoogleAccount,
-        loginWithEmail,
-        registerWithEmail,
-        completeOnboarding,
-        logout
-      }}
-    >
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

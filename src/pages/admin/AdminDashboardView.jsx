@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAdmin } from '../../context/AdminContext.jsx';
 import {
   Users,
@@ -47,26 +47,30 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
   const recentUsers = usersList.slice(0, 5);
 
   // Growth Chart Data
-  const growthSeries = stats?.userGrowth?.[growthTimeframe] || [
-    { date: 'Oct 12', count: 280 },
-    { date: 'Oct 13', count: 520 },
-    { date: 'Oct 14', count: 680 },
-    { date: 'Oct 15', count: 750 },
-    { date: 'Oct 16', count: 890 },
-    { date: 'Oct 17', count: 1040 },
-    { date: 'Oct 18', count: 1248 }
-  ];
+  const growthSeries = useMemo(() => {
+    return stats?.userGrowth?.[growthTimeframe] || [
+      { date: 'Oct 12', count: 280 },
+      { date: 'Oct 13', count: 520 },
+      { date: 'Oct 14', count: 680 },
+      { date: 'Oct 15', count: 750 },
+      { date: 'Oct 16', count: 890 },
+      { date: 'Oct 17', count: 1040 },
+      { date: 'Oct 18', count: 1248 }
+    ];
+  }, [stats?.userGrowth, growthTimeframe]);
 
   // Bar Chart Data
-  const barSeries = stats?.incomeVsExpense?.[expenseTimeframe] || [
-    { date: 'Oct 12', income: 24000, expenses: 14000 },
-    { date: 'Oct 13', income: 38000, expenses: 21000 },
-    { date: 'Oct 14', income: 32000, expenses: 18000 },
-    { date: 'Oct 15', income: 29000, expenses: 19000 },
-    { date: 'Oct 16', income: 22000, expenses: 15000 },
-    { date: 'Oct 17', income: 34000, expenses: 23000 },
-    { date: 'Oct 18', income: 45000, expenses: 28000 }
-  ];
+  const barSeries = useMemo(() => {
+    return stats?.incomeVsExpense?.[expenseTimeframe] || [
+      { date: 'Oct 12', income: 24000, expenses: 14000 },
+      { date: 'Oct 13', income: 38000, expenses: 21000 },
+      { date: 'Oct 14', income: 32000, expenses: 18000 },
+      { date: 'Oct 15', income: 29000, expenses: 19000 },
+      { date: 'Oct 16', income: 22000, expenses: 15000 },
+      { date: 'Oct 17', income: 34000, expenses: 23000 },
+      { date: 'Oct 18', income: 45000, expenses: 28000 }
+    ];
+  }, [stats?.incomeVsExpense, expenseTimeframe]);
 
   // Recent Activity items
   const recentActivity = stats?.recentActivity || [
@@ -77,28 +81,31 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
     { id: 'act_5', type: 'feedback', title: 'New feedback', meta: 'Great app!', time: '2 hours ago', color: '#A5B4FC' }
   ];
 
-  // SVG Coordinates calculation for Spline Line Chart
-  const svgWidth = 420;
-  const svgHeight = 180;
-  const paddingX = 40;
-  const paddingY = 25;
-  const maxVal = Math.max(...growthSeries.map(p => p.count), 1200);
+  // SVG Coordinates calculation for Spline Line Chart (Memoized)
+  const { points, pathD, areaD, svgWidth, svgHeight, paddingY } = useMemo(() => {
+    const svgWidth = 420;
+    const svgHeight = 180;
+    const paddingX = 40;
+    const paddingY = 25;
+    const maxVal = Math.max(...growthSeries.map(p => p.count), 1200);
 
-  const points = growthSeries.map((item, idx) => {
-    const x = paddingX + (idx / (growthSeries.length - 1)) * (svgWidth - paddingX * 2);
-    const y = svgHeight - paddingY - (item.count / maxVal) * (svgHeight - paddingY * 2);
-    return { x, y, ...item };
-  });
+    const points = growthSeries.map((item, idx) => {
+      const x = paddingX + (idx / (growthSeries.length - 1)) * (svgWidth - paddingX * 2);
+      const y = svgHeight - paddingY - (item.count / maxVal) * (svgHeight - paddingY * 2);
+      return { x, y, ...item };
+    });
 
-  // Construct smooth bezier curve path
-  const pathD = points.reduce((acc, p, i, a) => {
-    if (i === 0) return `M ${p.x} ${p.y}`;
-    const prev = a[i - 1];
-    const cpX = (prev.x + p.x) / 2;
-    return `${acc} C ${cpX} ${prev.y}, ${cpX} ${p.y}, ${p.x} ${p.y}`;
-  }, '');
+    const pathD = points.reduce((acc, p, i, a) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const prev = a[i - 1];
+      const cpX = (prev.x + p.x) / 2;
+      return `${acc} C ${cpX} ${prev.y}, ${cpX} ${p.y}, ${p.x} ${p.y}`;
+    }, '');
 
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${svgHeight - paddingY} L ${points[0].x} ${svgHeight - paddingY} Z`;
+    const areaD = `${pathD} L ${points[points.length - 1].x} ${svgHeight - paddingY} L ${points[0].x} ${svgHeight - paddingY} Z`;
+
+    return { points, pathD, areaD, svgWidth, svgHeight, paddingY };
+  }, [growthSeries]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
