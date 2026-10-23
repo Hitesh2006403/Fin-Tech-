@@ -23,8 +23,15 @@ export function formatINR(amount, includeDecimals = false) {
 // Parses ISO date string (YYYY-MM-DD) safely
 export function parseDate(dateStr) {
   if (!dateStr) return new Date();
-  const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  if (typeof dateStr !== 'string') {
+    return dateStr instanceof Date ? new Date(dateStr.getTime()) : new Date(dateStr);
+  }
+  const parts = dateStr.split('-');
+  if (parts.length >= 3) {
+    const [year, month, day] = parts.map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
 }
 
 // Formats date to YYYY-MM-DD

@@ -81,6 +81,25 @@ export function Header() {
           <Calendar size={14} color="#38BDF8" />
           <span>{todayStr}</span>
         </div>
+
+        {user?.isGuest && (
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'rgba(56, 189, 248, 0.12)',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              borderRadius: 8,
+              padding: '4px 10px',
+              fontSize: 11.5,
+              fontWeight: 700,
+              color: '#38BDF8'
+            }}
+          >
+            <span>Guest Demo Mode</span>
+          </div>
+        )}
       </div>
 
       {/* Right: Actions, Notifications & Profile */}

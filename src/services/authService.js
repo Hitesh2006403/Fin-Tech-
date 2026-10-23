@@ -243,19 +243,66 @@ export const authService = {
             role: 'Freelance Product Architect',
             authProvider: 'local',
             onboardingCompleted: true,
-            isOfflineMode: true
+            isOfflineMode: true,
+            isAuthenticated: true
           };
           const demoToken = `demo_${Date.now()}`;
           try {
             localStorage.setItem('uip_auth_token', demoToken);
             localStorage.setItem('uip_fallback_user', JSON.stringify(demoUser));
           } catch {}
-          return { success: true, token: demoToken, user: demoUser };
+          return { success: true, token: demoToken, user: demoUser, role: 'user', redirectTo: '/dashboard' };
         }
-        throw new Error('Authentication server is not responding (502). Please start the backend with "npm run server" or login with Google.');
+
+        // Seamless client session fallback for prototype testing during network/server startup
+        const offlineUser = {
+          id: `usr_${Date.now()}`,
+          email: cleanEmail,
+          name: cleanEmail.includes('@') ? cleanEmail.split('@')[0] : 'User',
+          role: 'Freelance Professional',
+          authProvider: 'local',
+          onboardingCompleted: true,
+          isOfflineMode: true,
+          isAuthenticated: true
+        };
+        const demoToken = `offline_${Date.now()}`;
+        try {
+          localStorage.setItem('uip_auth_token', demoToken);
+          localStorage.setItem('uip_fallback_user', JSON.stringify(offlineUser));
+        } catch {}
+        return { success: true, token: demoToken, user: offlineUser, role: 'user', redirectTo: '/dashboard' };
       }
       throw err;
     }
+  },
+
+  /**
+   * Guest Login: Instantly provides zero-friction access to the full 70% prototype dashboard
+   */
+  loginAsGuest() {
+    const guestUser = {
+      id: 'usr_guest_demo',
+      email: 'guest@finsight.demo',
+      name: 'Guest Explorer',
+      role: 'Treasury Planner (Guest)',
+      isGuest: true,
+      authProvider: 'guest',
+      onboardingCompleted: true,
+      isAuthenticated: true
+    };
+    const guestToken = `guest_${Date.now()}`;
+    try {
+      localStorage.setItem('uip_auth_token', guestToken);
+      localStorage.setItem('uip_guest_session', 'true');
+      localStorage.setItem('uip_fallback_user', JSON.stringify(guestUser));
+    } catch {}
+    return {
+      success: true,
+      token: guestToken,
+      user: guestUser,
+      role: 'user',
+      redirectTo: '/dashboard'
+    };
   },
 
   /**
@@ -294,9 +341,21 @@ export const authService = {
 
       if (!res.ok) {
         const token = localStorage.getItem('uip_auth_token');
-        if (token && (token.startsWith('offline_') || token.startsWith('demo_'))) {
+        if (token && (token.startsWith('offline_') || token.startsWith('demo_') || token.startsWith('guest_') || token.startsWith('admin_'))) {
           const stored = localStorage.getItem('uip_fallback_user');
           if (stored) return JSON.parse(stored);
+        }
+        if (localStorage.getItem('uip_guest_session') === 'true') {
+          return {
+            id: 'usr_guest_demo',
+            email: 'guest@finsight.demo',
+            name: 'Guest Explorer',
+            role: 'Treasury Planner (Guest)',
+            isGuest: true,
+            authProvider: 'guest',
+            onboardingCompleted: true,
+            isAuthenticated: true
+          };
         }
         return null;
       }
@@ -304,11 +363,23 @@ export const authService = {
       return data.authenticated ? data.user : null;
     } catch {
       const token = localStorage.getItem('uip_auth_token');
-      if (token && (token.startsWith('offline_') || token.startsWith('demo_'))) {
+      if (token && (token.startsWith('offline_') || token.startsWith('demo_') || token.startsWith('guest_') || token.startsWith('admin_'))) {
         try {
           const stored = localStorage.getItem('uip_fallback_user');
           if (stored) return JSON.parse(stored);
         } catch {}
+      }
+      if (localStorage.getItem('uip_guest_session') === 'true') {
+        return {
+          id: 'usr_guest_demo',
+          email: 'guest@finsight.demo',
+          name: 'Guest Explorer',
+          role: 'Treasury Planner (Guest)',
+          isGuest: true,
+          authProvider: 'guest',
+          onboardingCompleted: true,
+          isAuthenticated: true
+        };
       }
       return null;
     }
@@ -319,17 +390,20 @@ export const authService = {
    */
   async logout() {
     try {
-      await fetch(`${API_BASE}/logout`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        credentials: 'include'
-      });
+      if (typeof window !== 'undefined') {
+        await fetch(`${API_BASE}/logout`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          credentials: 'include'
+        });
+      }
     } catch (e) {
-      console.warn('Logout network error:', e);
+      console.warn('Logout network notice:', e?.message || e);
     } finally {
       try {
         localStorage.removeItem('uip_auth_token');
         localStorage.removeItem('uip_fallback_user');
+        localStorage.removeItem('uip_guest_session');
       } catch {}
     }
   },

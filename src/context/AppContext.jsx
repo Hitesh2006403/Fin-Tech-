@@ -514,6 +514,26 @@ export function AppProvider({ children }) {
     navigate('/login');
   }, [navigate]);
 
+  const loginAsGuest = useCallback(() => {
+    const data = authService.loginAsGuest();
+    const authUser = {
+      ...INITIAL_USER,
+      ...data.user,
+      isAuthenticated: true
+    };
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+    } catch {}
+    setUser(authUser);
+    setPreferencesState(INITIAL_PREFERENCES);
+    setIncomes(INITIAL_INCOMES);
+    setExpenses(INITIAL_EXPENSES);
+    setLeanSavings(INITIAL_LEAN_SAVINGS);
+    setNotifications(INITIAL_NOTIFICATIONS);
+    navigate('/dashboard', { replace: true });
+    return data;
+  }, [navigate]);
+
   const completeOnboarding = useCallback(async () => {
     try {
       await authService.completeOnboarding();
@@ -584,6 +604,7 @@ export function AppProvider({ children }) {
     linkGoogleAccount,
     loginWithEmail,
     registerWithEmail,
+    loginAsGuest,
     completeOnboarding,
     logout
   }), [
@@ -631,6 +652,7 @@ export function AppProvider({ children }) {
     linkGoogleAccount,
     loginWithEmail,
     registerWithEmail,
+    loginAsGuest,
     completeOnboarding,
     logout
   ]);

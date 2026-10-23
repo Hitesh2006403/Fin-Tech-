@@ -38,6 +38,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     linkGoogleAccount,
     loginWithEmail,
     registerWithEmail,
+    loginAsGuest,
     completeOnboarding,
     setPreferences
   } = useApp();
@@ -159,6 +160,17 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
         setAuthError(err.message || 'Google authentication failed. Please check your network and retry.');
       }
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = () => {
+    setLoading(true);
+    setAuthError(null);
+    try {
+      loginAsGuest();
+    } catch (err) {
+      setAuthError('Could not start guest session.');
       setLoading(false);
     }
   };
@@ -816,7 +828,86 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 </button>
               </form>
 
-              <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#94A3B8' }}>
+              {/* Guest Access Option for Zero-Friction 70% Prototype Evaluation */}
+              <div style={{ marginTop: 14 }}>
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  disabled={loading}
+                  id="guest-login-button"
+                  style={{
+                    width: '100%',
+                    padding: '11px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(56, 189, 248, 0.08)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    color: '#38BDF8',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: loading ? 'wait' : 'pointer',
+                    transition: 'all 0.15s ease',
+                    boxShadow: '0 2px 12px rgba(56, 189, 248, 0.12)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(56, 189, 248, 0.16)';
+                    e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(56, 189, 248, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+                  }}
+                >
+                  <User size={16} />
+                  <span>Explore as Guest (Instant Access)</span>
+                </button>
+              </div>
+
+              {/* Demo Auto-Fill Shortcuts */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14 }}>
+                <span style={{ fontSize: 11.5, color: '#64748B' }}>Quick Fill:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('alex@example.com');
+                    setPassword('FinSight2026!Secured');
+                  }}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#94A3B8',
+                    fontSize: 11,
+                    padding: '3px 8px',
+                    borderRadius: 5,
+                    cursor: 'pointer'
+                  }}
+                >
+                  User Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('hiteshav2006@gmail.com');
+                    setPassword('FinSight2026!Secured');
+                  }}
+                  style={{
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(129, 140, 248, 0.3)',
+                    color: '#818CF8',
+                    fontSize: 11,
+                    padding: '3px 8px',
+                    borderRadius: 5,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Admin Demo
+                </button>
+              </div>
+
+              <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#94A3B8' }}>
                 Don't have an account?{' '}
                 <a
                   href="#register"
@@ -826,8 +917,6 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   Create account
                 </a>
               </div>
-
-
             </div>
           )}
 
@@ -1043,8 +1132,36 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 </button>
               </form>
 
+              {/* Guest Option in Register Mode */}
+              <div style={{ marginTop: 14 }}>
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  disabled={loading}
+                  id="register-guest-button"
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    borderRadius: '10px',
+                    background: 'rgba(56, 189, 248, 0.08)',
+                    border: '1px solid rgba(56, 189, 248, 0.28)',
+                    color: '#38BDF8',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: loading ? 'wait' : 'pointer'
+                  }}
+                >
+                  <User size={15} />
+                  <span>Skip and Explore as Guest</span>
+                </button>
+              </div>
+
               {/* 6. Footer Navigation Links */}
-              <div style={{ marginTop: 22, textAlign: 'center', fontSize: 13, color: '#94A3B8', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#94A3B8', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div>
                   Already registered?{' '}
                   <a
