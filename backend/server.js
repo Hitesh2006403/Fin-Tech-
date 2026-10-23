@@ -407,6 +407,123 @@ app.post('/api/auth/onboarding', (req, res) => {
   });
 });
 
+// 7b. Password Recovery - Request Reset Link
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email, redirectTo } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Email address is required.' });
+    }
+
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address format.' });
+    }
+
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const targetRedirect = redirectTo || `${APP_ORIGIN}/update-password`;
+
+    // Genuine recovery request via Supabase Auth
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error: sbError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+          redirectTo: targetRedirect
+        });
+        if (sbError) {
+          console.warn('[Supabase resetPasswordForEmail notice]:', sbError.message);
+          // If Supabase returned rate limit error, propagate informative rate-limit message
+          if (sbError.status === 429 || sbError.code === 'over_email_send_rate_limit' || sbError.message?.toLowerCase().includes('rate limit')) {
+            return res.status(429).json({
+              error: 'Email rate limit exceeded. Please wait a few minutes before requesting another recovery email, or configure custom SMTP in Supabase.'
+            });
+          }
+        }
+      } catch (sbErr) {
+        console.warn('[Supabase Auth recovery error]:', sbErr.message);
+      }
+    }
+
+    // Record security audit log
+    db.addSecurityLog({
+      event: 'Password Recovery Requested',
+      details: `Password recovery request initiated for ${normalizedEmail}`,
+      actor: normalizedEmail,
+      ip: req.ip || '127.0.0.1',
+      status: 'success',
+      severity: 'info'
+    });
+
+    // Generic response: do not reveal whether an account exists
+    return res.json({
+      success: true,
+      message: 'If an account exists for this email address, a password recovery link will be sent.'
+    });
+  } catch (err) {
+    console.error('Password recovery error:', err);
+    return res.status(500).json({ error: 'Internal server error while processing password recovery request.' });
+  }
+});
+
+// 7c. Password Recovery - Submit New Password
+app.post('/api/auth/update-password', async (req, res) => {
+  try {
+    const password = req.body.password || req.body.newPassword;
+    const { recoveryToken } = req.body;
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+
+    let targetEmail = null;
+
+    // 1. Verify recoveryToken with Supabase Auth if provided
+    if (recoveryToken && isSupabaseConfigured && supabase) {
+      try {
+        const { data, error: sbAuthErr } = await supabase.auth.getUser(recoveryToken);
+        if (!sbAuthErr && data?.user?.email) {
+          targetEmail = data.user.email.toLowerCase().trim();
+        }
+      } catch (tokenErr) {
+        console.warn('Supabase token verification error:', tokenErr.message);
+      }
+    }
+
+    // 2. Authenticated session on Express backend
+    if (!targetEmail && req.user?.email) {
+      targetEmail = req.user.email.toLowerCase().trim();
+    }
+
+    // Security requirement: Must have verified recovery token or authenticated session.
+    // Unauthenticated visitors are rejected to protect arbitrary accounts.
+    if (!targetEmail) {
+      return res.status(401).json({
+        error: 'Invalid or expired recovery session. Please request a new password recovery link.'
+      });
+    }
+
+    // Update password in local database
+    const updated = db.updateUserPasswordByEmail(targetEmail, password);
+
+    // Record security audit log
+    db.addSecurityLog({
+      event: 'Password Reset Completed',
+      details: `Password was successfully updated for account ${targetEmail}`,
+      actor: targetEmail,
+      ip: req.ip || '127.0.0.1',
+      status: 'success',
+      severity: 'info'
+    });
+
+    return res.json({
+      success: true,
+      message: 'Password updated successfully. You can now sign in with your new password.'
+    });
+  } catch (err) {
+    console.error('Update password error:', err);
+    return res.status(500).json({ error: 'Internal server error while updating password.' });
+  }
+});
+
 // 8. Health and Configuration Diagnostic
 app.get('/api/health', (req, res) => {
   const effectiveClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';

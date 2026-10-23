@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://rmzbuevslhddkinkgikq.supabase.co';
+const rawKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_3irM48DO-tN8a1MDY8qLvg_dB2TVuj7';
+
+// Sanitize URL by removing accidental trailing /rest/v1 or trailing slashes
+const supabaseUrl = (rawUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+const supabaseAnonKey = (rawKey || '').trim();
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
@@ -15,7 +19,8 @@ export const supabase = isSupabaseConfigured
       auth: {
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: 'pkce'
       }
     })
   : null;

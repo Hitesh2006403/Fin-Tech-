@@ -18,6 +18,7 @@ import { LeanWeekSavings } from './pages/LeanWeekSavings.jsx';
 import { NotificationsPage } from './pages/NotificationsPage.jsx';
 import { ProfileSettings } from './pages/ProfileSettings.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
+import { UpdatePasswordPage } from './pages/UpdatePasswordPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
 import { AdminPortal } from './pages/admin/AdminPortal.jsx';
@@ -143,8 +144,10 @@ function AppRoutes() {
       {/* Root Route */}
       <Route path="/" element={<HomeRoute />} />
 
-      {/* Common Login Route */}
+      {/* Common Login & Password Recovery Routes */}
       <Route path="/login" element={<LoginRoute />} />
+      <Route path="/reset-password" element={<AuthPage initialMode="forgot" />} />
+      <Route path="/update-password" element={<UpdatePasswordPage />} />
 
       {/* Protected User Dashboard Routes */}
       <Route element={<MainAppShellLayout />}>

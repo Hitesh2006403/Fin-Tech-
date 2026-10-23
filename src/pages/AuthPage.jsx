@@ -15,10 +15,13 @@ import {
   RefreshCw,
   Check,
   User,
-  ShieldAlert
+  ShieldAlert,
+  Loader2,
+  Mail
 } from 'lucide-react';
 import { Background3D } from '../components/common/Background3D.jsx';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService.js';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
 
@@ -42,7 +45,13 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   const [confirmPassword, setConfirmPassword] = useState('FinSight2026!Secured');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
+  
+  // Password Recovery state
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
+  const [forgotError, setForgotError] = useState(null);
+  const [forgotSuccessNotice, setForgotSuccessNotice] = useState(null);
 
   // Authentication status & error handling (Requirements 11 & 12)
   const [loading, setLoading] = useState(false);
@@ -107,6 +116,13 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       setLoading(false);
     }
   };
+
+  // Synchronize mode when initialMode prop changes (e.g., navigating to /reset-password)
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
 
   // Initialize Google Identity Services (Requirements 1, 3, 4)
   useEffect(() => {
@@ -306,6 +322,40 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       setAuthError(err.message || 'Failed to link account. Please verify password.');
     } finally {
       setLinkLoading(false);
+    }
+  };
+
+  // Handle Password Recovery Request (Task 2)
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setForgotError(null);
+    const targetEmail = (forgotEmail || email || '').trim();
+
+    if (!targetEmail) {
+      setForgotError('Please enter your account email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(targetEmail)) {
+      setForgotError('Please enter a valid email address format (e.g. name@example.com).');
+      return;
+    }
+
+    setForgotLoading(true);
+
+    try {
+      const result = await authService.requestPasswordRecovery(targetEmail);
+      setForgotSuccessNotice(
+        result.message ||
+        'If an account exists for this email address, a password recovery link will be sent.'
+      );
+      setForgotSubmitted(true);
+    } catch (err) {
+      console.error('Password recovery dispatch error:', err);
+      setForgotError(err.message || 'Failed to dispatch password recovery email. Please try again.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -1006,57 +1056,109 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
               <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0', letterSpacing: '-0.3px' }}>
                 Reset Password
               </h2>
-              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 24px 0', lineHeight: 1.5 }}>
-                Enter your account email and we'll send you an instant link to recover your access.
+              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+                Enter your account email address and we'll dispatch a secure, time-limited recovery link.
               </p>
 
+              {/* Error Notice */}
+              {forgotError && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  marginBottom: 18,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  color: '#FCA5A5',
+                  fontSize: 13,
+                  lineHeight: 1.45
+                }}>
+                  <AlertCircle size={18} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>{forgotError}</div>
+                </div>
+              )}
+
               {forgotSubmitted ? (
-                <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '24px 20px', borderRadius: 12, textAlign: 'center', backdropFilter: 'blur(12px)' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.2)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                    <CheckCircle2 size={24} />
+                <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '26px 22px', borderRadius: 14, textAlign: 'center', backdropFilter: 'blur(12px)' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.2)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 0 20px rgba(16, 185, 129, 0.25)' }}>
+                    <CheckCircle2 size={26} />
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', margin: '0 0 6px 0' }}>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: '#F8FAFC', margin: '0 0 8px 0' }}>
                     Recovery Link Dispatched
                   </h3>
-                  <p style={{ fontSize: 13, color: '#94A3B8', margin: '0 0 18px 0', lineHeight: 1.5 }}>
-                    We've sent a password reset link to <strong>{email}</strong>. Please check your inbox.
+                  <p style={{ fontSize: 13.5, color: '#CBD5E1', margin: '0 0 12px 0', lineHeight: 1.55 }}>
+                    {forgotSuccessNotice}
                   </p>
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: 13.5 }}
-                    onClick={() => { setMode('login'); setForgotSubmitted(false); }}
-                  >
-                    <span>Return to Sign In</span>
-                  </button>
+                  <p style={{ fontSize: 12.5, color: '#94A3B8', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+                    Please check your inbox (including your spam or junk folder). The recovery link will redirect you to update your password.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 13.5 }}
+                      onClick={() => { setMode('login'); setForgotSubmitted(false); setForgotError(null); }}
+                    >
+                      <span>Return to Sign In</span>
+                    </button>
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: 12.5, cursor: 'pointer', padding: 6, fontWeight: 600 }}
+                      onClick={() => { setForgotSubmitted(false); setForgotError(null); }}
+                    >
+                      Did not receive link? Try again
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <form onSubmit={(e) => { e.preventDefault(); setForgotSubmitted(true); }}>
+                <form onSubmit={handleForgotSubmit}>
                   <div className="form-group-item">
                     <label className="form-label-title" style={{ color: '#F8FAFC' }}>Email Address</label>
-                    <input
-                      type="email"
-                      className="form-input-control"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="email"
+                        className="form-input-control"
+                        placeholder="name@example.com"
+                        value={forgotEmail || email}
+                        onChange={(e) => {
+                          setForgotEmail(e.target.value);
+                          setEmail(e.target.value);
+                          if (forgotError) setForgotError(null);
+                        }}
+                        required
+                        disabled={forgotLoading}
+                        autoFocus
+                      />
+                    </div>
                   </div>
 
                   <button
                     type="submit"
                     className="btn-primary"
+                    disabled={forgotLoading}
                     style={{
                       width: '100%',
                       justifyContent: 'center',
                       padding: '12px',
                       fontSize: 14.5,
-                      marginTop: 6
+                      marginTop: 8,
+                      opacity: forgotLoading ? 0.75 : 1,
+                      cursor: forgotLoading ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    <span>Send Recovery Link</span>
-                    <ArrowRight size={16} />
+                    {forgotLoading ? (
+                      <>
+                        <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} />
+                        <span>Sending Recovery Link...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Recovery Link</span>
+                        <ArrowRight size={16} />
+                      </>
+                    )}
                   </button>
 
                   {/* Professional Bottom Navigation */}
@@ -1078,7 +1180,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                           borderRadius: 6,
                           transition: 'all 0.15s ease'
                         }}
-                        onClick={() => { setAuthError(null); setMode('login'); }}
+                        onClick={() => { setForgotError(null); setMode('login'); }}
                       >
                         <ArrowLeft size={14} />
                         <span>Return to Sign In</span>
@@ -1090,7 +1192,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                       <a
                         href="#register"
                         style={{ color: '#38BDF8', fontWeight: 600, textDecoration: 'none' }}
-                        onClick={(e) => { e.preventDefault(); setAuthError(null); setMode('register'); }}
+                        onClick={(e) => { e.preventDefault(); setForgotError(null); setMode('register'); }}
                       >
                         Create an account
                       </a>

@@ -3,6 +3,8 @@
  * Interfaces with the backend session API and Google Identity Services
  */
 
+import { supabase, isSupabaseConfigured } from './supabaseClient.js';
+
 const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
 const API_BASE = `${API_ROOT}/api/auth`;
 
@@ -331,5 +333,124 @@ export const authService = {
     } catch (e) {
       return { success: true };
     }
+  },
+
+  /**
+   * Dispatches genuine password recovery request
+   * Uses Supabase Auth's resetPasswordForEmail with redirectTo pointing to /update-password
+   */
+  async requestPasswordRecovery(email) {
+    if (!email || typeof email !== 'string') {
+      throw new Error('Please enter your email address.');
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      throw new Error('Please enter a valid email address format.');
+    }
+
+    // Determine absolute redirect URL (production or dev)
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fin-tech-vert-alpha.vercel.app';
+    const redirectTo = `${origin}/update-password`;
+
+    let requestDispatched = false;
+    let rateLimitError = null;
+
+    // 1. Dispatch genuine recovery link through Supabase Auth official API
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error: sbError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo
+        });
+        if (sbError) {
+          console.warn('[Supabase resetPasswordForEmail notice]:', sbError.message);
+          if (sbError.status === 429 || sbError.code === 'over_email_send_rate_limit' || sbError.message?.toLowerCase().includes('rate limit')) {
+            rateLimitError = new Error('Email rate limit reached. Please wait a few minutes before trying again, or check your spam/junk folder.');
+            rateLimitError.status = 429;
+          }
+        } else {
+          requestDispatched = true;
+        }
+      } catch (sbErr) {
+        console.warn('Supabase password recovery request failed:', sbErr);
+      }
+    }
+
+    // 2. Also notify backend endpoint
+    try {
+      const res = await fetch(`${API_BASE}/forgot-password`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ email: cleanEmail, redirectTo })
+      });
+      const data = await safeJsonParse(res);
+      if (res.status === 429) {
+        throw new Error(data.error || 'Email rate limit reached. Please wait a few minutes before requesting another recovery email.');
+      }
+      if (res.ok) {
+        requestDispatched = true;
+      }
+    } catch (backendErr) {
+      if (backendErr.status === 429 || backendErr.message?.includes('rate limit')) {
+        throw backendErr;
+      }
+      console.warn('Backend forgot-password notification notice:', backendErr);
+    }
+
+    if (rateLimitError && !requestDispatched) {
+      throw rateLimitError;
+    }
+
+    return {
+      success: true,
+      message: 'If an account exists for this email address, a password recovery link will be sent.'
+    };
+  },
+
+  /**
+   * Updates user password using verified recovery session/token
+   */
+  async updatePassword({ password, email, recoveryToken }) {
+    if (!password || password.length < 8) {
+      throw new Error('New password must be at least 8 characters long.');
+    }
+
+    let supabaseUpdated = false;
+
+    // 1. Update password in Supabase Auth if client is configured
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) {
+          console.warn('Supabase updateUser password notice:', error.message);
+        } else {
+          supabaseUpdated = true;
+        }
+      } catch (sbErr) {
+        console.warn('Supabase updateUser error:', sbErr);
+      }
+    }
+
+    // 2. Synchronize password update to custom backend
+    try {
+      const res = await fetch(`${API_BASE}/update-password`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ password, email, recoveryToken })
+      });
+      const data = await safeJsonParse(res);
+      if (!res.ok && !supabaseUpdated) {
+        throw new Error(data.error || 'Failed to update password.');
+      }
+    } catch (backendErr) {
+      if (!supabaseUpdated) throw backendErr;
+      console.warn('Backend password sync notice:', backendErr);
+    }
+
+    return {
+      success: true,
+      message: 'Password updated successfully. You can now log in with your new password.'
+    };
   }
 };

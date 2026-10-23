@@ -526,6 +526,17 @@ export const db = {
     return users[index];
   },
 
+  updateUserPasswordByEmail(email, newPassword) {
+    if (!email || !newPassword) return null;
+    const normalized = email.toLowerCase().trim();
+    users = readJSON(USERS_FILE, users);
+    const user = users.find(u => u.email.toLowerCase() === normalized);
+    if (!user) return null;
+    return this.updateUser(user.id, {
+      passwordHash: hashPassword(newPassword)
+    });
+  },
+
   // Sessions (30-day HttpOnly cookie session store)
   createSession(userId) {
     sessions = readJSON(SESSIONS_FILE, sessions);
@@ -1302,3 +1313,4 @@ export const db = {
   }
 };
 
+export default db;
