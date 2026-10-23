@@ -32,48 +32,56 @@ export function OverviewDashboard() {
     dismissAlert
   } = useApp();
 
-  const hasRecords = incomes.length > 0 || expenses.length > 0;
+  const safeIncomes = Array.isArray(incomes) ? incomes : [];
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
+  const safeBalance = balanceDetails || { availableCash: 0 };
+  const safeSpend = safeToSpend || { safeToSpendToday: 0, projectedShortfall: 0 };
+  const safeForecast = standardForecast?.forecast || [];
+  const safePrefs = preferences || { startingBalance: 45000, safetyBuffer: 25000 };
+  const safeInsights = dashboardInsights || { alerts: [], primaryInsight: null };
+
+  const hasRecords = safeIncomes.length > 0 || safeExpenses.length > 0;
 
   // Unpaid bills up to 5
-  const upcomingBills = expenses
-    .filter(e => e.status !== 'paid')
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+  const upcomingBills = safeExpenses
+    .filter(e => e && e.status !== 'paid')
+    .sort((a, b) => (a?.dueDate || '').localeCompare(b?.dueDate || ''))
     .slice(0, 5);
 
   // Combined recent activity (last 5 transactions)
   const recentTransactions = [
-    ...incomes.filter(i => i.status === 'received').map(i => ({
-      id: i.id,
-      title: i.title,
+    ...safeIncomes.filter(i => i && i.status === 'received').map(i => ({
+      id: i.id || `inc_${Math.random()}`,
+      title: i.title || 'Income Received',
       category: i.source || 'Client Payout',
-      date: i.actualDate || i.expectedDate,
-      amount: i.amount,
+      date: i.actualDate || i.expectedDate || 'Cleared',
+      amount: i.amount || 0,
       type: 'income',
       status: 'Received'
     })),
-    ...expenses.map(e => ({
-      id: e.id,
-      title: e.title,
-      category: e.category,
-      date: e.paidDate || e.dueDate,
-      amount: e.amount,
+    ...safeExpenses.map(e => ({
+      id: e.id || `exp_${Math.random()}`,
+      title: e.title || 'Expense',
+      category: e.category || 'General',
+      date: e.paidDate || e.dueDate || 'Committed',
+      amount: e.amount || 0,
       type: 'expense',
       status: e.status === 'paid' ? 'Paid' : 'Unpaid'
     }))
   ]
-    .sort((a, b) => b.date.localeCompare(a.date))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
     .slice(0, 5);
 
   // Income Reliability totals
-  const totalReceived = incomes
-    .filter(i => i.status === 'received')
-    .reduce((s, i) => s + Number(i.amount), 0);
-  const totalConfirmed = incomes
-    .filter(i => i.status === 'confirmed')
-    .reduce((s, i) => s + Number(i.amount), 0);
-  const totalUncertain = incomes
-    .filter(i => i.status === 'uncertain')
-    .reduce((s, i) => s + Number(i.amount), 0);
+  const totalReceived = safeIncomes
+    .filter(i => i && i.status === 'received')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
+  const totalConfirmed = safeIncomes
+    .filter(i => i && i.status === 'confirmed')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
+  const totalUncertain = safeIncomes
+    .filter(i => i && i.status === 'uncertain')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
   const grandTotalPipeline = totalReceived + totalConfirmed + totalUncertain || 1;
 
   if (!hasRecords) {
@@ -142,26 +150,26 @@ export function OverviewDashboard() {
       </div>
 
       {/* Prominent Data-Driven Financial Insight Bar */}
-      {dashboardInsights.primaryInsight && (
+      {safeInsights?.primaryInsight && (
         <div
           className="dashboard-insight-banner"
           style={{
-            background: dashboardInsights.primaryInsight.type === 'danger'
+            background: safeInsights.primaryInsight.type === 'danger'
               ? 'rgba(239, 68, 68, 0.14)'
-              : dashboardInsights.primaryInsight.type === 'warning'
+              : safeInsights.primaryInsight.type === 'warning'
               ? 'rgba(245, 158, 11, 0.14)'
               : 'rgba(56, 189, 248, 0.12)',
             border: `1px solid ${
-              dashboardInsights.primaryInsight.type === 'danger'
+              safeInsights.primaryInsight.type === 'danger'
                 ? 'rgba(239, 68, 68, 0.35)'
-                : dashboardInsights.primaryInsight.type === 'warning'
+                : safeInsights.primaryInsight.type === 'warning'
                 ? 'rgba(245, 158, 11, 0.35)'
                 : 'rgba(56, 189, 248, 0.28)'
             }`,
             borderTop: `1px solid ${
-              dashboardInsights.primaryInsight.type === 'danger'
+              safeInsights.primaryInsight.type === 'danger'
                 ? 'rgba(239, 68, 68, 0.5)'
-                : dashboardInsights.primaryInsight.type === 'warning'
+                : safeInsights.primaryInsight.type === 'warning'
                 ? 'rgba(245, 158, 11, 0.5)'
                 : 'rgba(56, 189, 248, 0.45)'
             }`,
@@ -178,19 +186,19 @@ export function OverviewDashboard() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {dashboardInsights.primaryInsight.type === 'danger' ? (
+            {safeInsights.primaryInsight.type === 'danger' ? (
               <AlertTriangle size={18} color="#F87171" style={{ filter: 'drop-shadow(0 0 6px rgba(239, 68, 68, 0.4))' }} />
-            ) : dashboardInsights.primaryInsight.type === 'warning' ? (
+            ) : safeInsights.primaryInsight.type === 'warning' ? (
               <Clock size={18} color="#FBBF24" style={{ filter: 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.4))' }} />
             ) : (
               <Sparkles size={18} color="#38BDF8" style={{ filter: 'drop-shadow(0 0 6px rgba(56, 189, 248, 0.4))' }} />
             )}
             <div>
               <strong style={{ fontSize: 13, color: '#F8FAFC', marginRight: 8 }}>
-                {dashboardInsights.primaryInsight.title}:
+                {safeInsights.primaryInsight.title}:
               </strong>
               <span style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.45 }}>
-                {dashboardInsights.primaryInsight.message}
+                {safeInsights.primaryInsight.message}
               </span>
             </div>
           </div>
@@ -229,7 +237,7 @@ export function OverviewDashboard() {
             </div>
           </div>
           <div className="kpi-amount-val">
-            {formatINR(balanceDetails.availableCash)}
+            {formatINR(safeBalance.availableCash)}
           </div>
           <div className="kpi-subtitle-meta">
             <span>Based on recorded transactions.</span>
@@ -242,8 +250,8 @@ export function OverviewDashboard() {
           className="kpi-card"
           onClick={() => setActiveRoute('safe-to-spend')}
           style={{
-            borderColor: safeToSpend.safeToSpendToday > 0 ? 'rgba(56, 189, 248, 0.35)' : 'rgba(239, 68, 68, 0.35)',
-            boxShadow: safeToSpend.safeToSpendToday > 0 ? '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(56, 189, 248, 0.12)' : '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(239, 68, 68, 0.12)'
+            borderColor: (safeSpend.safeToSpendToday || 0) > 0 ? 'rgba(56, 189, 248, 0.35)' : 'rgba(239, 68, 68, 0.35)',
+            boxShadow: (safeSpend.safeToSpendToday || 0) > 0 ? '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(56, 189, 248, 0.12)' : '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(239, 68, 68, 0.12)'
           }}
         >
           <div className="kpi-top-row">
@@ -252,12 +260,12 @@ export function OverviewDashboard() {
               <ShieldCheck size={18} />
             </div>
           </div>
-          <div className="kpi-amount-val" style={{ color: safeToSpend.safeToSpendToday > 0 ? '#38BDF8' : '#F87171', textShadow: safeToSpend.safeToSpendToday > 0 ? '0 0 20px rgba(56, 189, 248, 0.4)' : '0 0 20px rgba(239, 68, 68, 0.4)' }}>
-            {formatINR(safeToSpend.safeToSpendToday)}
+          <div className="kpi-amount-val" style={{ color: (safeSpend.safeToSpendToday || 0) > 0 ? '#38BDF8' : '#F87171', textShadow: (safeSpend.safeToSpendToday || 0) > 0 ? '0 0 20px rgba(56, 189, 248, 0.4)' : '0 0 20px rgba(239, 68, 68, 0.4)' }}>
+            {formatINR(safeSpend.safeToSpendToday)}
           </div>
           <div className="kpi-subtitle-meta">
             <span>After planned commitments.</span>
-            {safeToSpend.projectedShortfall > 0 ? (
+            {(safeSpend.projectedShortfall || 0) > 0 ? (
               <span className="kpi-status-badge warning">Buffer Protected</span>
             ) : (
               <span className="kpi-status-badge positive">Safe Buffer Intact</span>
@@ -308,7 +316,7 @@ export function OverviewDashboard() {
             <div>
               <h3 className="card-title-h3">30-Day Cash Flow Trajectory</h3>
               <p className="card-subtitle-p">
-                Projected cash balance against safety buffer ({formatINR(preferences.safetyBuffer)}).
+                Projected cash balance against safety buffer ({formatINR(safePrefs.safetyBuffer)}).
               </p>
             </div>
             <button
@@ -323,9 +331,9 @@ export function OverviewDashboard() {
           </div>
 
           <CashFlowChart
-            forecastData={standardForecast.forecast}
-            safetyBuffer={preferences.safetyBuffer}
-            startingBalance={balanceDetails.availableCash}
+            forecastData={safeForecast}
+            safetyBuffer={safePrefs.safetyBuffer ?? 25000}
+            startingBalance={safeBalance.availableCash ?? 0}
             height={260}
             showControls={false}
           />
@@ -343,7 +351,7 @@ export function OverviewDashboard() {
                 style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                 onClick={() => setActiveRoute('expenses')}
               >
-                View all ({expenses.filter(e => e.status !== 'paid').length})
+                View all ({safeExpenses.filter(e => e && e.status !== 'paid').length})
               </button>
             </div>
 
@@ -398,12 +406,12 @@ export function OverviewDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {dashboardInsights.alerts.length === 0 ? (
+              {(safeInsights.alerts || []).length === 0 ? (
                 <div style={{ fontSize: 12.5, color: '#64748B', textAlign: 'center', padding: '16px 8px' }}>
                   No active alerts. All financial flows are within safe parameters.
                 </div>
               ) : (
-                dashboardInsights.alerts.map(alert => (
+                safeInsights.alerts.map(alert => (
                   <div
                     key={alert.id}
                     style={{

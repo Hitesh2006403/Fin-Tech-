@@ -27,27 +27,30 @@ export function ExpensesBills() {
   const [paymentDate, setPaymentDate] = useState(toISODate(new Date()));
 
   const todayStr = toISODate(new Date());
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
   // Metrics
-  const unpaidBills = expenses.filter(e => e.status !== 'paid');
-  const totalUnpaid = unpaidBills.reduce((s, e) => s + Number(e.amount), 0);
+  const unpaidBills = safeExpenses.filter(e => e && e.status !== 'paid');
+  const totalUnpaid = unpaidBills.reduce((s, e) => s + Number(e.amount || 0), 0);
 
   const due7Days = unpaidBills.filter(e => {
+    if (!e || !e.dueDate) return false;
     const diff = diffInDays(todayStr, e.dueDate);
     return diff >= 0 && diff <= 7;
   });
-  const totalDue7Days = due7Days.reduce((s, e) => s + Number(e.amount), 0);
+  const totalDue7Days = due7Days.reduce((s, e) => s + Number(e.amount || 0), 0);
 
-  const overdueBills = unpaidBills.filter(e => e.dueDate < todayStr);
-  const totalOverdue = overdueBills.reduce((s, e) => s + Number(e.amount), 0);
+  const overdueBills = unpaidBills.filter(e => e && e.dueDate && e.dueDate < todayStr);
+  const totalOverdue = overdueBills.reduce((s, e) => s + Number(e.amount || 0), 0);
 
-  const essentialUnpaid = unpaidBills.filter(e => e.isEssential);
-  const totalEssentialUnpaid = essentialUnpaid.reduce((s, e) => s + Number(e.amount), 0);
+  const essentialUnpaid = unpaidBills.filter(e => e && e.isEssential);
+  const totalEssentialUnpaid = essentialUnpaid.reduce((s, e) => s + Number(e.amount || 0), 0);
 
   // Filtered List
-  const filteredExpenses = expenses.filter(exp => {
-    const matchesSearch = exp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          exp.category.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredExpenses = safeExpenses.filter(exp => {
+    if (!exp) return false;
+    const matchesSearch = (exp.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (exp.category || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     let matchesStatus = true;
     if (statusFilter === 'unpaid') matchesStatus = exp.status !== 'paid';

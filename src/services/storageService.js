@@ -249,7 +249,9 @@ export const storageService = {
   get(key, fallback) {
     try {
       const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : fallback;
+      if (!data) return fallback;
+      const parsed = JSON.parse(data);
+      return parsed !== null && parsed !== undefined ? parsed : fallback;
     } catch {
       return fallback;
     }

@@ -173,82 +173,89 @@ export function AppProvider({ children }) {
   }, [notifications]);
 
   // 2. Authoritative Financial Engine Calculations (Memoized for peak performance)
+  const safeIncomes = useMemo(() => Array.isArray(incomes) ? incomes : [], [incomes]);
+  const safeExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
+  const safePrefs = preferences || INITIAL_PREFERENCES;
+  const safeSavings = leanSavings || INITIAL_LEAN_SAVINGS;
+
   const balanceDetails = useMemo(() => {
     return calculateCurrentBalance(
-      preferences.startingBalance,
-      incomes,
-      expenses,
-      leanSavings.currentDesignatedReserve
+      safePrefs.startingBalance ?? 45000,
+      safeIncomes,
+      safeExpenses,
+      safeSavings.currentDesignatedReserve ?? 0
     );
-  }, [preferences.startingBalance, incomes, expenses, leanSavings.currentDesignatedReserve]);
+  }, [safePrefs.startingBalance, safeIncomes, safeExpenses, safeSavings.currentDesignatedReserve]);
 
   const safeToSpend = useMemo(() => {
     return calculateSafeToSpend({
-      availableCash: balanceDetails.availableCash,
-      incomes,
-      expenses,
-      safetyBuffer: preferences.safetyBuffer,
-      horizonDays: preferences.defaultHorizonDays,
-      scenario: preferences.defaultScenario
+      availableCash: balanceDetails?.availableCash ?? 0,
+      incomes: safeIncomes,
+      expenses: safeExpenses,
+      safetyBuffer: safePrefs.safetyBuffer ?? 25000,
+      horizonDays: safePrefs.defaultHorizonDays ?? 30,
+      scenario: safePrefs.defaultScenario ?? 'expected'
     });
-  }, [balanceDetails.availableCash, incomes, expenses, preferences.safetyBuffer, preferences.defaultHorizonDays, preferences.defaultScenario]);
+  }, [balanceDetails?.availableCash, safeIncomes, safeExpenses, safePrefs.safetyBuffer, safePrefs.defaultHorizonDays, safePrefs.defaultScenario]);
 
   const standardForecast = useMemo(() => {
     return generateCashFlowForecast({
-      availableCash: balanceDetails.availableCash,
-      incomes,
-      expenses,
-      safetyBuffer: preferences.safetyBuffer,
+      availableCash: balanceDetails?.availableCash ?? 0,
+      incomes: safeIncomes,
+      expenses: safeExpenses,
+      safetyBuffer: safePrefs.safetyBuffer ?? 25000,
       days: 30,
       scenario: 'expected'
     });
-  }, [balanceDetails.availableCash, incomes, expenses, preferences.safetyBuffer]);
+  }, [balanceDetails?.availableCash, safeIncomes, safeExpenses, safePrefs.safetyBuffer]);
 
   const rawDashboardInsights = useMemo(() => {
     return generateDashboardInsights({
-      availableCash: balanceDetails.availableCash,
-      safetyBuffer: preferences.safetyBuffer,
-      incomes,
-      expenses,
-      forecast: standardForecast.forecast,
-      firstLowBufferDate: standardForecast.firstLowBufferDate,
-      firstNegativeDate: standardForecast.firstNegativeDate
+      availableCash: balanceDetails?.availableCash ?? 0,
+      safetyBuffer: safePrefs.safetyBuffer ?? 25000,
+      incomes: safeIncomes,
+      expenses: safeExpenses,
+      forecast: standardForecast?.forecast || [],
+      firstLowBufferDate: standardForecast?.firstLowBufferDate,
+      firstNegativeDate: standardForecast?.firstNegativeDate
     });
-  }, [balanceDetails.availableCash, preferences.safetyBuffer, incomes, expenses, standardForecast]);
+  }, [balanceDetails?.availableCash, safePrefs.safetyBuffer, safeIncomes, safeExpenses, standardForecast]);
 
   const dashboardInsights = useMemo(() => {
+    const rawAlerts = rawDashboardInsights?.alerts || [];
     return {
       ...rawDashboardInsights,
-      alerts: rawDashboardInsights.alerts.filter(a => !dismissedAlertIds.includes(a.id))
+      alerts: rawAlerts.filter(a => !dismissedAlertIds.includes(a.id))
     };
   }, [rawDashboardInsights, dismissedAlertIds]);
 
   const billRanking = useMemo(() => {
-    return rankBills(expenses, balanceDetails.availableCash);
-  }, [expenses, balanceDetails.availableCash]);
+    return rankBills(safeExpenses, balanceDetails?.availableCash ?? 0);
+  }, [safeExpenses, balanceDetails?.availableCash]);
 
   const leanWeekCalculations = useMemo(() => {
-    return calculateLeanWeekSavings(leanSavings);
-  }, [leanSavings]);
+    return calculateLeanWeekSavings(safeSavings);
+  }, [safeSavings]);
 
   // Derived metrics for UI
   const confirmedUpcomingIncome = useMemo(() => {
     const today = toISODate(new Date());
-    return incomes
+    return safeIncomes
       .filter(inc => inc.status === 'confirmed' && inc.expectedDate >= today)
       .reduce((sum, inc) => sum + Number(inc.amount || 0), 0);
-  }, [incomes]);
+  }, [safeIncomes]);
 
   const upcomingBillsNext7Days = useMemo(() => {
     const today = toISODate(new Date());
     const sevenDaysLater = addDays(today, 7);
-    return expenses
+    return safeExpenses
       .filter(exp => exp.status !== 'paid' && exp.dueDate >= today && exp.dueDate <= sevenDaysLater)
       .reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
-  }, [expenses]);
+  }, [safeExpenses]);
 
   const unreadNotificationCount = useMemo(() => {
-    return notifications.filter(n => !n.isRead).length;
+    const safeNotifications = Array.isArray(notifications) ? notifications : [];
+    return safeNotifications.filter(n => !n.isRead).length;
   }, [notifications]);
 
   // 3. Mutating Actions (Wrapped in useCallback to maintain reference equality)

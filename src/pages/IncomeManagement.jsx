@@ -25,24 +25,27 @@ export function IncomeManagement() {
   const [receiveModalIncome, setReceiveModalIncome] = useState(null);
   const [receiveDate, setReceiveDate] = useState(toISODate(new Date()));
 
+  const safeIncomes = Array.isArray(incomes) ? incomes : [];
+
   // Summary Metrics
-  const totalReceived = incomes
-    .filter(i => i.status === 'received')
-    .reduce((s, i) => s + Number(i.amount), 0);
+  const totalReceived = safeIncomes
+    .filter(i => i && i.status === 'received')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
 
-  const totalConfirmed = incomes
-    .filter(i => i.status === 'confirmed')
-    .reduce((s, i) => s + Number(i.amount), 0);
+  const totalConfirmed = safeIncomes
+    .filter(i => i && i.status === 'confirmed')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
 
-  const totalUncertain = incomes
-    .filter(i => i.status === 'uncertain')
-    .reduce((s, i) => s + Number(i.amount), 0);
+  const totalUncertain = safeIncomes
+    .filter(i => i && i.status === 'uncertain')
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
 
   const totalPipeline = totalReceived + totalConfirmed + totalUncertain;
 
   // Filtered List
-  const filteredIncomes = incomes.filter(inc => {
-    const matchesSearch = inc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredIncomes = safeIncomes.filter(inc => {
+    if (!inc) return false;
+    const matchesSearch = (inc.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (inc.source && inc.source.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || inc.status === statusFilter;
     return matchesSearch && matchesStatus;

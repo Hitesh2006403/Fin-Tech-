@@ -37,10 +37,8 @@ export class ErrorBoundary extends React.Component {
 
   handleResetSession = () => {
     try {
-      localStorage.removeItem('uip_auth_token');
-      localStorage.removeItem('uip_fallback_user');
-      localStorage.removeItem('finsight_admin_token');
-      localStorage.removeItem('finsight_admin_user');
+      localStorage.clear();
+      sessionStorage.clear();
     } catch (e) {
       // Ignore storage errors
     }
@@ -48,6 +46,7 @@ export class ErrorBoundary extends React.Component {
   };
 
   handleGoDashboard = () => {
+    this.setState({ hasError: false, error: null, errorInfo: null });
     window.location.href = '/dashboard';
   };
 
@@ -213,43 +212,42 @@ export class ErrorBoundary extends React.Component {
             </div>
 
             {/* Collapsible Technical Diagnostics */}
-            {(isDev || this.state.showDetails) && (
-              <div style={{ marginTop: 20, textAlign: 'left' }}>
-                <button
-                  type="button"
-                  onClick={() => this.setState(prev => ({ showDetails: !prev.showDetails }))}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#64748B',
-                    fontSize: 11.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    cursor: 'pointer',
-                    padding: 0,
-                    margin: '0 auto 8px auto'
-                  }}
-                >
-                  <span>{this.state.showDetails ? 'Hide' : 'Show'} Diagnostics</span>
-                  {this.state.showDetails ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                </button>
-                {this.state.showDetails && (
-                  <pre style={{
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    padding: 12,
-                    borderRadius: 8,
-                    fontSize: 11,
-                    color: '#F87171',
-                    overflowX: 'auto',
-                    whiteSpace: 'pre-wrap',
-                    border: '1px solid rgba(239, 68, 68, 0.2)'
-                  }}>
-                    {errorMessage}
-                  </pre>
-                )}
-              </div>
-            )}
+            <div style={{ marginTop: 20, textAlign: 'left' }}>
+              <button
+                type="button"
+                onClick={() => this.setState(prev => ({ showDetails: !prev.showDetails }))}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#64748B',
+                  fontSize: 11.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  cursor: 'pointer',
+                  padding: 0,
+                  margin: '0 auto 8px auto'
+                }}
+              >
+                <span>{this.state.showDetails ? 'Hide' : 'Show'} Diagnostics</span>
+                {this.state.showDetails ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+              {this.state.showDetails && (
+                <pre style={{
+                  background: 'rgba(0, 0, 0, 0.5)',
+                  padding: 12,
+                  borderRadius: 8,
+                  fontSize: 11,
+                  color: '#F87171',
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  {errorMessage}
+                  {this.state.error?.stack && `\n\nStack:\n${this.state.error.stack}`}
+                </pre>
+              )}
+            </div>
           </div>
         </div>
       );
