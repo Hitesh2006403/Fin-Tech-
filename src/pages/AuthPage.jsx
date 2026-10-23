@@ -116,8 +116,10 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     });
   }, [obBalance, obBuffer, obFrequency, obThreshold]);
 
-  // Google Identity Services (GIS) button ref
+  // Google Identity Services (GIS) button ref & initialization tracking
   const googleBtnRef = useRef(null);
+  const [gisReady, setGisReady] = useState(false);
+  const gisInitializedRef = useRef(false);
 
   // Handle Google Credential Response
   const handleGoogleCredentialResponse = async (response) => {
@@ -125,6 +127,8 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
       setAuthError('Authentication canceled or no credential was returned by Google.');
       return;
     }
+
+    if (loading) return; // Prevent multiple simultaneous login submissions
 
     setAuthError(null);
     setLoading(true);
@@ -137,15 +141,12 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
         data?.user?.role === 'Super Administrator' ||
         ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'].includes((data?.user?.email || '').toLowerCase().trim())
       );
-      // If new regular user with incomplete onboarding, switch to onboarding
-      if (data.user && !data.user.onboardingCompleted && !isAdminUser) {
-        navigate('/setup?step=1');
-      } else {
-        const dest = data?.redirectTo || (isAdminUser ? '/admin' : '/dashboard');
-        navigate(dest);
-      }
+
+      // Direct, reliable role-based navigation without redirect loops
+      const dest = isAdminUser ? '/admin' : '/dashboard';
+      navigate(dest, { replace: true });
     } catch (err) {
-      console.warn('Google authentication response handling:', err);
+      console.warn('Google authentication response notice:', err.message);
       if (err.code === 'EXISTING_LOCAL_ACCOUNT') {
         // Trigger secure account linking modal
         setConflictData({
@@ -155,7 +156,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
         });
         setInternalMode('link_account');
       } else {
-        setAuthError(err.message || 'Google authentication failed. Please retry.');
+        setAuthError(err.message || 'Google authentication failed. Please check your network and retry.');
       }
     } finally {
       setLoading(false);
@@ -169,31 +170,35 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
     const setupGis = () => {
       if (typeof window !== 'undefined' && window.google?.accounts?.id) {
         try {
-          window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleCredentialResponse,
-            auto_select: false,
-            cancel_on_tap_outside: true,
-            context: 'signin',
-            itp_support: true
-          });
+          if (!gisInitializedRef.current) {
+            window.google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: handleGoogleCredentialResponse,
+              auto_select: false,
+              cancel_on_tap_outside: true,
+              context: 'signin',
+              itp_support: true
+            });
+            gisInitializedRef.current = true;
+          }
 
           if (googleBtnRef.current) {
             googleBtnRef.current.innerHTML = '';
             // Dynamically calculate appropriate button width for mobile/desktop
-            const containerWidth = googleBtnRef.current.offsetWidth || (typeof window !== 'undefined' && window.innerWidth < 420 ? window.innerWidth - 48 : 380);
-            const btnWidth = Math.min(400, Math.max(220, containerWidth));
+            const containerWidth = googleBtnRef.current.offsetWidth || (window.innerWidth < 420 ? window.innerWidth - 48 : 380);
+            const btnWidth = Math.min(400, Math.max(240, containerWidth));
 
-            // Render genuine GIS button inside the overlay container
+            // Render genuine GIS button
             window.google.accounts.id.renderButton(googleBtnRef.current, {
               type: 'standard',
-              theme: 'outline',
+              theme: 'filled_black',
               size: 'large',
               text: 'continue_with',
               shape: 'rectangular',
               logo_alignment: 'left',
               width: btnWidth
             });
+            setGisReady(true);
           }
         } catch (e) {
           console.error('Failed to initialize Google Identity Services:', e);
@@ -661,84 +666,73 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 Sign in to continue to your financial dashboard.
               </p>
 
-              {/* Google SSO Button Container (Preserves exact design + Real GIS Account Chooser) */}
-              <div style={{ position: 'relative', width: '100%', marginBottom: 6 }}>
-                {/* Visual presentation matching 3D dark glass theme */}
-                <button
-                  type="button"
-                  className="btn-google-sso"
-                  onClick={handleGoogleBtnClick}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    background: 'rgba(15, 23, 42, 0.85)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.22)',
-                    borderRadius: '10px',
-                    padding: '11px 16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    cursor: loading ? 'wait' : 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 4px 18px rgba(0, 0, 0, 0.35)',
-                    opacity: loading ? 0.7 : 1,
-                    backdropFilter: 'blur(10px)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {loading ? (
-                      <RefreshCw size={18} className="spin" color="#38BDF8" />
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path
-                          fill="#4285F4"
-                          d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12c0 1.97.45 3.82 1.25 5.42l4.03-3.15z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                        />
-                      </svg>
-                    )}
-                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#F8FAFC' }}>
-                      {loading ? 'Authenticating with Google...' : 'Continue with Google'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Real Google Identity Services Overlay (Seamlessly renders genuine account chooser iframe over button) */}
+              {/* Google SSO Button Container (Natively rendered GIS button + resilient mobile touch fallback) */}
+              <div style={{ position: 'relative', width: '100%', marginBottom: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div
                   ref={googleBtnRef}
-                  className="gis-button-overlay"
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
                     width: '100%',
-                    height: '100%',
-                    opacity: 0.001,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    zIndex: 10,
+                    minHeight: 44,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    pointerEvents: loading ? 'none' : 'auto'
+                    justifyContent: 'center'
                   }}
-                  title="Sign in with genuine Google account"
                 />
+
+                {/* Visible fallback button while GIS script is loading or if adblocker blocks GIS */}
+                {!gisReady && (
+                  <button
+                    type="button"
+                    className="btn-google-sso"
+                    onClick={handleGoogleBtnClick}
+                    disabled={loading}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(15, 23, 42, 0.85)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.22)',
+                      borderRadius: '10px',
+                      padding: '11px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      cursor: loading ? 'wait' : 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.35)',
+                      opacity: loading ? 0.7 : 1,
+                      backdropFilter: 'blur(10px)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {loading ? (
+                        <RefreshCw size={18} className="spin" color="#38BDF8" />
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                          <path
+                            fill="#4285F4"
+                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12c0 1.97.45 3.82 1.25 5.42l4.03-3.15z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                          />
+                        </svg>
+                      )}
+                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#F8FAFC' }}>
+                        {loading ? 'Authenticating with Google...' : 'Continue with Google'}
+                      </span>
+                    </div>
+                  </button>
+                )}
               </div>
 
               {/* Divider */}

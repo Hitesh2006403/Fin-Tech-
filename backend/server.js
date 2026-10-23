@@ -135,7 +135,7 @@ function authenticate(req, res, next) {
     return next();
   }
 
-  const user = db.getUserById(session.userId);
+  const user = db.getUserById(session.userId) || session.user;
   req.user = user || null;
   next();
 }
@@ -1031,7 +1031,8 @@ app.get('/api/database/status', async (req, res) => {
   });
 });
 
-if (!process.env.VERCEL) {
+const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+if (!process.env.VERCEL && isMainModule) {
   app.listen(PORT, () => {
     console.log(`[FinSight Auth Server] Running on http://localhost:${PORT}`);
     console.log(`[FinSight Auth Server] Authorized origin: ${APP_ORIGIN}`);

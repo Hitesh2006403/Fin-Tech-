@@ -83,7 +83,7 @@ export function OverviewDashboard() {
           <Sparkles size={34} />
         </div>
         <h2 style={{ fontSize: 26, fontWeight: 700, color: '#F8FAFC', marginBottom: 8, letterSpacing: -0.4 }}>
-          Welcome to Uncertain Income Planner, {user.name}
+          Welcome to Uncertain Income Planner, {user?.name || 'Treasury Planner'}
         </h2>
         <p style={{ color: '#94A3B8', maxWidth: 480, marginBottom: 28, fontSize: 15, lineHeight: 1.6 }}>
           Take the stress out of irregular earnings. Record your current cash, upcoming gigs, and essential bills to see your true Safe-to-Spend.
@@ -123,7 +123,7 @@ export function OverviewDashboard() {
             <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>•</span>
             <span style={{ fontSize: 12, color: '#94A3B8' }}>Irregular Cash-Flow Engine</span>
           </div>
-          <h1 className="page-title">Good day, {user.name}</h1>
+          <h1 className="page-title">Good day, {user?.name || 'Treasury Planner'}</h1>
           <p className="page-subtitle">
             Here's your real-time spendable cash, protected obligations, and 30-day runway.
           </p>

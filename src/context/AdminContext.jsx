@@ -1,12 +1,27 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { adminService } from '../services/adminService.js';
+import { useApp } from './AppContext.jsx';
 
 const AdminContext = createContext(null);
 
+const AUTHORIZED_ADMIN_EMAILS = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
+
 export function AdminProvider({ children }) {
-  const [adminUser, setAdminUser] = useState(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [adminLoading, setAdminLoading] = useState(true);
+  const appContext = useApp ? useApp() : null;
+  const contextUser = appContext?.user;
+
+  const isUserAdmin = Boolean(
+    contextUser && (
+      contextUser.isAdmin ||
+      contextUser.role === 'Super Administrator' ||
+      contextUser.role === 'admin' ||
+      (contextUser.email && AUTHORIZED_ADMIN_EMAILS.includes(contextUser.email.toLowerCase().trim()))
+    )
+  );
+
+  const [adminUser, setAdminUser] = useState(() => isUserAdmin ? contextUser : null);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => isUserAdmin);
+  const [adminLoading, setAdminLoading] = useState(() => !isUserAdmin);
   const [adminActiveTab, setAdminActiveTab] = useState('dashboard');
   
   // Dashboard & Management Data State
@@ -22,21 +37,36 @@ export function AdminProvider({ children }) {
 
   // Check existing admin session on mount
   useEffect(() => {
+    let isCancelled = false;
+
     async function initAdminAuth() {
       try {
         const currentUser = await adminService.getCurrentAdmin();
+        if (isCancelled) return;
         if (currentUser && (currentUser.isAdmin || currentUser.role === 'Super Administrator')) {
           setAdminUser(currentUser);
+          setIsAdminAuthenticated(true);
+        } else if (isUserAdmin) {
+          // If server call fails temporarily (cold start) but client holds verified admin session
+          setAdminUser(contextUser);
           setIsAdminAuthenticated(true);
         }
       } catch (err) {
         console.warn('Admin session check notice:', err);
+        if (isUserAdmin && !isCancelled) {
+          setAdminUser(contextUser);
+          setIsAdminAuthenticated(true);
+        }
       } finally {
-        setAdminLoading(false);
+        if (!isCancelled) {
+          setAdminLoading(false);
+        }
       }
     }
     initAdminAuth();
-  }, []);
+
+    return () => { isCancelled = true; };
+  }, [contextUser, isUserAdmin]);
 
   // Fetch admin datasets when authenticated
   const loadAdminData = useCallback(async () => {

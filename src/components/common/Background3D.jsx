@@ -48,6 +48,7 @@ export function Background3D() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     let animationFrameId;
 
     let width = (canvas.width = window.innerWidth);
@@ -98,56 +99,61 @@ export function Background3D() {
     const render = () => {
       if (!isRunning) return;
 
-      // Smooth lerp for mouse parallax
-      const dx = mousePos.current.targetX - mousePos.current.x;
-      const dy = mousePos.current.targetY - mousePos.current.y;
+      try {
+        // Smooth lerp for mouse parallax
+        const dx = mousePos.current.targetX - mousePos.current.x;
+        const dy = mousePos.current.targetY - mousePos.current.y;
 
-      if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
-        mousePos.current.x += dx * 0.05;
-        mousePos.current.y += dy * 0.05;
-        mousePos.current.settled = false;
+        if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+          mousePos.current.x += dx * 0.05;
+          mousePos.current.y += dy * 0.05;
+          mousePos.current.settled = false;
 
-        // Apply transform directly to layerRef rather than setting 4 CSS variables on containerRef
-        if (layerRef.current && !prefersReducedMotion) {
+          // Apply transform directly to layerRef rather than setting 4 CSS variables on containerRef
+          if (layerRef.current && !prefersReducedMotion) {
+            const px = mousePos.current.x;
+            const py = mousePos.current.y;
+            layerRef.current.style.transform = `translate3d(${px * 14}px, ${py * 14}px, 0) rotateY(${px * 5}deg) rotateX(${-py * 5}deg)`;
+          }
+        } else {
+          mousePos.current.settled = true;
+        }
+
+        // Draw subtle particles if enabled and not scrolling fast
+        if (ctx && particleCount > 0 && !isScrollingRef.current) {
+          ctx.clearRect(0, 0, width, height);
+
           const px = mousePos.current.x;
           const py = mousePos.current.y;
-          layerRef.current.style.transform = `translate3d(${px * 14}px, ${py * 14}px, 0) rotateY(${px * 5}deg) rotateX(${-py * 5}deg)`;
-        }
-      } else {
-        mousePos.current.settled = true;
-      }
 
-      // Draw subtle particles if enabled and not scrolling fast
-      if (particleCount > 0 && !isScrollingRef.current) {
-        ctx.clearRect(0, 0, width, height);
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.speedX;
+            p.y += p.speedY;
 
-        const px = mousePos.current.x;
-        const py = mousePos.current.y;
+            if (p.y < -10) {
+              p.y = height + 10;
+              p.x = Math.random() * width;
+            }
+            if (p.x < -10) p.x = width + 10;
+            if (p.x > width + 10) p.x = -10;
 
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          p.x += p.speedX;
-          p.y += p.speedY;
+            const renderX = p.x + px * 8;
+            const renderY = p.y + py * 8;
 
-          if (p.y < -10) {
-            p.y = height + 10;
-            p.x = Math.random() * width;
+            ctx.beginPath();
+            ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `${p.color}${p.alpha})`;
+            ctx.fill();
           }
-          if (p.x < -10) p.x = width + 10;
-          if (p.x > width + 10) p.x = -10;
-
-          const renderX = p.x + px * 8;
-          const renderY = p.y + py * 8;
-
-          ctx.beginPath();
-          ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `${p.color}${p.alpha})`;
-          ctx.fill();
         }
-      }
 
-      if (!prefersReducedMotion && (particleCount > 0 || !mousePos.current.settled)) {
-        animationFrameId = requestAnimationFrame(render);
+        if (!prefersReducedMotion && (particleCount > 0 || !mousePos.current.settled)) {
+          animationFrameId = requestAnimationFrame(render);
+        }
+      } catch (err) {
+        // Silently stop loop if canvas context becomes invalid
+        console.warn('Background3D render context warning:', err);
       }
     };
 

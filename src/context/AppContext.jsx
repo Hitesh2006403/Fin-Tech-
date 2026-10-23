@@ -81,25 +81,49 @@ export function AppProvider({ children }) {
   const [quickAddModalOpen, setQuickAddModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Check HttpOnly session on initial load from backend
+  // Check HttpOnly session on initial load from backend with timeout guard
   useEffect(() => {
+    let isCancelled = false;
+
+    // Safety timeout: Never leave authLoading true indefinitely
+    const safetyTimer = setTimeout(() => {
+      if (!isCancelled) {
+        setAuthLoading(false);
+      }
+    }, 5000);
+
     async function checkSession() {
       try {
         const sessionUser = await authService.getCurrentUser();
+        if (isCancelled) return;
         if (sessionUser) {
-          setUser(prev => ({
-            ...prev,
+          const authUser = {
             ...sessionUser,
             isAuthenticated: true
+          };
+          setUser(prev => ({
+            ...prev,
+            ...authUser
           }));
+          try {
+            storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+          } catch {}
         }
       } catch (err) {
-        console.warn('Session verification check:', err);
+        console.warn('Session verification check notice:', err);
       } finally {
-        setAuthLoading(false);
+        if (!isCancelled) {
+          setAuthLoading(false);
+          clearTimeout(safetyTimer);
+        }
       }
     }
     checkSession();
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   // Load user-specific dataset from backend / user-scoped storage when user.id changes
@@ -110,11 +134,11 @@ export function AppProvider({ children }) {
       try {
         const data = await apiService.getFinancials(user.id);
         if (isCancelled || !data) return;
-        if (data.preferences) setPreferencesState(data.preferences);
-        if (data.incomes) setIncomes(data.incomes);
-        if (data.expenses) setExpenses(data.expenses);
-        if (data.savingsGoals) setLeanSavings(data.savingsGoals);
-        if (data.notifications) setNotifications(data.notifications);
+        if (data.preferences) setPreferencesState(prev => ({ ...prev, ...data.preferences }));
+        if (Array.isArray(data.incomes)) setIncomes(data.incomes);
+        if (Array.isArray(data.expenses)) setExpenses(data.expenses);
+        if (data.savingsGoals) setLeanSavings(prev => ({ ...prev, ...data.savingsGoals }));
+        if (Array.isArray(data.notifications)) setNotifications(data.notifications);
       } catch (err) {
         console.warn('Financial data load error:', err);
       }
@@ -414,44 +438,60 @@ export function AppProvider({ children }) {
     setActiveRoute('dashboard');
   }, [setActiveRoute, userId]);
 
-  // Real backend authentication methods
+  // Real backend authentication methods with synchronous storage persistence
   const loginWithGoogle = useCallback(async (credential) => {
     const data = await authService.verifyGoogleCredential(credential);
-    setUser(prev => ({
-      ...prev,
+    const authUser = {
+      ...INITIAL_USER,
       ...data.user,
       isAuthenticated: true
-    }));
+    };
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+    } catch {}
+    setUser(authUser);
     return data;
   }, []);
 
   const linkGoogleAccount = useCallback(async ({ email, password, credential }) => {
     const data = await authService.linkGoogleAccount({ email, password, credential });
-    setUser(prev => ({
-      ...prev,
+    const authUser = {
+      ...INITIAL_USER,
       ...data.user,
       isAuthenticated: true
-    }));
+    };
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+    } catch {}
+    setUser(authUser);
     return data;
   }, []);
 
   const loginWithEmail = useCallback(async (email, password) => {
     const data = await authService.loginWithEmail(email, password);
-    setUser(prev => ({
-      ...prev,
+    const authUser = {
+      ...INITIAL_USER,
       ...data.user,
       isAuthenticated: true
-    }));
+    };
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+    } catch {}
+    setUser(authUser);
     return data;
   }, []);
 
   const registerWithEmail = useCallback(async (email, name, password) => {
     const data = await authService.registerWithEmail(email, name, password);
-    setUser(prev => ({
-      ...prev,
+    const authUser = {
+      ...INITIAL_USER,
       ...data.user,
       isAuthenticated: true
-    }));
+    };
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, authUser);
+    } catch {}
+    setUser(authUser);
     return data;
   }, []);
 

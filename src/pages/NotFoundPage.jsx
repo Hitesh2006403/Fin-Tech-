@@ -1,10 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Background3D } from '../components/common/Background3D.jsx';
-import { Compass, Home, LogIn, ArrowLeft } from 'lucide-react';
+import { Compass, Home, LogIn, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { useApp } from '../context/AppContext.jsx';
+import { checkIsAdmin } from '../App.jsx';
+import { navigationTracker } from '../services/navigationTracker.js';
 
 export function NotFoundPage() {
   const navigate = useNavigate();
+  const { user } = useApp();
+
+  const isAuthenticated = Boolean(user && user.isAuthenticated);
+  const isAdmin = checkIsAdmin(user);
+  const fallbackRoute = isAuthenticated ? (isAdmin ? '/admin' : '/dashboard') : '/login';
 
   return (
     <div style={{
@@ -91,34 +99,61 @@ export function NotFoundPage() {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            style={{
-              width: '100%',
-              padding: '12px 18px',
-              borderRadius: 12,
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              background: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
-              color: '#FFFFFF',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Home size={16} />
-            <span>Return to User Dashboard</span>
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => navigate(fallbackRoute)}
+              style={{
+                width: '100%',
+                padding: '12px 18px',
+                borderRadius: 12,
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                background: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+                color: '#FFFFFF',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {isAdmin ? <ShieldAlert size={16} /> : <Home size={16} />}
+              <span>{isAdmin ? 'Return to Admin Portal' : 'Return to User Dashboard'}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              style={{
+                width: '100%',
+                padding: '12px 18px',
+                borderRadius: 12,
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                background: 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+                color: '#FFFFFF',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <LogIn size={16} />
+              <span>Return to Login</span>
+            </button>
+          )}
 
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigationTracker.goBack(navigate, fallbackRoute)}
             style={{
               width: '100%',
               padding: '11px 18px',
@@ -144,7 +179,7 @@ export function NotFoundPage() {
               e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
             }}
           >
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
             <span>Go Back</span>
           </button>
         </div>

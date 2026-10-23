@@ -36,16 +36,16 @@ export function ProfileSettings() {
   const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'financial' | 'security' | 'data'
 
   // Personal form
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [role, setRole] = useState(user.role || 'Freelance Product Architect');
-  const [timezone, setTimezone] = useState(user.timezone || 'Asia/Kolkata (IST)');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [role, setRole] = useState(user?.role || 'Freelance Product Architect');
+  const [timezone, setTimezone] = useState(user?.timezone || 'Asia/Kolkata (IST)');
 
   // Financial form
-  const [startingBalance, setStartingBalance] = useState(preferences.startingBalance);
-  const [safetyBuffer, setSafetyBuffer] = useState(preferences.safetyBuffer);
-  const [defaultHorizon, setDefaultHorizon] = useState(preferences.defaultHorizonDays);
-  const [defaultScenario, setDefaultScenario] = useState(preferences.defaultScenario);
+  const [startingBalance, setStartingBalance] = useState(preferences?.startingBalance ?? 45000);
+  const [safetyBuffer, setSafetyBuffer] = useState(preferences?.safetyBuffer ?? 25000);
+  const [defaultHorizon, setDefaultHorizon] = useState(preferences?.defaultHorizonDays ?? 30);
+  const [defaultScenario, setDefaultScenario] = useState(preferences?.defaultScenario || 'expected');
 
   // Security form
   const [currentPassword, setCurrentPassword] = useState('');

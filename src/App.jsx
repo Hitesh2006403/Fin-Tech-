@@ -20,6 +20,8 @@ import { ProfileSettings } from './pages/ProfileSettings.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 import { UpdatePasswordPage } from './pages/UpdatePasswordPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
+import { OAuthCallbackHandler } from './pages/OAuthCallbackHandler.jsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 
 const AdminPortal = React.lazy(() => import('./pages/admin/AdminPortal.jsx').then(m => ({ default: m.AdminPortal })));
 import { Background3D } from './components/common/Background3D.jsx';
@@ -28,12 +30,59 @@ import { navigationTracker } from './services/navigationTracker.js';
 import './App.css';
 
 function LoadingScreen({ message = 'Verifying secure session...' }) {
+  const [showRetry, setShowRetry] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowRetry(true), 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B1220', position: 'relative' }}>
       <Background3D />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1, padding: 24, textAlign: 'center' }}>
         <div style={{ width: 38, height: 38, border: '3px solid rgba(56, 189, 248, 0.2)', borderTopColor: '#38BDF8', borderRadius: '50%', animation: 'spin 0.8s linear infinite', boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)' }} />
         <div style={{ fontSize: 13.5, color: '#94A3B8', fontWeight: 500 }}>{message}</div>
+        {showRetry && (
+          <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: 'rgba(56, 189, 248, 0.15)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                color: '#38BDF8',
+                fontSize: 12,
+                cursor: 'pointer'
+              }}
+            >
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.removeItem('uip_auth_token');
+                  localStorage.removeItem('uip_fallback_user');
+                } catch {}
+                window.location.href = '/login';
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#94A3B8',
+                fontSize: 12,
+                cursor: 'pointer'
+              }}
+            >
+              Return to Login
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -41,9 +90,9 @@ function LoadingScreen({ message = 'Verifying secure session...' }) {
 
 const AUTHORIZED_ADMIN_EMAILS = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
 
-function checkIsAdmin(user) {
+export function checkIsAdmin(user) {
   if (!user) return false;
-  if (user.isAdmin || user.role === 'Super Administrator') return true;
+  if (user.isAdmin || user.role === 'Super Administrator' || user.role === 'admin') return true;
   if (user.email && AUTHORIZED_ADMIN_EMAILS.includes(user.email.toLowerCase().trim())) return true;
   return false;
 }
@@ -89,9 +138,6 @@ function LoginRoute() {
     if (checkIsAdmin(user)) {
       return <Navigate to="/admin" replace />;
     }
-    if (!user.onboardingCompleted) {
-      return <Navigate to="/setup" replace />;
-    }
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -109,9 +155,6 @@ function RegisterRoute() {
   if (user && user.isAuthenticated) {
     if (checkIsAdmin(user)) {
       return <Navigate to="/admin" replace />;
-    }
-    if (!user.onboardingCompleted) {
-      return <Navigate to="/setup" replace />;
     }
     return <Navigate to="/dashboard" replace />;
   }
@@ -141,10 +184,6 @@ function MainAppShellLayout() {
 
   if (!user || !user.isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  if (!user.onboardingCompleted) {
-    return <Navigate to="/setup" replace state={{ from: location }} />;
   }
 
   return (
@@ -204,6 +243,13 @@ function AppRoutes() {
         <Route path="/reset-password" element={<AuthPage initialMode="forgot" />} />
         <Route path="/update-password" element={<UpdatePasswordPage />} />
 
+        {/* OAuth Callback Handlers (Prevents 404 Route Unresolved on OAuth redirect return) */}
+        <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
+        <Route path="/callback" element={<OAuthCallbackHandler />} />
+        <Route path="/login/callback" element={<OAuthCallbackHandler />} />
+        <Route path="/oauth/callback" element={<OAuthCallbackHandler />} />
+        <Route path="/api/auth/callback" element={<OAuthCallbackHandler />} />
+
         {/* Protected User Dashboard Routes */}
         <Route element={<MainAppShellLayout />}>
           <Route path="/dashboard" element={<OverviewDashboard />} />
@@ -232,9 +278,11 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppRoutes />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppRoutes />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

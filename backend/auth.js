@@ -115,7 +115,7 @@ export async function processGoogleAuth({ token }) {
     authProvider: 'google',
     googleSub: googleData.googleSub,
     role: isAdmin ? 'Super Administrator' : 'Freelance Planner',
-    onboardingCompleted: Boolean(isAdmin)
+    onboardingCompleted: true
   });
 
   return { status: 'authenticated', user, isNewUser: true, isAdmin };

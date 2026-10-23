@@ -120,11 +120,11 @@ export function Header() {
             aria-label="Open user profile menu"
           >
             <div className="user-avatar-circle">
-              {user.avatarInitials || 'AV'}
+              {user?.avatarInitials || 'AV'}
             </div>
             <div className="user-meta-text">
-              <div className="user-name-title">{user.name}</div>
-              <div className="user-role-sub">{user.role || 'Freelance Planner'}</div>
+              <div className="user-name-title">{user?.name || 'User'}</div>
+              <div className="user-role-sub">{user?.role || 'Freelance Planner'}</div>
             </div>
           </button>
 
@@ -155,8 +155,8 @@ export function Header() {
                 }}
               >
               <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{user.name}</div>
-                <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 2 }}>{user.email}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{user?.name || 'User'}</div>
+                <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 2 }}>{user?.email || ''}</div>
               </div>
 
               <button

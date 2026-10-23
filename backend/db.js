@@ -588,17 +588,43 @@ export const db = {
     return false;
   },
 
-  // Sessions (30-day HttpOnly cookie session store)
+  // Sessions (30-day HttpOnly cookie session store with stateless cryptographic signature support)
   createSession(userId) {
     sessions = readJSON(SESSIONS_FILE, sessions);
-    const sessionId = crypto.randomBytes(32).toString('hex');
+    const user = this.getUserById(userId);
     const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+    const jti = crypto.randomBytes(16).toString('hex');
+
+    const SESSION_SECRET = process.env.SESSION_SECRET || 'finsight_uncertain_income_planner_secure_session_secret_2026';
+    const isAdmin = Boolean(user && (user.isAdmin || user.role === 'Super Administrator' || (user.email && this.isAuthorizedAdminEmail(user.email))));
+
+    // Create cryptographically signed, stateless session payload
+    const tokenPayload = {
+      jti,
+      userId,
+      email: user?.email || '',
+      name: user?.name || '',
+      role: isAdmin ? 'Super Administrator' : (user?.role || 'Freelance Planner'),
+      isAdmin,
+      exp: expiresAt,
+      createdAt: Date.now()
+    };
+
+    let sessionId;
+    try {
+      const dataStr = Buffer.from(JSON.stringify(tokenPayload)).toString('base64url');
+      const signature = crypto.createHmac('sha256', SESSION_SECRET).update(dataStr).digest('base64url');
+      sessionId = `sess_${dataStr}.${signature}`;
+    } catch {
+      sessionId = crypto.randomBytes(32).toString('hex');
+    }
 
     sessions[sessionId] = {
       sessionId,
       userId,
       createdAt: Date.now(),
-      expiresAt
+      expiresAt,
+      user: tokenPayload
     };
 
     writeJSON(SESSIONS_FILE, sessions);
@@ -607,6 +633,54 @@ export const db = {
 
   getSession(sessionId) {
     if (!sessionId) return null;
+
+    // 1. Verify stateless cryptographically signed token (works across all serverless containers)
+    if (typeof sessionId === 'string' && sessionId.startsWith('sess_')) {
+      try {
+        const raw = sessionId.slice(5);
+        const parts = raw.split('.');
+        if (parts.length === 2) {
+          const [dataStr, signature] = parts;
+          const SESSION_SECRET = process.env.SESSION_SECRET || 'finsight_uncertain_income_planner_secure_session_secret_2026';
+          const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(dataStr).digest('base64url');
+          if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
+            const verified = JSON.parse(Buffer.from(dataStr, 'base64url').toString('utf8'));
+            if (!verified.exp || Date.now() <= verified.exp) {
+              // Ensure user is present in memory cache so getUserById succeeds seamlessly
+              users = readJSON(USERS_FILE, users);
+              if (verified.userId && !users.some(u => u.id === verified.userId)) {
+                const restoredUser = {
+                  id: verified.userId,
+                  email: verified.email,
+                  name: verified.name || 'User',
+                  role: verified.role,
+                  isAdmin: verified.isAdmin,
+                  avatarInitials: verified.name ? verified.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'U',
+                  authProvider: 'google',
+                  onboardingCompleted: true,
+                  createdAt: new Date(verified.createdAt || Date.now()).toISOString(),
+                  updatedAt: new Date().toISOString()
+                };
+                users.push(restoredUser);
+                try { writeJSON(USERS_FILE, users); } catch {}
+              }
+
+              return {
+                sessionId,
+                userId: verified.userId,
+                createdAt: verified.createdAt,
+                expiresAt: verified.exp,
+                user: verified
+              };
+            }
+          }
+        }
+      } catch (err) {
+        // Fall through to file/memory lookup
+      }
+    }
+
+    // 2. Legacy / local file-based session lookup
     sessions = readJSON(SESSIONS_FILE, sessions);
     const session = sessions[sessionId];
     if (!session) return null;
