@@ -64,10 +64,12 @@ export function CashFlowChart({
 
   const {
     minBal,
+    maxBal,
     paddingY,
     chartHeight,
     chartWidth,
     paddingX,
+    usableWidth,
     getX,
     getY,
     yZero,
@@ -244,7 +246,7 @@ export function CashFlowChart({
 
           {/* Transparent interactive hover trigger zones */}
           {forecastData.map((d, i) => {
-            const stepWidth = usableWidth / forecastData.length;
+            const stepWidth = (usableWidth || (chartWidth - paddingX * 2)) / (forecastData.length || 1);
             return (
               <rect
                 key={i}
