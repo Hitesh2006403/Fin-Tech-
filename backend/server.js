@@ -62,6 +62,14 @@ const defaultOrigins = [
 
 const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
 
+// URL path normalizer: collapse duplicate /api/api/* prefixes to /api/*
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/');
+  }
+  next();
+});
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());

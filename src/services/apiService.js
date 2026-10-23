@@ -13,8 +13,15 @@ import {
   INITIAL_NOTIFICATIONS
 } from './storageService.js';
 
-const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
-const API_BASE = `${API_ROOT}/api`;
+function resolveApiBase() {
+  let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  if (root.endsWith('/api')) {
+    root = root.slice(0, -4);
+  }
+  return root ? `${root}/api` : `/api`;
+}
+
+const API_BASE = resolveApiBase();
 
 function getUserStorageKey(userId, key) {
   return `uip_${userId || 'guest'}_${key}`;

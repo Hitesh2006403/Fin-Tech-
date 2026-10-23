@@ -5,8 +5,15 @@
 
 import { decodeGoogleJwt } from './authService.js';
 
-const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
-const ADMIN_API_BASE = `${API_ROOT}/api/admin`;
+function resolveAdminApiBase() {
+  let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  if (root.endsWith('/api')) {
+    root = root.slice(0, -4);
+  }
+  return root ? `${root}/api/admin` : `/api/admin`;
+}
+
+const ADMIN_API_BASE = resolveAdminApiBase();
 
 function getAdminAuthHeaders() {
   const headers = { 'Content-Type': 'application/json' };
@@ -50,9 +57,17 @@ async function safeJsonParse(res) {
     return JSON.parse(text);
   } catch (e) {
     if (!res.ok) {
-      const error = new Error(`Server returned error (${res.status})`);
+      const isGatewayError = res.status >= 502 && res.status <= 504;
+      const isNotFound = res.status === 404;
+      const error = new Error(
+        isNotFound
+          ? 'Admin API endpoint not found (HTTP 404). Backend routing is normalizing.'
+          : isGatewayError
+          ? 'Admin server is starting or temporarily unavailable (502/504). Please retry.'
+          : `Server returned error (${res.status})`
+      );
       error.status = res.status;
-      error.isServerDown = res.status >= 502 && res.status <= 504;
+      error.isServerDown = isGatewayError;
       throw error;
     }
     throw new Error('Received unexpected non-JSON response from server.');

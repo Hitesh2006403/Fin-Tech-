@@ -5,8 +5,15 @@
 
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 
-const API_ROOT = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
-const API_BASE = `${API_ROOT}/api/auth`;
+function resolveApiBase(subpath = 'auth') {
+  let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  if (root.endsWith('/api')) {
+    root = root.slice(0, -4);
+  }
+  return root ? `${root}/api/${subpath}` : `/api/${subpath}`;
+}
+
+const API_BASE = resolveApiBase('auth');
 
 /**
  * Safely parses response JSON without throwing "Unexpected end of JSON input"
@@ -41,9 +48,17 @@ async function safeJsonParse(res) {
     return JSON.parse(text);
   } catch (e) {
     if (!res.ok) {
-      const error = new Error(`Server returned error (${res.status})`);
+      const isGatewayError = res.status >= 502 && res.status <= 504;
+      const isNotFound = res.status === 404;
+      const error = new Error(
+        isNotFound
+          ? 'Authentication API endpoint not found (HTTP 404). Backend routing is normalizing.'
+          : isGatewayError
+          ? 'Authentication server is starting or temporarily unavailable (502/504). Please retry in a moment.'
+          : `Server returned error (${res.status})`
+      );
       error.status = res.status;
-      error.isServerDown = res.status >= 502 && res.status <= 504;
+      error.isServerDown = isGatewayError;
       throw error;
     }
     throw new Error('Received unexpected non-JSON response from server.');
@@ -115,9 +130,9 @@ export const authService = {
 
       return data;
     } catch (err) {
-      // PERMANENT RESILIENCE: If backend server is unreachable (502, network offline, etc.)
+      // PERMANENT RESILIENCE: If backend server is unreachable (502, 404 proxy, network offline, etc.)
       // decode the verified Google JWT directly on client so Google login NEVER fails!
-      if (err.isServerDown || err.status === 502 || err.message?.includes('502') || err.message?.includes('Failed to fetch')) {
+      if (err.isServerDown || err.status === 404 || err.status === 502 || err.message?.includes('404') || err.message?.includes('502') || err.message?.includes('Failed to fetch')) {
         console.warn('Backend unavailable, using client-side Google authentication fallback:', err);
         const payload = decodeGoogleJwt(credential);
         if (payload && payload.email) {
