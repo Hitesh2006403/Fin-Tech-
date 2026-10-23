@@ -866,47 +866,6 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 </button>
               </div>
 
-              {/* Demo Auto-Fill Shortcuts */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14 }}>
-                <span style={{ fontSize: 11.5, color: '#64748B' }}>Quick Fill:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('alex@example.com');
-                    setPassword('FinSight2026!Secured');
-                  }}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#94A3B8',
-                    fontSize: 11,
-                    padding: '3px 8px',
-                    borderRadius: 5,
-                    cursor: 'pointer'
-                  }}
-                >
-                  User Demo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('hiteshav2006@gmail.com');
-                    setPassword('FinSight2026!Secured');
-                  }}
-                  style={{
-                    background: 'rgba(99, 102, 241, 0.12)',
-                    border: '1px solid rgba(129, 140, 248, 0.3)',
-                    color: '#818CF8',
-                    fontSize: 11,
-                    padding: '3px 8px',
-                    borderRadius: 5,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Admin Demo
-                </button>
-              </div>
-
               <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#94A3B8' }}>
                 Don't have an account?{' '}
                 <a
