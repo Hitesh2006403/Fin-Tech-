@@ -537,6 +537,57 @@ export const db = {
     });
   },
 
+  createPasswordRecoveryToken(email) {
+    if (!email) return null;
+    const normalized = email.toLowerCase().trim();
+    sessions = readJSON(SESSIONS_FILE, sessions);
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+
+    sessions[`recovery_${token}`] = {
+      type: 'recovery',
+      email: normalized,
+      token,
+      createdAt: Date.now(),
+      expiresAt,
+      used: false
+    };
+
+    writeJSON(SESSIONS_FILE, sessions);
+    return { token, expiresAt };
+  },
+
+  verifyPasswordRecoveryToken(token, email = null) {
+    if (!token) return { valid: false, error: 'Recovery token is required' };
+    sessions = readJSON(SESSIONS_FILE, sessions);
+    const record = sessions[`recovery_${token}`];
+    if (!record || record.type !== 'recovery') {
+      return { valid: false, error: 'Invalid or unrecognized recovery token' };
+    }
+    if (record.used) {
+      return { valid: false, error: 'This recovery link has already been used. Please request a new one.' };
+    }
+    if (Date.now() > record.expiresAt) {
+      return { valid: false, error: 'This recovery link has expired. Please request a new one.' };
+    }
+    if (email && record.email !== email.toLowerCase().trim()) {
+      return { valid: false, error: 'Email does not match recovery session.' };
+    }
+    return { valid: true, email: record.email };
+  },
+
+  consumePasswordRecoveryToken(token) {
+    if (!token) return false;
+    sessions = readJSON(SESSIONS_FILE, sessions);
+    const record = sessions[`recovery_${token}`];
+    if (record) {
+      record.used = true;
+      writeJSON(SESSIONS_FILE, sessions);
+      return true;
+    }
+    return false;
+  },
+
   // Sessions (30-day HttpOnly cookie session store)
   createSession(userId) {
     sessions = readJSON(SESSIONS_FILE, sessions);

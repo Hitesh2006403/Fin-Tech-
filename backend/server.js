@@ -18,6 +18,7 @@ import {
   supabaseUrl,
   testSupabaseCloudConnection
 } from './supabase.js';
+import { sendPasswordRecoveryEmail } from './emailService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -424,23 +425,30 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const normalizedEmail = trimmedEmail.toLowerCase();
     const targetRedirect = redirectTo || `${APP_ORIGIN}/update-password`;
 
-    // Genuine recovery request via Supabase Auth
+    // 1. Direct Email Delivery via Nodemailer (Guarantees delivery from sender to recipient)
+    const existingUser = db.getUserByEmail(normalizedEmail);
+    const recoveryData = db.createPasswordRecoveryToken(normalizedEmail);
+    if (recoveryData?.token) {
+      const directRecoveryLink = `${targetRedirect}?token=${recoveryData.token}&email=${encodeURIComponent(normalizedEmail)}`;
+      try {
+        await sendPasswordRecoveryEmail({
+          toEmail: normalizedEmail,
+          recoveryLink: directRecoveryLink,
+          recipientName: existingUser?.name || 'FinSight User'
+        });
+      } catch (mailErr) {
+        console.warn('[Direct Mailer Error]:', mailErr.message);
+      }
+    }
+
+    // 2. Also trigger Supabase Auth recovery if configured
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error: sbError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        await supabase.auth.resetPasswordForEmail(normalizedEmail, {
           redirectTo: targetRedirect
         });
-        if (sbError) {
-          console.warn('[Supabase resetPasswordForEmail notice]:', sbError.message);
-          // If Supabase returned rate limit error, propagate informative rate-limit message
-          if (sbError.status === 429 || sbError.code === 'over_email_send_rate_limit' || sbError.message?.toLowerCase().includes('rate limit')) {
-            return res.status(429).json({
-              error: 'Email rate limit exceeded. Please wait a few minutes before requesting another recovery email, or configure custom SMTP in Supabase.'
-            });
-          }
-        }
       } catch (sbErr) {
-        console.warn('[Supabase Auth recovery error]:', sbErr.message);
+        console.warn('[Supabase Auth recovery notice]:', sbErr.message);
       }
     }
 
@@ -469,15 +477,24 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 app.post('/api/auth/update-password', async (req, res) => {
   try {
     const password = req.body.password || req.body.newPassword;
-    const { recoveryToken } = req.body;
+    const recoveryToken = req.body.token || req.body.recoveryToken;
     if (!password || typeof password !== 'string' || password.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
     }
 
     let targetEmail = null;
 
-    // 1. Verify recoveryToken with Supabase Auth if provided
-    if (recoveryToken && isSupabaseConfigured && supabase) {
+    // 1. Verify direct recovery token issued by backend
+    if (recoveryToken) {
+      const directCheck = db.verifyPasswordRecoveryToken(recoveryToken, req.body.email);
+      if (directCheck.valid) {
+        targetEmail = directCheck.email;
+        db.consumePasswordRecoveryToken(recoveryToken);
+      }
+    }
+
+    // 2. Verify recoveryToken with Supabase Auth if provided and not yet verified
+    if (!targetEmail && recoveryToken && isSupabaseConfigured && supabase) {
       try {
         const { data, error: sbAuthErr } = await supabase.auth.getUser(recoveryToken);
         if (!sbAuthErr && data?.user?.email) {
@@ -488,7 +505,7 @@ app.post('/api/auth/update-password', async (req, res) => {
       }
     }
 
-    // 2. Authenticated session on Express backend
+    // 3. Authenticated session on Express backend
     if (!targetEmail && req.user?.email) {
       targetEmail = req.user.email.toLowerCase().trim();
     }

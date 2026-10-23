@@ -146,4 +146,51 @@ describe('FinSight Password Recovery Flow & Security Suite', () => {
     assert.equal(loginBodyNew.success, true);
     assert.equal(loginBodyNew.user.email, testEmail);
   });
+
+  test('7. POST /api/auth/update-password with valid recovery token resets password and prevents token reuse', async () => {
+    const testEmail = `tokenflow_${Date.now()}@example.com`;
+    const initialPass = 'OriginalPass123!';
+    const resetPass = 'SuperResetPass456!';
+
+    // Create user
+    db.createUser({ name: 'Token Flow User', email: testEmail, password: initialPass });
+
+    // Generate recovery token
+    const recovery = db.createPasswordRecoveryToken(testEmail);
+    assert.ok(recovery?.token);
+
+    // Call update-password with this token
+    const updateRes = await fetch(`${baseUrl}/api/auth/update-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: recovery.token,
+        newPassword: resetPass,
+        email: testEmail
+      })
+    });
+    const updateBody = await updateRes.json();
+    assert.equal(updateRes.status, 200);
+    assert.equal(updateBody.success, true);
+
+    // Token must now be consumed (single-use protection)
+    const reuseRes = await fetch(`${baseUrl}/api/auth/update-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: recovery.token,
+        newPassword: 'AnotherPassword789!',
+        email: testEmail
+      })
+    });
+    assert.equal(reuseRes.status, 401);
+
+    // Login with new password must succeed
+    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: resetPass })
+    });
+    assert.equal(loginRes.status, 200);
+  });
 });

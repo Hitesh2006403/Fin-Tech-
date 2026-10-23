@@ -73,6 +73,22 @@ export function UpdatePasswordPage() {
         return;
       }
 
+      // Check for direct recovery token in query string (?token=...&email=...)
+      if (search.includes('token=')) {
+        const queryParams = new URLSearchParams(search);
+        const token = queryParams.get('token');
+        const email = queryParams.get('email');
+        if (token) {
+          if (!isCancelled) {
+            setRecoveryToken(token);
+            if (email) setRecoveryEmail(decodeURIComponent(email));
+            setStatus('ready');
+            cleanUrl();
+          }
+          return;
+        }
+      }
+
       // Check for PKCE code in query string
       if (search.includes('code=') && isSupabaseConfigured && supabase) {
         const queryParams = new URLSearchParams(search);
