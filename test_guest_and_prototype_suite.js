@@ -17,6 +17,7 @@ import {
   INITIAL_NOTIFICATIONS
 } from './src/services/storageService.js';
 import { authService } from './src/services/authService.js';
+import { adminService } from './src/services/adminService.js';
 
 const AUTHORIZED_ADMIN_EMAILS = ['hiteshav2006@gmail.com', 'dishankbs04@gmail.com'];
 function checkIsAdmin(user) {
@@ -193,5 +194,42 @@ test('FinSight 70% Prototype & Guest Mode Comprehensive Test Suite', async (t) =
     await authService.logout();
     assert.equal(localStorage.getItem('uip_auth_token'), null);
     assert.equal(localStorage.getItem('uip_guest_session'), null);
+    assert.equal(localStorage.getItem('uip_user_profile'), null);
+    assert.equal(localStorage.getItem('finsight_admin_token'), null);
+  });
+
+  await t.test('10. Admin signout purges both admin and user tokens and prevents automatic login to user portal', async () => {
+    // Simulate active admin session in client storage
+    localStorage.setItem('finsight_admin_token', 'admin_test_token_123');
+    localStorage.setItem('finsight_admin_user', JSON.stringify({ email: 'hiteshav2006@gmail.com', role: 'Super Administrator', isAdmin: true }));
+    localStorage.setItem('uip_auth_token', 'user_token_hitesh_456');
+    localStorage.setItem('uip_fallback_user', JSON.stringify({ email: 'hiteshav2006@gmail.com', name: 'Hitesh' }));
+    localStorage.setItem('uip_user_profile', JSON.stringify({ email: 'hiteshav2006@gmail.com', isAuthenticated: true, role: 'admin' }));
+
+    assert.ok(localStorage.getItem('finsight_admin_token'));
+    assert.ok(localStorage.getItem('uip_auth_token'));
+
+    // Execute adminService.logout()
+    await adminService.logout();
+
+    // Verify all admin and user tokens are completely removed
+    assert.equal(localStorage.getItem('finsight_admin_token'), null, 'Admin token must be removed');
+    assert.equal(localStorage.getItem('finsight_admin_user'), null, 'Admin user record must be removed');
+    assert.equal(localStorage.getItem('uip_auth_token'), null, 'User auth token must be removed');
+    assert.equal(localStorage.getItem('uip_fallback_user'), null, 'Fallback user must be removed');
+    assert.equal(localStorage.getItem('uip_user_profile'), null, 'User profile must be removed');
+
+    // Verify session restoration returns null (completely unauthenticated)
+    const restoredUser = await authService.getCurrentUser();
+    assert.equal(restoredUser, null, 'No user session must be restored');
+
+    // Simulate subsequent login with another user account
+    const newGuest = authService.loginAsGuest();
+    assert.equal(newGuest.user.email, 'guest@finsight.demo');
+    assert.equal(checkIsAdmin(newGuest.user), false, 'New guest session must not have admin privileges');
+    assert.equal(newGuest.redirectTo, '/dashboard', 'New guest session routes to user dashboard');
+
+    // Cleanup
+    await authService.logout();
   });
 });

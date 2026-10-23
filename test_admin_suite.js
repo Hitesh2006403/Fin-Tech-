@@ -244,4 +244,62 @@ describe('FinSight Admin Portal Backend Test Suite', () => {
       assert.strictEqual(meData.user.isAdmin, true);
     }
   });
+
+  it('10. Signing out from Admin terminates both admin and user sessions cleanly without auto-logging into user portal', async () => {
+    // 1. Log in as admin
+    const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'hiteshav2006@gmail.com',
+        password: 'Admin@FinSight2026!Master'
+      })
+    });
+    const loginData = await loginRes.json();
+    assert.strictEqual(loginRes.status, 200);
+    const cookieHeader = loginRes.headers.get('set-cookie');
+
+    // 2. Log out via admin logout endpoint
+    const logoutRes = await fetch(`${BASE_URL}/api/admin/logout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${loginData.token}`,
+        'Cookie': cookieHeader || ''
+      }
+    });
+    assert.strictEqual(logoutRes.status, 200);
+
+    // 3. Verify user session /api/auth/me is now unauthenticated with cleared cookie
+    const clearCookieHeader = logoutRes.headers.get('set-cookie');
+    const meRes = await fetch(`${BASE_URL}/api/auth/me`, {
+      headers: {
+        'Cookie': clearCookieHeader || ''
+      }
+    });
+    const meData = await meRes.json();
+    assert.strictEqual(meData.authenticated, false, 'User session must NOT remain active after admin logout');
+
+    // 4. Verify admin endpoint is rejected
+    const statsRes = await fetch(`${BASE_URL}/api/admin/stats`, {
+      headers: {
+        'Cookie': clearCookieHeader || ''
+      }
+    });
+    assert.strictEqual(statsRes.status, 401, 'Admin endpoints must return 401');
+
+    // 5. Subsequent login with standard user account works cleanly without redirecting to admin
+    const userLoginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'alex@example.com',
+        password: 'FinSight2026!Secured'
+      })
+    });
+    assert.strictEqual(userLoginRes.status, 200);
+    const userLoginData = await userLoginRes.json();
+    assert.strictEqual(userLoginData.role, 'user', 'Regular user must receive role: "user"');
+    assert.strictEqual(userLoginData.redirectTo, '/dashboard', 'Regular user must be directed to "/dashboard"');
+    assert.strictEqual(userLoginData.user.isAdmin, false);
+  });
 });

@@ -404,6 +404,10 @@ export const authService = {
         localStorage.removeItem('uip_auth_token');
         localStorage.removeItem('uip_fallback_user');
         localStorage.removeItem('uip_guest_session');
+        localStorage.removeItem('uip_user_profile');
+        localStorage.removeItem('finsight_admin_token');
+        localStorage.removeItem('finsight_admin_user');
+        sessionStorage.clear();
       } catch {}
     }
   },

@@ -46,7 +46,7 @@ function AdminPortalInner({ onReturnToClient }) {
   }
 
   if (!isAdminAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (

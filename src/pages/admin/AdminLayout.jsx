@@ -423,7 +423,10 @@ export function AdminLayout({ onReturnToClient }) {
 
           <button
             type="button"
-            onClick={logoutAdmin}
+            onClick={async () => {
+              await logoutAdmin();
+              navigate('/login', { replace: true });
+            }}
             title="Sign out of Admin Session"
             style={{
               background: 'none',
@@ -769,9 +772,9 @@ export function AdminLayout({ onReturnToClient }) {
                   <button
                     type="button"
                     onClick={async () => {
-                      await logoutAdmin();
                       setProfileDropdownOpen(false);
-                      navigate('/login');
+                      await logoutAdmin();
+                      navigate('/login', { replace: true });
                     }}
                     style={{
                       width: '100%',

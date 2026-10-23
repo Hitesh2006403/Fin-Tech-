@@ -199,17 +199,24 @@ export const adminService = {
    */
   async logout() {
     try {
-      await fetch(`${ADMIN_API_BASE}/logout`, {
-        method: 'POST',
-        headers: getAdminAuthHeaders(),
-        credentials: 'include'
-      });
+      if (typeof window !== 'undefined') {
+        await fetch(`${ADMIN_API_BASE}/logout`, {
+          method: 'POST',
+          headers: getAdminAuthHeaders(),
+          credentials: 'include'
+        });
+      }
     } catch (e) {
       console.warn('Admin logout network error:', e);
     } finally {
       try {
         localStorage.removeItem('finsight_admin_token');
         localStorage.removeItem('finsight_admin_user');
+        localStorage.removeItem('uip_auth_token');
+        localStorage.removeItem('uip_fallback_user');
+        localStorage.removeItem('uip_guest_session');
+        localStorage.removeItem('uip_user_profile');
+        sessionStorage.clear();
       } catch {}
     }
   },

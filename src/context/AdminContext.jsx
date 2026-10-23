@@ -134,12 +134,33 @@ export function AdminProvider({ children }) {
     throw new Error('Admin email authorization failed');
   };
 
-  // Logout Handler
+  // Unified Admin Logout Handler
   const logoutAdmin = async () => {
-    await adminService.logout();
+    try {
+      await adminService.logout();
+    } catch (e) {
+      console.warn('Admin logout notice:', e);
+    }
     setAdminUser(null);
     setIsAdminAuthenticated(false);
     setAdminActiveTab('dashboard');
+
+    if (appContext && typeof appContext.logout === 'function') {
+      await appContext.logout();
+    } else {
+      try {
+        localStorage.removeItem('finsight_admin_token');
+        localStorage.removeItem('finsight_admin_user');
+        localStorage.removeItem('uip_auth_token');
+        localStorage.removeItem('uip_fallback_user');
+        localStorage.removeItem('uip_guest_session');
+        localStorage.removeItem('uip_user_profile');
+        sessionStorage.clear();
+      } catch {}
+      if (typeof window !== 'undefined') {
+        window.location.replace('/login');
+      }
+    }
   };
 
   // Block / Unblock User Action

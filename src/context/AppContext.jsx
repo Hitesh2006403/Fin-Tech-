@@ -20,6 +20,7 @@ import {
   addDays
 } from '../services/financialEngine.js';
 import { authService } from '../services/authService.js';
+import { adminService } from '../services/adminService.js';
 import { apiService } from '../services/apiService.js';
 
 const AppContext = createContext(null);
@@ -503,7 +504,22 @@ export function AppProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await authService.logout();
+    try {
+      await authService.logout();
+    } catch {}
+    try {
+      await adminService.logout();
+    } catch {}
+    try {
+      storageService.set(storageService.KEYS.USER_PROFILE, INITIAL_USER);
+      localStorage.removeItem('uip_auth_token');
+      localStorage.removeItem('uip_fallback_user');
+      localStorage.removeItem('uip_guest_session');
+      localStorage.removeItem('finsight_admin_token');
+      localStorage.removeItem('finsight_admin_user');
+      localStorage.removeItem('uip_user_profile');
+      sessionStorage.clear();
+    } catch {}
     setUser(INITIAL_USER);
     setPreferencesState(INITIAL_PREFERENCES);
     setIncomes(INITIAL_INCOMES);
@@ -511,7 +527,7 @@ export function AppProvider({ children }) {
     setLeanSavings(INITIAL_LEAN_SAVINGS);
     setNotifications(INITIAL_NOTIFICATIONS);
     setDismissedAlertIds([]);
-    navigate('/login');
+    navigate('/login', { replace: true });
   }, [navigate]);
 
   const loginAsGuest = useCallback(() => {
