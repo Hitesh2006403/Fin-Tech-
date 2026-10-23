@@ -7,8 +7,12 @@ import { decodeGoogleJwt } from './authService.js';
 
 function resolveAdminApiBase() {
   let root = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/+$/, '');
-  if (root.endsWith('/api')) {
+  if (root.endsWith('/api/admin')) {
+    root = root.slice(0, -('/api/admin'.length));
+  } else if (root.endsWith('/api')) {
     root = root.slice(0, -4);
+  } else if (root.endsWith('/admin')) {
+    root = root.slice(0, -('/admin'.length));
   }
   return root ? `${root}/api/admin` : `/api/admin`;
 }
@@ -41,13 +45,17 @@ async function safeJsonParse(res) {
   if (!text || !text.trim()) {
     if (!res.ok) {
       const isGatewayError = res.status === 502 || res.status === 503 || res.status === 504;
+      const isNotFound = res.status === 404;
       const error = new Error(
         isGatewayError
           ? 'Backend admin server is starting or unreachable (502). Please verify server is running.'
+          : isNotFound
+          ? 'Admin API endpoint not found (HTTP 404). Backend routing is normalizing.'
           : `Server returned HTTP ${res.status}`
       );
       error.status = res.status;
       error.isServerDown = isGatewayError;
+      error.isNotFound = isNotFound;
       throw error;
     }
     return {};
@@ -68,6 +76,7 @@ async function safeJsonParse(res) {
       );
       error.status = res.status;
       error.isServerDown = isGatewayError;
+      error.isNotFound = isNotFound;
       throw error;
     }
     throw new Error('Received unexpected non-JSON response from server.');

@@ -62,10 +62,24 @@ const defaultOrigins = [
 
 const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
 
-// URL path normalizer: collapse duplicate /api/api/* prefixes to /api/*
+// URL path normalizer: collapse duplicate /api/api/* prefixes or missing /api/
 app.use((req, res, next) => {
   if (req.url.startsWith('/api/api/')) {
     req.url = req.url.replace('/api/api/', '/api/');
+  } else if (!req.url.startsWith('/api/') && !req.url.startsWith('/api?')) {
+    if (
+      req.url.startsWith('/auth/') ||
+      req.url.startsWith('/admin/') ||
+      req.url.startsWith('/financials') ||
+      req.url.startsWith('/preferences') ||
+      req.url.startsWith('/incomes') ||
+      req.url.startsWith('/expenses') ||
+      req.url.startsWith('/health') ||
+      req.url.startsWith('/database/') ||
+      req.url.startsWith('/session/')
+    ) {
+      req.url = '/api' + req.url;
+    }
   }
   next();
 });
@@ -1036,6 +1050,15 @@ app.get('/api/database/status', async (req, res) => {
     cloudDiagnostic: cloudTest,
     serverPersistence: 'Active',
     serverTime: new Date().toISOString()
+  });
+});
+
+// Ensure all unmatched API routes return structured JSON (HTTP 404) instead of HTML
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    error: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
+    code: 'ENDPOINT_NOT_FOUND',
+    status: 404
   });
 });
 
