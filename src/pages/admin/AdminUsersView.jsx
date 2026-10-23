@@ -21,17 +21,20 @@ export function AdminUsersView() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  // Safe users list
+  const safeUsersList = Array.isArray(usersList) ? usersList : [];
+
   // Filtered users
-  const filteredUsers = usersList.filter(user => {
+  const filteredUsers = safeUsersList.filter(user => {
     const matchesSearch =
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id?.toLowerCase().includes(searchTerm.toLowerCase());
+      user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.id?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === 'all' ||
-      (statusFilter === 'active' && user.status?.toLowerCase() === 'active') ||
-      (statusFilter === 'blocked' && user.status?.toLowerCase() === 'blocked');
+      (statusFilter === 'active' && user?.status?.toLowerCase() === 'active') ||
+      (statusFilter === 'blocked' && user?.status?.toLowerCase() === 'blocked');
 
     return matchesSearch && matchesStatus;
   });
@@ -68,7 +71,7 @@ export function AdminUsersView() {
           fontWeight: 700
         }}>
           <Users size={16} />
-          <span>{usersList.length} Total Registered Users</span>
+          <span>{safeUsersList.length} Total Registered Users</span>
         </div>
       </div>
 

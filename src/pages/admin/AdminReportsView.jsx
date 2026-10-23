@@ -15,14 +15,17 @@ import {
 export function AdminReportsView() {
   const { stats, transactions, usersList } = useAdmin();
 
-  const totalVolume = transactions.reduce((acc, t) => acc + Number(t.amount || 0), 0) || 345000;
-  const avgTx = transactions.length > 0 ? Math.round(totalVolume / transactions.length) : 4800;
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const safeUsersList = Array.isArray(usersList) ? usersList : [];
+
+  const totalVolume = safeTransactions.reduce((acc, t) => acc + Number(t?.amount || 0), 0) || 345000;
+  const avgTx = safeTransactions.length > 0 ? Math.round(totalVolume / safeTransactions.length) : 4800;
 
   // Category breakdown
   const categoryMap = {};
-  transactions.forEach(t => {
-    const cat = t.category || 'Other';
-    categoryMap[cat] = (categoryMap[cat] || 0) + Number(t.amount || 0);
+  safeTransactions.forEach(t => {
+    const cat = t?.category || 'Other';
+    categoryMap[cat] = (categoryMap[cat] || 0) + Number(t?.amount || 0);
   });
 
   const categories = Object.entries(categoryMap)
@@ -34,15 +37,15 @@ export function AdminReportsView() {
       generatedAt: new Date().toISOString(),
       platform: 'FinSight Treasury Platform',
       summary: {
-        totalUsers: stats?.totalUsers || usersList.length,
+        totalUsers: stats?.totalUsers || safeUsersList.length,
         activeUsers: stats?.activeUsers || 1102,
-        totalTransactions: transactions.length,
+        totalTransactions: safeTransactions.length,
         totalVolumeINR: totalVolume,
         averageTransactionINR: avgTx
       },
       categoryBreakdown: categoryMap,
-      users: usersList.map(u => ({ id: u.id, name: u.name, email: u.email, status: u.status, joinedOn: u.joinedOn })),
-      transactions: transactions
+      users: safeUsersList.map(u => ({ id: u?.id, name: u?.name, email: u?.email, status: u?.status, joinedOn: u?.joinedOn })),
+      transactions: safeTransactions
     };
 
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(reportData, null, 2));

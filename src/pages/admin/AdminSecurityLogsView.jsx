@@ -18,13 +18,15 @@ export function AdminSecurityLogsView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState('all');
 
-  const filteredLogs = securityLogs.filter(log => {
-    const matchesSeverity = severityFilter === 'all' || log.severity === severityFilter;
+  const safeLogs = Array.isArray(securityLogs) ? securityLogs : [];
+
+  const filteredLogs = safeLogs.filter(log => {
+    const matchesSeverity = severityFilter === 'all' || log?.severity === severityFilter;
     const matchesSearch =
-      log.event?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.actor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.ip?.toLowerCase().includes(searchTerm.toLowerCase());
+      log?.event?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log?.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log?.actor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log?.ip?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSeverity && matchesSearch;
   });

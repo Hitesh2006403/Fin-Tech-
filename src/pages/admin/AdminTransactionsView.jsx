@@ -20,16 +20,18 @@ export function AdminTransactionsView() {
   const [typeFilter, setTypeFilter] = useState('all'); // 'all' | 'income' | 'expense'
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'Completed' | 'Pending'
 
-  const filteredTx = transactions.filter(t => {
-    const matchesSearch =
-      t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.id?.toLowerCase().includes(searchTerm.toLowerCase());
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
 
-    const matchesType = typeFilter === 'all' || t.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
+  const filteredTx = safeTransactions.filter(t => {
+    const matchesSearch =
+      t?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t?.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t?.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t?.id?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType = typeFilter === 'all' || t?.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || t?.status === statusFilter;
 
     return matchesSearch && matchesType && matchesStatus;
   });
@@ -37,15 +39,15 @@ export function AdminTransactionsView() {
   const exportCSV = () => {
     const headers = ['ID', 'Type', 'Title', 'Category', 'Amount (INR)', 'Date', 'Status', 'User Name', 'Email'];
     const rows = filteredTx.map(t => [
-      t.id,
-      t.type,
-      `"${t.title.replace(/"/g, '""')}"`,
-      `"${t.category || ''}"`,
-      t.amount,
-      t.date,
-      t.status,
-      `"${t.userName || ''}"`,
-      `"${t.email || ''}"`
+      t?.id || '',
+      t?.type || '',
+      `"${(t?.title || '').replace(/"/g, '""')}"`,
+      `"${t?.category || ''}"`,
+      t?.amount || 0,
+      t?.date || '',
+      t?.status || '',
+      `"${t?.userName || ''}"`,
+      `"${t?.email || ''}"`
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');

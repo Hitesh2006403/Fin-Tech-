@@ -83,10 +83,10 @@ export function AdminProvider({ children }) {
       ]);
 
       if (statsData.status === 'fulfilled' && statsData.value) setStats(statsData.value);
-      if (usersData.status === 'fulfilled' && usersData.value) setUsersList(usersData.value);
-      if (txData.status === 'fulfilled' && txData.value) setTransactions(txData.value);
-      if (issuesData.status === 'fulfilled' && issuesData.value) setIssues(issuesData.value);
-      if (logsData.status === 'fulfilled' && logsData.value) setSecurityLogs(logsData.value);
+      if (usersData.status === 'fulfilled' && Array.isArray(usersData.value)) setUsersList(usersData.value);
+      if (txData.status === 'fulfilled' && Array.isArray(txData.value)) setTransactions(txData.value);
+      if (issuesData.status === 'fulfilled' && Array.isArray(issuesData.value)) setIssues(issuesData.value);
+      if (logsData.status === 'fulfilled' && Array.isArray(logsData.value)) setSecurityLogs(logsData.value);
       if (settingsData.status === 'fulfilled' && settingsData.value) setSettings(settingsData.value);
     } catch (err) {
       console.warn('Error fetching admin datasets:', err);
@@ -219,25 +219,29 @@ export function AdminProvider({ children }) {
     if (!globalSearch || !globalSearch.trim()) return null;
     const q = globalSearch.toLowerCase().trim();
 
-    const matchedUsers = usersList.filter(u =>
-      u.name?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.id?.toLowerCase().includes(q)
+    const safeUsers = Array.isArray(usersList) ? usersList : [];
+    const safeTx = Array.isArray(transactions) ? transactions : [];
+    const safeIssues = Array.isArray(issues) ? issues : [];
+
+    const matchedUsers = safeUsers.filter(u =>
+      u?.name?.toLowerCase().includes(q) ||
+      u?.email?.toLowerCase().includes(q) ||
+      u?.id?.toLowerCase().includes(q)
     ).slice(0, 4);
 
-    const matchedTx = transactions.filter(t =>
-      t.title?.toLowerCase().includes(q) ||
-      t.category?.toLowerCase().includes(q) ||
-      t.userName?.toLowerCase().includes(q) ||
-      t.email?.toLowerCase().includes(q) ||
-      t.id?.toLowerCase().includes(q)
+    const matchedTx = safeTx.filter(t =>
+      t?.title?.toLowerCase().includes(q) ||
+      t?.category?.toLowerCase().includes(q) ||
+      t?.userName?.toLowerCase().includes(q) ||
+      t?.email?.toLowerCase().includes(q) ||
+      t?.id?.toLowerCase().includes(q)
     ).slice(0, 4);
 
-    const matchedIssues = issues.filter(i =>
-      i.title?.toLowerCase().includes(q) ||
-      i.category?.toLowerCase().includes(q) ||
-      i.userName?.toLowerCase().includes(q) ||
-      i.reportedBy?.toLowerCase().includes(q)
+    const matchedIssues = safeIssues.filter(i =>
+      i?.title?.toLowerCase().includes(q) ||
+      i?.category?.toLowerCase().includes(q) ||
+      i?.userName?.toLowerCase().includes(q) ||
+      i?.reportedBy?.toLowerCase().includes(q)
     ).slice(0, 4);
 
     return {

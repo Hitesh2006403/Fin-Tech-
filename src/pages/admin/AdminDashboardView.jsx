@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useAdmin } from '../../context/AdminContext.jsx';
 import {
   Users,
@@ -11,14 +11,6 @@ import {
   Eye,
   Edit2,
   Ban,
-  CheckCircle,
-  Activity,
-  Server,
-  Database,
-  Shield,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
   MessageSquare,
   ArrowRightLeft
 } from 'lucide-react';
@@ -27,8 +19,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
   const {
     stats,
     usersList,
-    toggleUserStatus,
-    setAdminActiveTab
+    toggleUserStatus
   } = useAdmin();
 
   const [growthTimeframe, setGrowthTimeframe] = useState('7days');
@@ -37,14 +28,17 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [hoveredBar, setHoveredBar] = useState(null);
 
+  // Safe users list
+  const safeUsersList = Array.isArray(usersList) ? usersList : [];
+
   // Fallback defaults if stats still loading
-  const totalUsers = stats?.totalUsers || 1248;
+  const totalUsers = stats?.totalUsers || safeUsersList.length || 1248;
   const activeUsers = stats?.activeUsers || 1102;
   const reportedIssues = stats?.reportedIssues || 18;
   const totalTransactions = stats?.totalTransactions || 8532;
 
   // Recent users (take first 5)
-  const recentUsers = usersList.slice(0, 5);
+  const recentUsers = safeUsersList.slice(0, 5);
 
   // Growth Chart Data
   const growthSeries = useMemo(() => {
@@ -82,16 +76,27 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
   ];
 
   // SVG Coordinates calculation for Spline Line Chart (Memoized)
-  const { points, pathD, areaD, svgWidth, svgHeight, paddingY } = useMemo(() => {
+  const { points, pathD, areaD, svgWidth, svgHeight, paddingX, paddingY, maxVal } = useMemo(() => {
     const svgWidth = 420;
     const svgHeight = 180;
     const paddingX = 40;
     const paddingY = 25;
-    const maxVal = Math.max(...growthSeries.map(p => p.count), 1200);
+    const safeSeries = Array.isArray(growthSeries) && growthSeries.length > 0 ? growthSeries : [
+      { date: 'Oct 12', count: 280 },
+      { date: 'Oct 13', count: 520 },
+      { date: 'Oct 14', count: 680 },
+      { date: 'Oct 15', count: 750 },
+      { date: 'Oct 16', count: 890 },
+      { date: 'Oct 17', count: 1040 },
+      { date: 'Oct 18', count: 1248 }
+    ];
+    const maxVal = Math.max(...safeSeries.map(p => Number(p?.count) || 0), 1200);
 
-    const points = growthSeries.map((item, idx) => {
-      const x = paddingX + (idx / (growthSeries.length - 1)) * (svgWidth - paddingX * 2);
-      const y = svgHeight - paddingY - (item.count / maxVal) * (svgHeight - paddingY * 2);
+    const points = safeSeries.map((item, idx) => {
+      const denom = safeSeries.length > 1 ? safeSeries.length - 1 : 1;
+      const x = paddingX + (idx / denom) * (svgWidth - paddingX * 2);
+      const val = Number(item?.count) || 0;
+      const y = svgHeight - paddingY - (val / (maxVal || 1)) * (svgHeight - paddingY * 2);
       return { x, y, ...item };
     });
 
@@ -102,9 +107,11 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
       return `${acc} C ${cpX} ${prev.y}, ${cpX} ${p.y}, ${p.x} ${p.y}`;
     }, '');
 
-    const areaD = `${pathD} L ${points[points.length - 1].x} ${svgHeight - paddingY} L ${points[0].x} ${svgHeight - paddingY} Z`;
+    const lastX = points.length > 0 ? points[points.length - 1].x : paddingX;
+    const firstX = points.length > 0 ? points[0].x : paddingX;
+    const areaD = pathD ? `${pathD} L ${lastX} ${svgHeight - paddingY} L ${firstX} ${svgHeight - paddingY} Z` : '';
 
-    return { points, pathD, areaD, svgWidth, svgHeight, paddingY };
+    return { points, pathD, areaD, svgWidth, svgHeight, paddingX, paddingY, maxVal };
   }, [growthSeries]);
 
   return (
@@ -467,19 +474,21 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               })}
 
               {/* Gradient Area Fill */}
-              <path d={areaD} fill="url(#growthAreaGradient)" />
+              {areaD && <path d={areaD} fill="url(#growthAreaGradient)" />}
 
               {/* Smooth Spline Curve */}
-              <path
-                d={pathD}
-                fill="none"
-                stroke="#818CF8"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
+              {pathD && (
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="#818CF8"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              )}
 
               {/* Data Points */}
-              {points.map((p, idx) => (
+              {(points || []).map((p, idx) => (
                 <g key={idx}>
                   <circle
                     cx={p.x}
@@ -509,8 +518,8 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
             {hoveredPoint && (
               <div style={{
                 position: 'absolute',
-                left: `${(hoveredPoint.x / svgWidth) * 100}%`,
-                top: `${(hoveredPoint.y / svgHeight) * 100 - 32}%`,
+                left: `${(hoveredPoint.x / (svgWidth || 420)) * 100}%`,
+                top: `${(hoveredPoint.y / (svgHeight || 180)) * 100 - 32}%`,
                 transform: 'translate(-50%, -100%)',
                 background: 'rgba(14, 21, 34, 0.98)',
                 border: '1px solid #818CF8',
@@ -524,7 +533,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                 whiteSpace: 'nowrap',
                 zIndex: 20
               }}>
-                {hoveredPoint.date}: {hoveredPoint.count.toLocaleString()} users
+                {hoveredPoint.date}: {Number(hoveredPoint.count || 0).toLocaleString()} users
               </div>
             )}
           </div>
@@ -576,10 +585,12 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
 
           {/* Grouped Bar Chart */}
           <div style={{ height: 180, display: 'flex', alignItems: 'flex-end', gap: 10, paddingBottom: 20, position: 'relative' }}>
-            {barSeries.map((bar, idx) => {
+            {(barSeries || []).map((bar, idx) => {
               const maxBarVal = 60000;
-              const incHeight = Math.min(100, Math.max(12, (bar.income / maxBarVal) * 100));
-              const expHeight = Math.min(100, Math.max(8, (bar.expenses / maxBarVal) * 100));
+              const incVal = Number(bar?.income) || 0;
+              const expVal = Number(bar?.expenses) || 0;
+              const incHeight = Math.min(100, Math.max(12, (incVal / maxBarVal) * 100));
+              const expHeight = Math.min(100, Math.max(8, (expVal / maxBarVal) * 100));
 
               return (
                 <div
@@ -625,7 +636,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                     color: '#64748B',
                     whiteSpace: 'nowrap'
                   }}>
-                    {bar.date.replace('Oct ', '')}
+                    {typeof bar?.date === 'string' ? bar.date.replace('Oct ', '') : (bar?.date || '')}
                   </span>
                 </div>
               );
@@ -647,9 +658,9 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                 zIndex: 25,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.6)'
               }}>
-                <div style={{ fontWeight: 700, marginBottom: 2 }}>{hoveredBar.date}</div>
-                <div style={{ color: '#34D399' }}>Income: ₹{hoveredBar.income.toLocaleString()}</div>
-                <div style={{ color: '#818CF8' }}>Expenses: ₹{hoveredBar.expenses.toLocaleString()}</div>
+                <div style={{ fontWeight: 700, marginBottom: 2 }}>{hoveredBar.date || ''}</div>
+                <div style={{ color: '#34D399' }}>Income: ₹{Number(hoveredBar.income || 0).toLocaleString()}</div>
+                <div style={{ color: '#818CF8' }}>Expenses: ₹{Number(hoveredBar.expenses || 0).toLocaleString()}</div>
               </div>
             )}
           </div>
@@ -782,18 +793,25 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
               </tr>
             </thead>
             <tbody>
-              {recentUsers.map((u) => {
-                const isBlocked = u.status === 'Blocked' || u.status === 'blocked';
-                return (
-                  <tr
-                    key={u.id}
-                    style={{
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                      transition: 'background 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                  >
+              {recentUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ padding: '32px', textAlign: 'center', color: '#64748B', fontSize: 13.5 }}>
+                    No registered user accounts found.
+                  </td>
+                </tr>
+              ) : (
+                recentUsers.map((u) => {
+                  const isBlocked = u.status === 'Blocked' || u.status === 'blocked';
+                  return (
+                    <tr
+                      key={u.id}
+                      style={{
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        transition: 'background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
                     <td style={{ padding: '14px 16px', fontSize: 13, color: '#94A3B8', fontWeight: 600 }}>
                       {u.id}
                     </td>
@@ -879,7 +897,7 @@ export function AdminDashboardView({ onViewAllUsers, onViewAllIssues, onViewAllL
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

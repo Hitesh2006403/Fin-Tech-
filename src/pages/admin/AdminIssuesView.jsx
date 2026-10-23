@@ -19,14 +19,16 @@ export function AdminIssuesView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIssue, setSelectedIssue] = useState(null);
 
-  const filteredIssues = issues.filter(issue => {
-    const matchesFilter = filterStatus === 'all' || issue.status === filterStatus;
+  const safeIssues = Array.isArray(issues) ? issues : [];
+
+  const filteredIssues = safeIssues.filter(issue => {
+    const matchesFilter = filterStatus === 'all' || issue?.status === filterStatus;
     const matchesSearch =
-      issue.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      issue.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      issue.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      issue.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      issue.reportedBy?.toLowerCase().includes(searchTerm.toLowerCase());
+      issue?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue?.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue?.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue?.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      issue?.reportedBy?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesFilter && matchesSearch;
   });
@@ -63,7 +65,7 @@ export function AdminIssuesView() {
           fontWeight: 700
         }}>
           <AlertTriangle size={15} />
-          <span>{issues.filter(i => i.status !== 'resolved').length} Open Tickets</span>
+          <span>{safeIssues.filter(i => i?.status !== 'resolved').length} Open Tickets</span>
         </div>
       </div>
 

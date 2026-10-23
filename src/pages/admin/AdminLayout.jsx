@@ -62,11 +62,13 @@ export function AdminLayout({ onReturnToClient }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
 
-  const openIssuesCount = issues.filter(i => i.status !== 'resolved').length || 5;
+  const safeIssues = Array.isArray(issues) ? issues : [];
+  const safeUsers = Array.isArray(usersList) ? usersList : [];
+  const openIssuesCount = safeIssues.filter(i => i?.status !== 'resolved').length || 5;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, section: 'main' },
-    { id: 'users', label: 'Users', icon: Users, badge: usersList.length || 24, badgeColor: '#10B981', section: 'management' },
+    { id: 'users', label: 'Users', icon: Users, badge: safeUsers.length || 24, badgeColor: '#10B981', section: 'management' },
     { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, section: 'management' },
     { id: 'reports', label: 'Reports', icon: BarChart2, section: 'management' },
     { id: 'issues', label: 'Feedback & Issues', icon: MessageSquare, badge: openIssuesCount, badgeColor: '#EF4444', section: 'management' },

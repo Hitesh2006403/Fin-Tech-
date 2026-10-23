@@ -46,6 +46,7 @@ export function AdminBackground3D() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     let animationFrameId;
 
     let width = (canvas.width = window.innerWidth);
@@ -111,31 +112,35 @@ export function AdminBackground3D() {
         mousePos.current.settled = true;
       }
 
-      if (particleCount > 0 && !isScrollingRef.current) {
-        ctx.clearRect(0, 0, width, height);
+      if (particleCount > 0 && !isScrollingRef.current && ctx) {
+        try {
+          ctx.clearRect(0, 0, width, height);
 
-        const px = mousePos.current.x;
-        const py = mousePos.current.y;
+          const px = mousePos.current.x;
+          const py = mousePos.current.y;
 
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          p.x += p.speedX;
-          p.y += p.speedY;
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.speedX;
+            p.y += p.speedY;
 
-          if (p.y < -10) {
-            p.y = height + 10;
-            p.x = Math.random() * width;
+            if (p.y < -10) {
+              p.y = height + 10;
+              p.x = Math.random() * width;
+            }
+            if (p.x < -10) p.x = width + 10;
+            if (p.x > width + 10) p.x = -10;
+
+            const renderX = p.x + px * 5;
+            const renderY = p.y + py * 5;
+
+            ctx.beginPath();
+            ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `${p.color}${p.alpha})`;
+            ctx.fill();
           }
-          if (p.x < -10) p.x = width + 10;
-          if (p.x > width + 10) p.x = -10;
-
-          const renderX = p.x + px * 5;
-          const renderY = p.y + py * 5;
-
-          ctx.beginPath();
-          ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `${p.color}${p.alpha})`;
-          ctx.fill();
+        } catch (e) {
+          // Ignore render exceptions on mobile context drop
         }
       }
 

@@ -34,7 +34,7 @@ export function AdminNotificationsView() {
       });
       setFeedback({
         type: 'success',
-        message: `Announcement successfully broadcast to ${res?.deliveredCount || usersList.length} active users!`
+        message: `Announcement successfully broadcast to ${res?.deliveredCount || (Array.isArray(usersList) ? usersList.length : 0)} active users!`
       });
       setTitle('');
       setDescription('');
