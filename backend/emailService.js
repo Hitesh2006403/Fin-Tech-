@@ -18,6 +18,26 @@ const SENDER_EMAIL = process.env.SMTP_FROM || SMTP_USER;
 
 let transporter = null;
 
+/**
+ * TEMPORARY 5-DAY MAINTENANCE FEATURE FLAG:
+ * Temporarily disables all password recovery email sending while administrator is unavailable.
+ *
+ * To re-enable password recovery after five days:
+ * 1. Change PASSWORD_RECOVERY_ENABLED to true below, OR
+ * 2. Set ENABLE_PASSWORD_RECOVERY=true in backend/.env
+ */
+export const PASSWORD_RECOVERY_ENABLED = process.env.ENABLE_PASSWORD_RECOVERY === 'true';
+
+export function isPasswordRecoveryEnabled() {
+  if (process.env.ENABLE_PASSWORD_RECOVERY !== undefined) {
+    return process.env.ENABLE_PASSWORD_RECOVERY === 'true';
+  }
+  if (process.env.DISABLE_PASSWORD_RECOVERY !== undefined) {
+    return process.env.DISABLE_PASSWORD_RECOVERY !== 'true';
+  }
+  return PASSWORD_RECOVERY_ENABLED; // false by default during maintenance period
+}
+
 export function getEmailTransporter() {
   if (!transporter && SMTP_USER && SMTP_PASS) {
     transporter = nodemailer.createTransport({
@@ -40,6 +60,15 @@ export function getEmailTransporter() {
  * Sends a password recovery email to the recipient
  */
 export async function sendPasswordRecoveryEmail({ toEmail, recoveryLink, recipientName = 'FinSight User' }) {
+  if (!isPasswordRecoveryEnabled()) {
+    console.warn(`[FinSight Mailer] Password recovery is temporarily disabled. Suppressed recovery email to ${toEmail}`);
+    return {
+      success: false,
+      disabled: true,
+      reason: 'Password recovery is temporarily unavailable. Please try again later.'
+    };
+  }
+
   const mailer = getEmailTransporter();
   if (!mailer) {
     console.warn('[FinSight Mailer] SMTP credentials not fully configured (SMTP_USER / SMTP_PASS). Skipping direct SMTP send.');

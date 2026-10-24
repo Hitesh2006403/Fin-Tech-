@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Background3D } from '../components/common/Background3D.jsx';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { authService } from '../services/authService.js';
+import { authService, isPasswordRecoveryDisabled } from '../services/authService.js';
 import { navigationTracker } from '../services/navigationTracker.js';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '261321779368-ruajq5gea9jtv1lkrqqa2cupa6jsim9a.apps.googleusercontent.com';
@@ -384,6 +384,12 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     setForgotError(null);
+
+    if (isPasswordRecoveryDisabled()) {
+      setForgotError('Password recovery is temporarily unavailable. Please try again later.');
+      return;
+    }
+
     const targetEmail = (forgotEmail || email || '').trim();
 
     if (!targetEmail) {
@@ -1262,6 +1268,29 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                 Enter your account email address and we'll dispatch a secure, time-limited recovery link.
               </p>
 
+              {/* Temporary Maintenance Advisory */}
+              {isPasswordRecoveryDisabled() && (
+                <div style={{
+                  background: 'rgba(245, 158, 11, 0.12)',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  marginBottom: 18,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  color: '#FCD34D',
+                  fontSize: 13,
+                  lineHeight: 1.45
+                }}>
+                  <AlertCircle size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <strong style={{ display: 'block', color: '#FDE68A', marginBottom: 2 }}>Maintenance Notice</strong>
+                    Password recovery is temporarily unavailable. Please try again later.
+                  </div>
+                </div>
+              )}
+
               {/* Error Notice */}
               {forgotError && (
                 <div style={{
@@ -1330,7 +1359,7 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                           if (forgotError) setForgotError(null);
                         }}
                         required
-                        disabled={forgotLoading}
+                        disabled={forgotLoading || isPasswordRecoveryDisabled()}
                         autoFocus
                       />
                     </div>
@@ -1339,18 +1368,20 @@ export function AuthPage({ initialMode = 'login', onOpenAdmin }) {
                   <button
                     type="submit"
                     className="btn-primary"
-                    disabled={forgotLoading}
+                    disabled={forgotLoading || isPasswordRecoveryDisabled()}
                     style={{
                       width: '100%',
                       justifyContent: 'center',
                       padding: '12px',
                       fontSize: 14.5,
                       marginTop: 8,
-                      opacity: forgotLoading ? 0.75 : 1,
-                      cursor: forgotLoading ? 'not-allowed' : 'pointer'
+                      opacity: (forgotLoading || isPasswordRecoveryDisabled()) ? 0.65 : 1,
+                      cursor: (forgotLoading || isPasswordRecoveryDisabled()) ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    {forgotLoading ? (
+                    {isPasswordRecoveryDisabled() ? (
+                      <span>Password Recovery Unavailable</span>
+                    ) : forgotLoading ? (
                       <>
                         <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} />
                         <span>Sending Recovery Link...</span>

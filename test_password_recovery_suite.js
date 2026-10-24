@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import app from './backend/server.js';
 import db from './backend/db.js';
+import { sendPasswordRecoveryEmail, isPasswordRecoveryEnabled } from './backend/emailService.js';
 
 let server;
 let baseUrl;
@@ -25,50 +26,36 @@ after(async () => {
 });
 
 describe('FinSight Password Recovery Flow & Security Suite', () => {
-  test('1. POST /api/auth/forgot-password rejects invalid/empty email formats with 400', async () => {
-    // Missing email
-    const res1 = await fetch(`${baseUrl}/api/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
-    });
-    const body1 = await res1.json();
-    assert.equal(res1.status, 400);
-    assert.match(body1.error, /email/i);
-
-    // Invalid email format
-    const res2 = await fetch(`${baseUrl}/api/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'not-a-valid-email' })
-    });
-    const body2 = await res2.json();
-    assert.equal(res2.status, 400);
-    assert.match(body2.error, /valid email address/i);
-  });
-
-  test('2. POST /api/auth/forgot-password accepts valid email and returns generic anti-enumeration response', async () => {
+  test('1. POST /api/auth/forgot-password is blocked by feature flag and returns 503 maintenance notice without sending emails', async () => {
     const res = await fetch(`${baseUrl}/api/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'dishankbs04@gmail.com' })
+      body: JSON.stringify({ email: 'user@example.com' })
     });
     const body = await res.json();
-    assert.equal(res.status, 200);
-    assert.equal(body.success, true);
-    assert.match(body.message, /If an account exists for this email address/i);
+    assert.equal(res.status, 503);
+    assert.equal(body.success, false);
+    assert.equal(body.disabled, true);
+    assert.equal(body.error, 'Password recovery is temporarily unavailable. Please try again later.');
+    assert.equal(body.message, 'Password recovery is temporarily unavailable. Please try again later.');
   });
 
-  test('3. POST /api/auth/forgot-password returns identical response for unknown email (no enumeration)', async () => {
-    const res = await fetch(`${baseUrl}/api/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'nonexistent-user-99999@domain.org' })
-    });
+  test('2. GET /api/auth/password-recovery-status returns disabled status', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/password-recovery-status`);
     const body = await res.json();
     assert.equal(res.status, 200);
-    assert.equal(body.success, true);
-    assert.match(body.message, /If an account exists for this email address/i);
+    assert.equal(body.enabled, false);
+    assert.match(body.message, /Password recovery is temporarily unavailable. Please try again later./i);
+  });
+
+  test('3. sendPasswordRecoveryEmail helper suppresses email delivery when disabled without invoking nodemailer', async () => {
+    const result = await sendPasswordRecoveryEmail({
+      toEmail: 'user@example.com',
+      recoveryLink: 'http://localhost/test'
+    });
+    assert.equal(result.success, false);
+    assert.equal(result.disabled, true);
+    assert.match(result.reason, /Password recovery is temporarily unavailable. Please try again later./i);
   });
 
   test('4. POST /api/auth/update-password rejects weak passwords (< 8 chars) with 400', async () => {
@@ -77,7 +64,7 @@ describe('FinSight Password Recovery Flow & Security Suite', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         newPassword: 'short',
-        email: 'dishankbs04@gmail.com'
+        email: 'testuser@example.com'
       })
     });
     const body = await res.json();
@@ -91,7 +78,7 @@ describe('FinSight Password Recovery Flow & Security Suite', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         newPassword: 'BrandNewSecurePassword2026!',
-        email: 'dishankbs04@gmail.com',
+        email: 'testuser@example.com',
         recoveryToken: 'invalid.or.forged.token'
       })
     });

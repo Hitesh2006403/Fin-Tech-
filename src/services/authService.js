@@ -23,6 +23,27 @@ function resolveApiBase(subpath = 'auth') {
 const API_BASE = resolveApiBase('auth');
 
 /**
+ * TEMPORARY 5-DAY MAINTENANCE FEATURE FLAG (FRONTEND GUARD):
+ * Temporarily disables client-initiated password recovery requests while administrator is unavailable.
+ * Completely blocks frontend Supabase Auth and backend API password recovery calls.
+ *
+ * To re-enable password recovery after five days:
+ * 1. Change IS_PASSWORD_RECOVERY_DISABLED to false below, OR
+ * 2. Set VITE_ENABLE_PASSWORD_RECOVERY=true in .env
+ */
+export const IS_PASSWORD_RECOVERY_DISABLED =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ENABLE_PASSWORD_RECOVERY === 'true')
+    ? false
+    : true;
+
+export function isPasswordRecoveryDisabled() {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ENABLE_PASSWORD_RECOVERY !== undefined) {
+    return import.meta.env.VITE_ENABLE_PASSWORD_RECOVERY !== 'true';
+  }
+  return IS_PASSWORD_RECOVERY_DISABLED;
+}
+
+/**
  * Safely parses response JSON without throwing "Unexpected end of JSON input"
  * on empty bodies or 502/504 gateway proxies
  */
@@ -612,6 +633,10 @@ export const authService = {
    * Uses Supabase Auth's resetPasswordForEmail with redirectTo pointing to /update-password
    */
   async requestPasswordRecovery(email) {
+    if (isPasswordRecoveryDisabled()) {
+      throw new Error('Password recovery is temporarily unavailable. Please try again later.');
+    }
+
     if (!email || typeof email !== 'string') {
       throw new Error('Please enter your email address.');
     }
@@ -656,6 +681,9 @@ export const authService = {
         body: JSON.stringify({ email: cleanEmail, redirectTo })
       });
       const data = await safeJsonParse(res);
+      if (res.status === 503 || data.disabled) {
+        throw new Error(data.message || data.error || 'Password recovery is temporarily unavailable. Please try again later.');
+      }
       if (res.status === 429) {
         throw new Error(data.error || 'Email rate limit reached. Please wait a few minutes before requesting another recovery email.');
       }
@@ -663,6 +691,9 @@ export const authService = {
         requestDispatched = true;
       }
     } catch (backendErr) {
+      if (backendErr.status === 503 || backendErr.message?.includes('temporarily unavailable')) {
+        throw backendErr;
+      }
       if (backendErr.status === 429 || backendErr.message?.includes('rate limit')) {
         throw backendErr;
       }

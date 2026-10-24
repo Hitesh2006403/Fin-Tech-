@@ -18,7 +18,7 @@ import {
   supabaseUrl,
   testSupabaseCloudConnection
 } from './supabase.js';
-import { sendPasswordRecoveryEmail } from './emailService.js';
+import { sendPasswordRecoveryEmail, isPasswordRecoveryEnabled } from './emailService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -433,9 +433,39 @@ app.post('/api/auth/onboarding', (req, res) => {
   });
 });
 
+// 7a. Password Recovery - Availability Status Check
+app.get('/api/auth/password-recovery-status', (req, res) => {
+  const enabled = isPasswordRecoveryEnabled();
+  return res.json({
+    enabled,
+    message: enabled
+      ? 'Password recovery service is active.'
+      : 'Password recovery is temporarily unavailable. Please try again later.'
+  });
+});
+
 // 7b. Password Recovery - Request Reset Link
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
+    // 1. Backend-Enforced Feature Flag (5-Day Maintenance Disablement)
+    if (!isPasswordRecoveryEnabled()) {
+      const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : 'unspecified';
+      db.addSecurityLog({
+        event: 'Password Recovery Attempt Blocked',
+        details: `Password recovery submission blocked (temporarily disabled for maintenance) for ${email}`,
+        actor: email,
+        ip: req.ip || '127.0.0.1',
+        status: 'blocked',
+        severity: 'info'
+      });
+      return res.status(503).json({
+        success: false,
+        disabled: true,
+        error: 'Password recovery is temporarily unavailable. Please try again later.',
+        message: 'Password recovery is temporarily unavailable. Please try again later.'
+      });
+    }
+
     const { email, redirectTo } = req.body;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: 'Email address is required.' });
@@ -575,6 +605,7 @@ app.get('/api/health', (req, res) => {
     googleClientIdConfigured: Boolean(effectiveClientId),
     googleClientIdSnippet: effectiveClientId ? effectiveClientId.slice(0, 15) + '...' : 'none',
     adminEmailConfigured,
+    passwordRecoveryEnabled: isPasswordRecoveryEnabled(),
     appOrigin: APP_ORIGIN,
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
     serverTime: new Date().toISOString()
